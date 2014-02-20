@@ -1,11 +1,11 @@
 #!/bin/sh
 
-./webkitwindow &
+./wkline &
 WK_PID=$!
 
 sleep 1
 
-W=$(xdotool search --class statusline)
+W=$(xdotool search --class wkline-window)
 
 xprop -id $W -f _NET_WM_STRUT_PARTIAL 32c -set _NET_WM_STRUT_PARTIAL "0,0,22,0,0,0,0,0,0,1920,0,0"
 
@@ -15,6 +15,6 @@ xdotool windowsize $W 100% 22
 # for some reason the window size doesn't get applied right away, but it works if we set it again after sleeping
 sleep 1
 xdotool windowsize $W 100% 22
-xdotool windowmap  $W
+xdotool windowmap $W
 
 wait $WK_PID

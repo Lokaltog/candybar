@@ -6,14 +6,14 @@ import signal
 from gi.repository import Gtk, Gdk, WebKit
 
 
-class StatuslineWindow(Gtk.ApplicationWindow):
+class WklineWindow(Gtk.ApplicationWindow):
 	dim = [1920, 22]
-	server_uri = 'file:///home/kim/projects/statusline/webroot/index.html'
+	server_uri = 'file:///home/kim/projects/wkline/webroot/index.html'
 
 	def __init__(self, app):
-		Gtk.Window.__init__(self, title='statusline', application=app, decorated=False)
+		Gtk.Window.__init__(self, title='wkline-window', application=app, decorated=False)
 
-		self.set_wmclass('statusline', 'statusline')
+		self.set_wmclass('wkline-window', 'wkline-window')
 		self.move(0, 0)
 		self.set_keep_above(True)
 
@@ -39,12 +39,12 @@ class StatuslineWindow(Gtk.ApplicationWindow):
 		self.add(scrolled_window)
 
 
-class StatuslineApplication(Gtk.Application):
+class WklineApplication(Gtk.Application):
 	def __init__(self):
 		Gtk.Application.__init__(self)
 
 	def do_activate(self):
-		win = StatuslineWindow(self)
+		win = WklineWindow(self)
 		win.show_all()
 
 	def do_startup(self):
@@ -54,6 +54,6 @@ class StatuslineApplication(Gtk.Application):
 if __name__ == '__main__':
 	signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-	app = StatuslineApplication()
+	app = WklineApplication()
 	exit_status = app.run(sys.argv)
 	sys.exit(exit_status)

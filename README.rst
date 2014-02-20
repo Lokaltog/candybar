@@ -15,8 +15,8 @@ manager that uses an executable to configure the layout and navigation (as oppos
 static config file) like ``bspwm``, or any "dynamic" window manager like ``qtile``.
 
 A basic proof-of-concept is currently available. Clone the repo, run ``npm install``,
-``grunt production``, configure the HTML file path in ``./webkitwindow`` then run
-``./statusline``. This will draw a statusline on the top of the screen. See
+``grunt production``, configure the HTML file path in ``scripts/wkline`` then run
+``scripts/wkline-launcher``. This will draw a statusline on the top of the screen. See
 screenshots below.
 
 Why Python and GTK+WebKit?
