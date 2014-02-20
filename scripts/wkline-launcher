@@ -7,14 +7,14 @@ sleep 1
 
 W=$(xdotool search --class wkline-window)
 
-xprop -id $W -f _NET_WM_STRUT_PARTIAL 32c -set _NET_WM_STRUT_PARTIAL "0,0,22,0,0,0,0,0,0,1920,0,0"
+xprop -id $W -f _NET_WM_STRUT_PARTIAL 32c -set _NET_WM_STRUT_PARTIAL "0,0,26,0,0,0,0,0,0,1920,0,0"
 
 xdotool windowunmap $W
 xdotool windowraise $W
-xdotool windowsize $W 100% 22
+xdotool windowsize $W 100% 26
 # for some reason the window size doesn't get applied right away, but it works if we set it again after sleeping
 sleep 1
-xdotool windowsize $W 100% 22
+xdotool windowsize $W 100% 26
 xdotool windowmap $W
 
 wait $WK_PID

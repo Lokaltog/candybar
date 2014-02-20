@@ -48,5 +48,9 @@ Ideas
 
 Screenshots
 -----------
+
 .. image:: http://i.imgur.com/qkZjKw6.png
+   :alt: Concept screenshot
+
+.. image:: http://i.imgur.com/whgqRGH.png
    :alt: Concept screenshot
