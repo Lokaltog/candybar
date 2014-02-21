@@ -65,3 +65,5 @@ Ideas
 * Disable faux transparency with fullscreen windows or in monocle mode. Only enable
   transparency if no windows are displayed, or if all windows are floating (should
   look much better).
+* Shorten certain segments to an icon, expand horizontally on hover. This should save
+  a lot of space.
