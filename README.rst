@@ -17,8 +17,12 @@ static config file) like ``bspwm``, or any "dynamic" window manager like ``qtile
 A basic proof-of-concept is currently available. Clone the repo, run ``npm install``
 and ``grunt production`` to render the HTML file. Then do ``cd src`` and ``make`` to
 compile the statusline executable. Run ``./wkline
-"file:///path/to/wkline/webroot/index.html"`` to display the statusline. Run ``echo
-'test string' > wkline_fifo`` to pass information to the statusline.
+"file:///path/to/wkline/webroot/index.html"`` to display the statusline.
+
+The statusline can be updated by running e.g.::
+
+  echo '["reload"]' > wkline_fifo # reloads the statusline
+  echo '{plugin:{time:"12:34",date:"2014-01-01"}}' > wkline_fifo # sets date and time
 
 Screenshots
 -----------

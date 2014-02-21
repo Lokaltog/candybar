@@ -177,7 +177,7 @@ module.exports = function (grunt) {
 			all: {
 				files: [{
 					cwd: 'app/assets',
-					src: '{font,img,etc}/**',
+					src: '{js,font,img,etc}/**',
 					dest: 'webroot/static/',
 				}],
 			},

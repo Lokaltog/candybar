@@ -21,7 +21,6 @@ html(ng-app='Wkline')
 						| 3
 						span.windows
 
-				div(ng-bind='data.placeholder') Waiting for page to load...
 
 			#right
 				ul#notification
@@ -53,10 +52,10 @@ html(ng-app='Wkline')
 						.bar(style='width:50%')
 				#date
 					i.fa.fa-calendar
-					| 2014-02-20
+					span(ng-bind='data.plugin.date') 0000-00-00
 				#time
 					i.fa.fa-clock-o
-					| 19:55
+					span(ng-bind='data.plugin.time') 00:00
 
 	script(src='http://ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular.min.js')
 	script(src='static/js/main.js')

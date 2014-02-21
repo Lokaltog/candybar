@@ -56,7 +56,7 @@ web_view_inject(gpointer data) {
 	char script[200];
 	WklineThreadData *thread_data = (WklineThreadData *)data;
 
-	sprintf(script, "wkInject({placeholder:'Text sent from wkline.c: [%s]'})", thread_data->buf);
+	sprintf(script, "wkInject(%s)", thread_data->buf);
 	webkit_web_view_execute_script(thread_data->web_view, script);
 
 	return FALSE;
