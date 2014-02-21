@@ -54,3 +54,6 @@ Ideas
   tiling window managers, but adding a window list isn't a priority.
 * Possibly use other browsers as alternatives? Both uzbl and chromium provides a
   kiosk mode.
+* Disable faux transparency with fullscreen windows or in monocle mode. Only enable
+  transparency if no windows are displayed, or if all windows are floating (should
+  look much better).
