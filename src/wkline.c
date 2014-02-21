@@ -1,8 +1,11 @@
-#include <string.h>
-
-#include <gtk/gtk.h>
+#include <fcntl.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
+#include <glib.h>
+#include <gtk/gtk.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
 #include <webkit/webkit.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_atom.h>
@@ -38,7 +41,7 @@ wk_notify_load_status_cb (WebKitWebView* web_view, GParamSpec* pspec, GtkWidget*
 	if (status == WEBKIT_LOAD_FINISHED) {
 		printf("Page loaded!\n");
 		fflush(stdout);
-		webkit_web_view_execute_script(web_view, "wkInject({placeholder:'Text sent from wkline.c'})");
+		// TODO move thread check and creation here to avoid script errors when the page hasn't been loaded yet
 	}
 }
 
@@ -46,6 +49,48 @@ static gboolean
 wk_context_menu_cb (WebKitWebView* web_view, GtkWidget* window) {
 	// Disable context menu
 	return TRUE;
+}
+
+gboolean
+web_view_inject(gpointer data) {
+	char script[200];
+	WklineThreadData *thread_data = (WklineThreadData *)data;
+
+	sprintf(script, "wkInject({placeholder:'Text sent from wkline.c: [%s]'})", thread_data->buf);
+	webkit_web_view_execute_script(thread_data->web_view, script);
+
+	return FALSE;
+}
+
+void
+fifo_monitor_thread (gpointer data) {
+	char buf[256];
+	int num, fd;
+	WklineThreadData *thread_data = (WklineThreadData *)data;
+
+	if (mkfifo(wkline_fifo, 0666) < 0) {
+		perror("mkfifo");
+	}
+
+	while (1) {
+		if ((fd = open(wkline_fifo, O_RDONLY)) < 0) {
+			perror("parent - open");
+		}
+		do {
+			if ((num = read(fd, buf, sizeof(buf))) < 0) {
+				perror("Monitor read");
+			}
+			else {
+				buf[num] = '\0';
+				if (num > 0) {
+					thread_data->buf = buf;
+					g_idle_add((GSourceFunc)web_view_inject, data);
+				}
+			}
+		} while (num > 0);
+
+		close(fd);
+	}
 }
 
 int
@@ -62,6 +107,7 @@ main (int argc, char *argv[]) {
 
 	const int ATOM__NET_WM_STRUT_PARTIAL = get_intern_atom(conn, "_NET_WM_STRUT_PARTIAL");
 
+	WklineThreadData thread_data;
 	WklineDimensions dim = {screen->width_in_pixels, wkline_height};
 	int strut_partial[12] = {0, 0, dim.h, 0, 0, 0, 0, 0, 0, dim.w, 0, 0};
 
@@ -108,6 +154,12 @@ main (int argc, char *argv[]) {
 	                    sizeof(strut_partial), strut_partial);
 
 	xcb_flush(conn);
+
+	thread_data.web_view = web_view;
+
+	// Launch fifo monitoring thread
+	g_thread_new("FIFO monitor thread", (GThreadFunc)fifo_monitor_thread, &thread_data);
+
 	gtk_main();
 
 	return 0;
