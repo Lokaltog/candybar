@@ -14,10 +14,12 @@ information from the window manager itself. This should work well with any windo
 manager that uses an executable to configure the layout and navigation (as opposed to a
 static config file) like ``bspwm``, or any "dynamic" window manager like ``qtile``.
 
-A basic proof-of-concept is currently available. Clone the repo, run ``npm install``
-and ``grunt production`` to render the HTML file. Then do ``cd src`` and ``make`` to
-compile the statusline executable. Run ``./wkline
-"file:///path/to/wkline/webroot/index.html"`` to display the statusline.
+A basic proof-of-concept is currently available. Clone the ``wkline-theme-default``
+repo, run ``npm install`` and ``grunt production`` to render the theme.
+
+Run ``cd src`` and ``make`` to compile the statusline executable. Run ``./wkline
+"file:///path/to/wkline-theme-default/webroot/index.html"`` to display the
+statusline.
 
 The statusline can be updated by running e.g.::
 
