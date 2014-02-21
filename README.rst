@@ -4,8 +4,8 @@ wkline
 :Author: Kim Silkebækken (kim.silkebaekken@gmail.com)
 :Source: https://github.com/Lokaltog/wkline
 
-**WebKit-based status line for tiling window managers. Requires Python 3, GTK+ 3 with
-WebKit bindings and xdotool.**
+**WebKit-based status line for tiling window managers. Requires Python 3, GTK+ 3 and
+libxcb.**
 
 This is a proof-of-concept statusline plugin that launches a plain GTK window with a
 WebKit WebView pointing to a static HTML file containing the statusline. Planned
@@ -14,13 +14,22 @@ information from the window manager itself. This should work well with any windo
 manager that uses an executable to configure the layout and navigation (as opposed to a
 static config file) like ``bspwm``, or any "dynamic" window manager like ``qtile``.
 
-A basic proof-of-concept is currently available. Clone the repo, run ``npm install``,
-``grunt production``, configure the HTML file path in ``scripts/wkline`` then run
-``scripts/wkline-launcher``. This will draw a statusline on the top of the screen. See
-screenshots below.
+A basic proof-of-concept is currently available. Clone the repo, run ``npm install``
+and ``grunt production`` to render the HTML file. Then do ``cd src`` and ``make`` to
+compile the statusline executable. Run ``./wkline
+"file:///path/to/wkline/webroot/index.html"`` to display the statusline.
 
-Why Python and GTK+WebKit?
---------------------------
+Screenshots
+-----------
+
+.. image:: http://i.imgur.com/qkZjKw6.png
+   :alt: Concept screenshot
+
+.. image:: http://i.imgur.com/whgqRGH.png
+   :alt: Concept screenshot
+
+Why Python/GTK/WebKit?
+----------------------
 
 No window manager currently provides the power and flexibility of using HTML and CSS
 for styling the status line. The WebKit WebView is fast and lightweight, and using
@@ -45,12 +54,3 @@ Ideas
   tiling window managers, but adding a window list isn't a priority.
 * Possibly use other browsers as alternatives? Both uzbl and chromium provides a
   kiosk mode.
-
-Screenshots
------------
-
-.. image:: http://i.imgur.com/qkZjKw6.png
-   :alt: Concept screenshot
-
-.. image:: http://i.imgur.com/whgqRGH.png
-   :alt: Concept screenshot
