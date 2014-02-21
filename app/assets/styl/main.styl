@@ -54,18 +54,36 @@ html, body
 
 	div, ul, li
 		display: inline-block
+		vertical-align: top
+		white-space: nowrap
+
+	i
+		display: inline-block
+		background: linear-gradient(top, rgba(#fff, 1), rgba(#fff, .7))
+		text-shadow: none
+		-webkit-background-clip: text
+		-webkit-text-fill-color: transparent
+		margin: 0 5px 0 0
+		&:after
+			background: none
+			content: attr(data-text)
+			left: 0
+			position: absolute
+			text-shadow: 6px 6px 9px rgba(0, 0, 0, 0.33)
+			top: 0
+			z-index: -1
 
 	#left
 		float: left
 		& > div:not(:first-child),
 		& > ul:not(:first-child)
-			margin: 0 0 0 10px
+			margin: 0 0 0 20px
 
 	#right
 		float: right
 		& > div:not(:last-child),
 		& > ul:not(:last-child)
-			margin: 0 10px 0 0
+			margin: 0 20px 0 0
 
 	#tags
 		li
@@ -96,16 +114,10 @@ html, body
 				right: 2px
 	#date
 		color: #eee
-		i
-			opacity: .8
-			margin: 0 5px 0 0
 
 	#time
 		font-weight: bold
 		margin: 0 10px 0 0
-		i
-			opacity: .8
-			margin: 0 5px 0 0
 
 	#notification
 		li
@@ -117,6 +129,7 @@ html, body
 			height: height - 4px
 			cursor: pointer
 			line-height: height - 2px
+			box-shadow: inset 0 -1px 1px 0 rgba(#000, .2), inset 0 1px 1px 0 rgba(#fff, .2)
 			.icon
 				margin: 0 5px 0 0
 			.close
@@ -132,10 +145,50 @@ html, body
 				.close
 					opacity: 1
 
+	#player
+		i.fa
+			margin: 0 5px
+		.progress
+			background: linear-gradient(top, rgba(#fff, .2), rgba(#fff, .4))
+			border-radius: 2px
+			width: 100px
+			height: 4px
+			position: relative
+			margin: 11px 10px 0 10px
+			.bar
+				height: 4px
+				border-radius: 2px
+				background: linear-gradient(top, rgba(#fff, .7), rgba(#fff, .4))
+				position: absolute
+		.time
+			margin: 0 10px
+			.end
+				font-size: 10px
+				opacity: .8
+				&:before
+					content: ' / '
+		.song
+			width = 200px
+			margin: 0 10px
+			max-width: width
+			height: height
+			line-height: height
+			overflow: hidden
+			text-overflow: clip
+			-webkit-mask-image: -webkit-linear-gradient(left, rgba(#000, 1), rgba(#000, 1) width - 30px, rgba(#000, 0) width)
+			.artist
+				display: inline
+				opacity: .8
+				&:after
+					font-family: 'FontAwesome'
+					content: '\f105'
+					margin: 0 5px
+					opacity: .6
+			.title
+				display: inline
+
+
 	#volume
-		i
-			opacity: .8
-			margin: 0 0 0 5px
 		.progress
 			background: linear-gradient(top, rgba(#000, .5), rgba(#000, 0))
 			box-shadow: inset 0 1px 1px #000, inset 0 -1px 1px rgba(#fff, .4)
@@ -143,7 +196,7 @@ html, body
 			width: 100px
 			height: 14px
 			position: relative
-			top: 2px
+			top: 7px
 			margin: 0 0 0 5px
 			.bar
 				height: 10px

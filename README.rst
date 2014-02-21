@@ -28,6 +28,9 @@ Screenshots
 .. image:: http://i.imgur.com/whgqRGH.png
    :alt: Concept screenshot
 
+.. image:: http://i.imgur.com/gpEKgyS.png
+   :alt: Concept screenshot
+
 Why Python/GTK/WebKit?
 ----------------------
 
