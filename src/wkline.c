@@ -32,6 +32,16 @@ wk_notify_progress_cb (WebKitWebView* web_view, GParamSpec* pspec, GtkWidget* wi
 	fflush(stdout);
 }
 
+static void
+wk_notify_load_status_cb (WebKitWebView* web_view, GParamSpec* pspec, GtkWidget* window) {
+	WebKitLoadStatus status = webkit_web_view_get_load_status(web_view);
+	if (status == WEBKIT_LOAD_FINISHED) {
+		printf("Page loaded!\n");
+		fflush(stdout);
+		webkit_web_view_execute_script(web_view, "wkInject({placeholder:'Text sent from wkline.c'})");
+	}
+}
+
 static gboolean
 wk_context_menu_cb (WebKitWebView* web_view, GtkWidget* window) {
 	// Disable context menu
@@ -78,6 +88,7 @@ main (int argc, char *argv[]) {
 
 	g_signal_connect(web_view, "context-menu", G_CALLBACK(wk_context_menu_cb), web_view);
 	g_signal_connect(web_view, "notify::progress", G_CALLBACK(wk_notify_progress_cb), web_view);
+	g_signal_connect(web_view, "notify::load-status", G_CALLBACK(wk_notify_load_status_cb), web_view);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 	printf("Opening URI '%s'...\n\n", uri);
