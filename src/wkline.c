@@ -94,7 +94,6 @@ wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, GtkWidget 
 	if (status == WEBKIT_LOAD_FINISHED) {
 		sprintf(init_data, "['init',{height:%i}]", wkline_height);
 		web_view_inject(web_view, init_data);
-		// TODO move thread check and creation here to avoid script errors when the page hasn't been loaded yet
 	}
 }
 
