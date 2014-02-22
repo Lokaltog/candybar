@@ -122,6 +122,10 @@ main (int argc, char *argv[]) {
 	}
 
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
+	if (xcb_connection_has_error(conn)) {
+		fprintf(stderr, "Could not connect to display %s.\n", getenv("DISPLAY"));
+		return 1;
+	}
 	xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
 
 	WklineThreadData thread_data;
