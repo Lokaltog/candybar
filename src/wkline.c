@@ -36,7 +36,7 @@ fifo_monitor (gpointer data) {
 			else {
 				buf[num] = '\0';
 				if (num > 0) {
-					thread_data->buf = buf;
+					sprintf(thread_data->buf, "%s", buf);
 					g_idle_add((GSourceFunc)fifo_monitor_inject_data, data);
 				}
 			}
@@ -143,7 +143,6 @@ main (int argc, char *argv[]) {
 	int strut_partial[12] = {0, 0, dim.h, 0, 0, 0, 0, 0, 0, dim.w, 0, 0};
 
 	// Add UID to fifo path
-	sprintf(wkline_fifo_path, wkline_fifo_path, getuid());
 	fprintf(stderr, "FIFO path: %s\n", wkline_fifo_path);
 
 	gtk_init(&argc, &argv);
