@@ -13,57 +13,8 @@
 #include "wkline.h"
 #include "config.h"
 
-static int
-get_intern_atom (xcb_connection_t *conn, char *atom) {
-	xcb_intern_atom_cookie_t cookie;
-	xcb_intern_atom_reply_t *reply;
-
-	cookie = xcb_intern_atom(conn, 0, strlen(atom), atom);
-	reply = xcb_intern_atom_reply(conn, cookie, NULL);
-
-	if (reply) {
-		return reply->atom;
-	}
-
-	return -1;
-}
-
 static void
-wk_notify_progress_cb (WebKitWebView* web_view, GParamSpec* pspec, GtkWidget* window) {
-	float progress = webkit_web_view_get_progress(web_view);
-	printf("Loading... %.0f%%\n", progress * 100);
-	fflush(stdout);
-}
-
-static void
-wk_notify_load_status_cb (WebKitWebView* web_view, GParamSpec* pspec, GtkWidget* window) {
-	WebKitLoadStatus status = webkit_web_view_get_load_status(web_view);
-	if (status == WEBKIT_LOAD_FINISHED) {
-		printf("Page loaded!\n");
-		fflush(stdout);
-		// TODO move thread check and creation here to avoid script errors when the page hasn't been loaded yet
-	}
-}
-
-static gboolean
-wk_context_menu_cb (WebKitWebView* web_view, GtkWidget* window) {
-	// Disable context menu
-	return TRUE;
-}
-
-gboolean
-web_view_inject(gpointer data) {
-	char script[200];
-	WklineThreadData *thread_data = (WklineThreadData *)data;
-
-	sprintf(script, "wkInject(%s)", thread_data->buf);
-	webkit_web_view_execute_script(thread_data->web_view, script);
-
-	return FALSE;
-}
-
-void
-fifo_monitor_thread (gpointer data) {
+fifo_monitor (gpointer data) {
 	char buf[256];
 	int num, fd;
 	WklineThreadData *thread_data = (WklineThreadData *)data;
@@ -93,6 +44,55 @@ fifo_monitor_thread (gpointer data) {
 	}
 }
 
+static int
+get_intern_atom (xcb_connection_t *conn, char *atom) {
+	xcb_intern_atom_cookie_t cookie;
+	xcb_intern_atom_reply_t *reply;
+
+	cookie = xcb_intern_atom(conn, 0, strlen(atom), atom);
+	reply = xcb_intern_atom_reply(conn, cookie, NULL);
+
+	if (reply) {
+		return reply->atom;
+	}
+
+	return -1;
+}
+
+static gboolean
+web_view_inject(gpointer data) {
+	char script[200];
+	WklineThreadData *thread_data = (WklineThreadData *)data;
+
+	sprintf(script, "wkInject(%s)", thread_data->buf);
+	webkit_web_view_execute_script(thread_data->web_view, script);
+
+	return FALSE;
+}
+
+static gboolean
+wk_context_menu_cb (WebKitWebView* web_view, GtkWidget* window) {
+	// Disable context menu
+	return TRUE;
+}
+
+static void
+wk_notify_load_status_cb (WebKitWebView* web_view, GParamSpec* pspec, GtkWidget* window) {
+	WebKitLoadStatus status = webkit_web_view_get_load_status(web_view);
+	if (status == WEBKIT_LOAD_FINISHED) {
+		printf("Page loaded!\n");
+		fflush(stdout);
+		// TODO move thread check and creation here to avoid script errors when the page hasn't been loaded yet
+	}
+}
+
+static void
+wk_notify_progress_cb (WebKitWebView* web_view, GParamSpec* pspec, GtkWidget* window) {
+	float progress = webkit_web_view_get_progress(web_view);
+	printf("Loading... %.0f%%\n", progress * 100);
+	fflush(stdout);
+}
+
 int
 main (int argc, char *argv[]) {
 	gchar *uri = (gchar *)(argc > 1 ? argv[1] : "about:blank");
@@ -105,10 +105,9 @@ main (int argc, char *argv[]) {
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
 
-	const int ATOM__NET_WM_STRUT_PARTIAL = get_intern_atom(conn, "_NET_WM_STRUT_PARTIAL");
-
 	WklineThreadData thread_data;
 	WklineDimensions dim = {screen->width_in_pixels, wkline_height};
+	int strut_partial_atom = get_intern_atom(conn, "_NET_WM_STRUT_PARTIAL");
 	int strut_partial[12] = {0, 0, dim.h, 0, 0, 0, 0, 0, 0, dim.w, 0, 0};
 
 	gtk_init(NULL, NULL);
@@ -148,7 +147,7 @@ main (int argc, char *argv[]) {
 	xcb_change_property(conn,
 	                    XCB_PROP_MODE_REPLACE,
 	                    window_xid,
-	                    ATOM__NET_WM_STRUT_PARTIAL,
+	                    strut_partial_atom,
 	                    XCB_ATOM_CARDINAL,
 	                    32,
 	                    sizeof(strut_partial), strut_partial);
@@ -158,7 +157,7 @@ main (int argc, char *argv[]) {
 	thread_data.web_view = web_view;
 
 	// Launch fifo monitoring thread
-	g_thread_new("FIFO monitor thread", (GThreadFunc)fifo_monitor_thread, &thread_data);
+	g_thread_new("FIFO monitor thread", (GThreadFunc)fifo_monitor, &thread_data);
 
 	gtk_main();
 
