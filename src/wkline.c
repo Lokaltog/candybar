@@ -21,12 +21,12 @@ fifo_monitor (gpointer data) {
 	int num, fd;
 	WklineThreadData *thread_data = (WklineThreadData *)data;
 
-	if (mkfifo(wkline_fifo, 0666) < 0) {
+	if (mkfifo(wkline_fifo_path, 0666) < 0) {
 		perror("mkfifo");
 	}
 
 	while (1) {
-		if ((fd = open(wkline_fifo, O_RDONLY)) < 0) {
+		if ((fd = open(wkline_fifo_path, O_RDONLY)) < 0) {
 			perror("FIFO open");
 		}
 		do {
@@ -142,6 +142,10 @@ main (int argc, char *argv[]) {
 	WklineDimensions dim = {screen->width_in_pixels, wkline_height};
 	int strut_partial_atom = get_intern_atom(conn, "_NET_WM_STRUT_PARTIAL");
 	int strut_partial[12] = {0, 0, dim.h, 0, 0, 0, 0, 0, 0, dim.w, 0, 0};
+
+	// Add UID to fifo path
+	sprintf(wkline_fifo_path, wkline_fifo_path, getuid());
+	fprintf(stderr, "FIFO path: %s\n", wkline_fifo_path);
 
 	gtk_init(&argc, &argv);
 
