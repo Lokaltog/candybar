@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+from dbus.mainloop.glib import DBusGMainLoop
+from gi.repository import GObject
+import dbus
+import json
+import os
+import struct
+
+def message_cb(bus, msg):
+	if msg.get_path_decomposed()[-1] != 'Notifications':
+		return
+
+	args = msg.get_args_list()
+	try:
+		details = args[6]
+		urgency = int(details.get('urgency'))
+		data_dict = {
+			'summary': args[3],
+			'body': args[4],
+			'category': details.get('category'),
+			'urgency_raw': urgency,
+			'urgency': ['low', 'normal', 'critical'][urgency],
+			'expire': args[7],
+		}
+	except KeyError:
+		return
+
+	json_payload = json.dumps(['notification', data_dict]).encode('utf-8')
+
+	fd = os.open('/tmp/wkline_fifo', os.O_RDWR | os.O_NONBLOCK)
+	os.write(fd, json_payload)
+	os.close(fd)
+
+if __name__ == '__main__':
+	DBusGMainLoop(set_as_default=True)
+
+	bus = dbus.SessionBus()
+	bus.add_match_string("interface='org.freedesktop.Notifications',member='Notify',eavesdrop='true'")
+	bus.add_message_filter(message_cb)
+
+	GObject.MainLoop().run()
