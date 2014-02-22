@@ -27,23 +27,32 @@ fifo_monitor (gpointer data) {
 
 	while (1) {
 		if ((fd = open(wkline_fifo, O_RDONLY)) < 0) {
-			perror("parent - open");
+			perror("FIFO open");
 		}
 		do {
 			if ((num = read(fd, buf, sizeof(buf))) < 0) {
-				perror("Monitor read");
+				perror("FIFO read");
 			}
 			else {
 				buf[num] = '\0';
 				if (num > 0) {
 					thread_data->buf = buf;
-					g_idle_add((GSourceFunc)web_view_inject, data);
+					g_idle_add((GSourceFunc)fifo_monitor_inject_data, data);
 				}
 			}
 		} while (num > 0);
 
 		close(fd);
 	}
+}
+
+static gboolean
+fifo_monitor_inject_data(gpointer data) {
+	WklineThreadData *thread_data = (WklineThreadData *)data;
+
+	web_view_inject(thread_data->web_view, thread_data->buf);
+
+	return FALSE;
 }
 
 static int
@@ -61,29 +70,30 @@ get_intern_atom (xcb_connection_t *conn, char *atom) {
 	return -1;
 }
 
-static gboolean
-web_view_inject(gpointer data) {
-	char script[200];
-	WklineThreadData *thread_data = (WklineThreadData *)data;
+static void
+web_view_inject (WebKitWebView *web_view, char *payload) {
+	char script[256];
 
-	sprintf(script, "wkInject(%s)", thread_data->buf);
-	webkit_web_view_execute_script(thread_data->web_view, script);
+	sprintf(script, "try{wkInject(%s)}catch(e){console.log(e)}", payload);
 
-	return FALSE;
+	webkit_web_view_execute_script(web_view, script);
 }
 
 static gboolean
-wk_context_menu_cb (WebKitWebView* web_view, GtkWidget* window) {
+wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
 	// Disable context menu
 	return TRUE;
 }
 
 static void
-wk_notify_load_status_cb (WebKitWebView* web_view, GParamSpec* pspec, GtkWidget* window) {
+wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, GtkWidget *window) {
+	char init_data[256];
 	WebKitLoadStatus status = webkit_web_view_get_load_status(web_view);
+
 	if (status == WEBKIT_LOAD_FINISHED) {
-		printf("Page loaded!\n");
-		fflush(stdout);
+		sprintf(init_data, "['init',{height:%i}]", wkline_height);
+		fprintf(stderr, "Page loaded, sending initial data to page: %s.\n", init_data);
+		web_view_inject(web_view, init_data);
 		// TODO move thread check and creation here to avoid script errors when the page hasn't been loaded yet
 	}
 }
@@ -158,7 +168,7 @@ main (int argc, char *argv[]) {
 	g_signal_connect(web_view, "notify::load-status", G_CALLBACK(wk_notify_load_status_cb), web_view);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-	printf("Opening URI '%s'...\n\n", uri);
+	fprintf(stderr, "Opening URI '%s'...\n\n", uri);
 	webkit_web_view_load_uri(web_view, uri);
 
 	gtk_widget_show_all(GTK_WIDGET(window));
