@@ -86,13 +86,6 @@ wk_notify_load_status_cb (WebKitWebView* web_view, GParamSpec* pspec, GtkWidget*
 	}
 }
 
-static void
-wk_notify_progress_cb (WebKitWebView* web_view, GParamSpec* pspec, GtkWidget* window) {
-	float progress = webkit_web_view_get_progress(web_view);
-	printf("Loading... %.0f%%\n", progress * 100);
-	fflush(stdout);
-}
-
 int
 main (int argc, char *argv[]) {
 	gchar *uri = (gchar *)(argc > 1 ? argv[1] : "about:blank");
@@ -132,7 +125,6 @@ main (int argc, char *argv[]) {
 	gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(layout));
 
 	g_signal_connect(web_view, "context-menu", G_CALLBACK(wk_context_menu_cb), web_view);
-	g_signal_connect(web_view, "notify::progress", G_CALLBACK(wk_notify_progress_cb), web_view);
 	g_signal_connect(web_view, "notify::load-status", G_CALLBACK(wk_notify_load_status_cb), web_view);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
