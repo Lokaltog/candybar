@@ -6,37 +6,70 @@ import dbus
 import json
 import os
 import struct
+import threading
+import time
 
-def message_cb(bus, msg):
-	if msg.get_path_decomposed()[-1] != 'Notifications':
-		return
+WKLINE_FIFO = '/tmp/wkline_fifo'
 
-	args = msg.get_args_list()
-	try:
-		details = args[6]
-		urgency = int(details.get('urgency'))
-		data_dict = {
-			'summary': args[3],
-			'body': args[4],
-			'category': details.get('category'),
-			'urgency_raw': urgency,
-			'urgency': ['low', 'normal', 'critical'][urgency],
-			'expire': args[7],
-		}
-	except KeyError:
-		return
-
-	json_payload = json.dumps(['notification', data_dict]).encode('utf-8')
-
-	fd = os.open('/tmp/wkline_fifo', os.O_RDWR | os.O_NONBLOCK)
-	os.write(fd, json_payload)
+def fifo_write(payload):
+	fd = os.open(WKLINE_FIFO, os.O_RDWR | os.O_NONBLOCK)
+	os.write(fd, payload.encode('utf-8'))
 	os.close(fd)
 
-if __name__ == '__main__':
+def notification_watcher(run_event):
+	def message_cb(bus, msg):
+		if msg.get_path_decomposed()[-1] != 'Notifications':
+			return
+
+		args = msg.get_args_list()
+		try:
+			details = args[6]
+			urgency = int(details.get('urgency'))
+			data_dict = {
+				'summary': args[3],
+				'body': args[4],
+				'category': details.get('category'),
+				'urgency_raw': urgency,
+				'urgency': ['low', 'normal', 'critical'][urgency],
+				'expire': args[7],
+			}
+		except KeyError:
+			return
+
+		json_payload = json.dumps(['notification', data_dict])
+		fifo_write(json_payload)
+
 	DBusGMainLoop(set_as_default=True)
 
 	bus = dbus.SessionBus()
 	bus.add_match_string("interface='org.freedesktop.Notifications',member='Notify',eavesdrop='true'")
 	bus.add_message_filter(message_cb)
 
-	GObject.MainLoop().run()
+def plugin_datetime_updater(run_event):
+	while run_event.is_set():
+		fifo_write(json.dumps({
+			'plugin': {
+				'time': time.strftime('%H:%M'),
+				'date': time.strftime('%Y-%m-%d'),
+			},
+		}))
+		time.sleep(15)
+
+if __name__ == '__main__':
+	threads = []
+
+	run_event = threading.Event()
+	run_event.set()
+
+	for target in [notification_watcher, plugin_datetime_updater]:
+		thread = threading.Thread(target=target, args=(run_event,))
+		threads.append(thread)
+		thread.start()
+
+	loop = GObject.MainLoop()
+
+	try:
+		loop.run()
+	except KeyboardInterrupt:
+		run_event.clear()
+		loop.quit()
