@@ -2,6 +2,9 @@
 
 from dbus.mainloop.glib import DBusGMainLoop
 from gi.repository import GObject
+from urllib.error import HTTPError
+from urllib.request import urlopen
+from urllib.parse import urlencode
 import dbus
 import json
 import os
@@ -55,13 +58,50 @@ def plugin_datetime_updater(run_event):
 		}))
 		time.sleep(15)
 
+def plugin_weather_updater(run_event):
+	unit = 'celsius'
+	temp_conversions = {
+		'celsius': lambda temp: temp,
+		'fahrenheit': lambda temp: (temp * 9 / 5) + 32,
+		'kelvin': lambda temp: temp + 273.15,
+	}
+	while run_event.is_set():
+		location_data = json.loads(urlopen('http://freegeoip.net/json/', timeout=10).read().decode('utf-8'))
+		location = ','.join([location_data['city'],
+		                     location_data['region_code'],
+		                     location_data['country_code']])
+
+		query_data = {
+			'q':
+			'use "http://github.com/yql/yql-tables/raw/master/weather/weather.bylocation.xml" as we;'
+			'select * from we where location="{0}" and unit="c"'.format(location).encode('utf-8'),
+			'format': 'json',
+		}
+		query_url = 'http://query.yahooapis.com/v1/public/yql?' + urlencode(query_data)
+
+		weather_response = json.loads(urlopen(query_url, timeout=10).read().decode('utf-8'))
+		condition = weather_response['query']['results']['weather']['rss']['channel']['item']['condition']
+		condition_code = int(condition['code'])
+		temp = float(condition['temp'])
+
+		fifo_write(json.dumps({
+			'plugin': {
+				'weather': {
+					'icon': condition_code,
+					'temp': temp_conversions[unit](temp),
+					'unit': unit,
+				},
+			},
+		}))
+		time.sleep(600)
+
 if __name__ == '__main__':
 	threads = []
 
 	run_event = threading.Event()
 	run_event.set()
 
-	for target in [notification_watcher, plugin_datetime_updater]:
+	for target in [notification_watcher, plugin_datetime_updater, plugin_weather_updater]:
 		thread = threading.Thread(target=target, args=(run_event,))
 		threads.append(thread)
 		thread.start()
