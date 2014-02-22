@@ -1,9 +1,11 @@
+#include <ctype.h>
 #include <fcntl.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <webkit/webkit.h>
@@ -88,12 +90,36 @@ wk_notify_load_status_cb (WebKitWebView* web_view, GParamSpec* pspec, GtkWidget*
 
 int
 main (int argc, char *argv[]) {
-	gchar *uri = (gchar *)(argc > 1 ? argv[1] : "about:blank");
+	gchar *uri = "about:blank";
 	guint window_xid;
+	int c;
 
 	GtkWindow *window;
 	GtkLayout *layout;
 	WebKitWebView *web_view;
+
+	while ((c = getopt(argc, argv, "u:")) != -1) {
+		switch (c) {
+		case 'u':
+			uri = optarg;
+			break;
+
+		case '?':
+			if (optopt == 'c') {
+				fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+			}
+			else if (isprint (optopt)) {
+				fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+			}
+			else {
+				fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+			}
+			return 1;
+
+		default:
+			abort ();
+		}
+	}
 
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
@@ -103,7 +129,7 @@ main (int argc, char *argv[]) {
 	int strut_partial_atom = get_intern_atom(conn, "_NET_WM_STRUT_PARTIAL");
 	int strut_partial[12] = {0, 0, dim.h, 0, 0, 0, 0, 0, 0, dim.w, 0, 0};
 
-	gtk_init(NULL, NULL);
+	gtk_init(&argc, &argv);
 
 	// GtkScrolledWindow fails to lock small heights (<25px), so a GtkLayout is used instead
 	window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
