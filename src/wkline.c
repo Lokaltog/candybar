@@ -17,8 +17,8 @@
 
 static void
 fifo_monitor (gpointer data) {
-	char buf[256];
-	int num, fd;
+	int num, fd, bufsize = 4096;
+	char *buf = malloc(bufsize);
 	WklineThreadData *thread_data = (WklineThreadData *)data;
 
 	if (mkfifo(wkline_fifo_path, 0666) < 0) {
@@ -29,18 +29,14 @@ fifo_monitor (gpointer data) {
 		if ((fd = open(wkline_fifo_path, O_RDONLY)) < 0) {
 			perror("FIFO open");
 		}
-		do {
-			if ((num = read(fd, buf, sizeof(buf))) < 0) {
-				perror("FIFO read");
-			}
-			else {
-				buf[num] = '\0';
-				if (num > 0) {
-					sprintf(thread_data->buf, "%s", buf);
-					g_idle_add((GSourceFunc)fifo_monitor_inject_data, data);
-				}
-			}
-		} while (num > 0);
+
+		if ((num = read(fd, buf, bufsize)) < 0) {
+			perror("FIFO read");
+		}
+		else {
+			thread_data->buf = buf;
+			g_idle_add((GSourceFunc)fifo_monitor_inject_data, data);
+		}
 
 		close(fd);
 	}
@@ -72,7 +68,7 @@ get_intern_atom (xcb_connection_t *conn, char *atom) {
 
 static void
 web_view_inject (WebKitWebView *web_view, char *payload) {
-	char script[256];
+	char *script = malloc(4096);
 
 	fprintf(stderr, "Injecting data into web view: %s\n", payload);
 	sprintf(script, "try{wkInject(%s)}catch(e){console.log(e)}", payload);
