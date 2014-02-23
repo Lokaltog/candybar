@@ -55,10 +55,8 @@ def notification_watcher(run_event):
 def plugin_datetime_updater(run_event):
 	while run_event.is_set():
 		fifo_write(json.dumps({
-			'plugin': {
-				'time': time.strftime('%H:%M'),
-				'date': time.strftime('%Y-%m-%d'),
-			},
+			'time': time.strftime('%H:%M'),
+			'date': time.strftime('%Y-%m-%d'),
 		}))
 		time.sleep(15)
 
@@ -89,12 +87,10 @@ def plugin_weather_updater(run_event):
 		temp = float(condition['temp'])
 
 		fifo_write(json.dumps({
-			'plugin': {
-				'weather': {
-					'icon': condition_code,
-					'temp': temp_conversions[unit](temp),
-					'unit': unit,
-				},
+			'weather': {
+				'icon': '{0:02g}'.format(condition_code),
+				'temp': temp_conversions[unit](temp),
+				'unit': unit,
 			},
 		}))
 		time.sleep(600)
@@ -111,14 +107,12 @@ def plugin_mpd_updater(run_event):
 		time_current = int(float(status.get('elapsed')))
 		time_total = int(song.get('time'))
 		fifo_write(json.dumps({
-			'plugin': {
-				'music': {
-					'artist': song.get('artist'),
-					'title': song.get('title'),
-					'time_current': '{}:{:02d}'.format(*time_split(time_current)),
-					'time_total': '{}:{:02d}'.format(*time_split(time_total)),
-					'time_percent': int(time_current / time_total * 100),
-				},
+			'music': {
+				'artist': song.get('artist'),
+				'title': song.get('title'),
+				'time_current': '{}:{:02d}'.format(*time_split(time_current)),
+				'time_total': '{}:{:02d}'.format(*time_split(time_total)),
+				'time_percent': int(time_current / time_total * 100),
 			},
 		}))
 		time.sleep(5)
