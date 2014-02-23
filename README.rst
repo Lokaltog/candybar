@@ -14,17 +14,58 @@ information from the window manager itself. This should work well with any windo
 manager that uses an executable to configure the layout and navigation (as opposed to a
 static config file) like ``bspwm``, or any "dynamic" window manager like ``qtile``.
 
-A basic proof-of-concept is currently available. Clone the ``wkline-theme-default``
-repo, run ``npm install`` and ``grunt production`` to render the theme.
+Installation
+------------
 
-Run ``cd src`` and ``make`` to compile the statusline executable. Run ``./wkline
-"file:///path/to/wkline-theme-default/webroot/index.html"`` to display the
-statusline.
+*The following instructions are temporary.*
 
-The statusline can be updated by running e.g.::
+Build dependencies:
 
-  echo '["reload"]' > wkline_fifo # reloads the statusline
-  echo '{plugin:{time:"12:34",date:"2014-01-01"}}' > wkline_fifo # sets date and time
+* gtk+ 3
+* libxcb
+
+Update daemon dependencies:
+
+* Python 3
+* pygtk
+* python-mpd2 (optional, mpd support)
+* python-dbus (optional, notification daemon support)
+* libnotify (optional, notification daemon support)
+
+Theme build dependencies:
+
+* node
+* node-grunt
+
+Installation instructions::
+
+  # clone source repos
+  git clone https://github.com/Lokaltog/wkline.git
+  git clone https://github.com/Lokaltog/wkline-theme-default.git
+
+  # build default theme
+  cd wkline-theme-default
+  npm install
+  grunt production
+
+  # build wkline
+  cd ../wkline
+  make
+
+  # run wkline, the -u parameter accepts any uri pointing to a wkline theme
+  build/wkline -u 'file:///path/to/wkline-theme-default/webroot/index.html'
+
+  # run test script, this will add a bunch of demo data to the statusline
+  scripts/wkline-test
+
+  # run update daemon
+  # currently handles date/time, weather, music, etc.
+  scripts/wkline-daemon
+
+  # send notification with notify-send
+  # valid categories are "error" and "warning"
+  notify-send -c warning "Warning" "This is a test warning"
+  notify-send -c error "Error" "This is a test error"
 
 Screenshots
 -----------
