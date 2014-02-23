@@ -70,6 +70,15 @@ Installation instructions::
 Screenshots
 -----------
 
+.. image:: http://i.imgur.com/tWGCVze.gif
+   :alt: Notification demo
+
+.. image:: http://i.imgur.com/bIjz45R.gif
+   :alt: Notification demo
+
+.. image:: http://i.imgur.com/CdtPSJi.png
+   :alt: Test script screenshot
+
 .. image:: http://i.imgur.com/qkZjKw6.png
    :alt: Concept screenshot
 
