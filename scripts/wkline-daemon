@@ -19,6 +19,10 @@ def fifo_write(payload):
 	os.write(fd, payload.encode('utf-8'))
 	os.close(fd)
 
+def time_split(seconds):
+	minutes, seconds = divmod(seconds, 60)
+	return (minutes, seconds)
+
 def notification_watcher(run_event):
 	def message_cb(bus, msg):
 		if msg.get_path_decomposed()[-1] != 'Notifications':
@@ -95,13 +99,41 @@ def plugin_weather_updater(run_event):
 		}))
 		time.sleep(600)
 
+def plugin_mpd_updater(run_event):
+	from mpd import MPDClient
+	client = MPDClient()
+	client.timeout = 10
+	client.connect('10.0.0.10', 6600)
+
+	while run_event.is_set():
+		song = client.currentsong()
+		status = client.status()
+		time_current = int(float(status.get('elapsed')))
+		time_total = int(song.get('time'))
+		fifo_write(json.dumps({
+			'plugin': {
+				'music': {
+					'artist': song.get('artist'),
+					'title': song.get('title'),
+					'time_current': '{}:{:02d}'.format(*time_split(time_current)),
+					'time_total': '{}:{:02d}'.format(*time_split(time_total)),
+					'time_percent': int(time_current / time_total * 100),
+				},
+			},
+		}))
+		time.sleep(5)
+
+	client.close()
+	client.disconnect()
+
 if __name__ == '__main__':
 	threads = []
 
 	run_event = threading.Event()
 	run_event.set()
 
-	for target in [notification_watcher, plugin_datetime_updater, plugin_weather_updater]:
+	for target in [notification_watcher, plugin_datetime_updater, plugin_weather_updater,
+				  plugin_mpd_updater]:
 		thread = threading.Thread(target=target, args=(run_event,))
 		threads.append(thread)
 		thread.start()
