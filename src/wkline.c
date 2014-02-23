@@ -34,6 +34,7 @@ fifo_monitor (gpointer data) {
 			perror("FIFO read");
 		}
 		else {
+			buf[num] = '\0';
 			thread_data->buf = buf;
 			g_idle_add((GSourceFunc)fifo_monitor_inject_data, data);
 		}
