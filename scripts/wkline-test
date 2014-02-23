@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+
+import json
+import os
+
+WKLINE_FIFO = '/tmp/wkline_fifo'
+
+def fifo_write(payload):
+	fd = os.open(WKLINE_FIFO, os.O_RDWR | os.O_NONBLOCK)
+	os.write(fd, payload.encode('utf-8'))
+	os.close(fd)
+
+json_dump = json.dumps({
+	'tags': [
+		{
+			'name': '1',
+			'hasWindows': True,
+			'selected': True,
+		},
+		{
+			'name': '2',
+		},
+		{
+			'name': '3',
+			'hasWindows': True,
+		},
+		{
+			'name': '4',
+			'urgent': True,
+		},
+	],
+	'window': {
+		'name': 'Lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet',
+	},
+	'music': {
+		'time_current': '0:00',
+		'time_total': '10:00',
+		'time_percent': 30,
+		'artist': 'Artist',
+		'title': 'Very, very long song name that just goes on and on',
+	},
+	'weather': {
+		'icon': '19',
+		'unit': 'celsius',
+		'temp': 20,
+	},
+	'volume': 40,
+	'date': '0000-00-00',
+    'time': '00:00',
+})
+
+fifo_write(json_dump)
