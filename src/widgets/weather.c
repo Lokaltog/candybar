@@ -172,7 +172,18 @@ void
 			location->city = strdup(wkline_widget_weather_location);
 		}
 
+		if (! location) {
+			free(location);
+			goto next_iter;
+		}
+
 		weather_t *weather = get_weather_information(location, wkline_widget_weather_unit);
+
+		if (! weather) {
+			free(location);
+			free(weather);
+			goto next_iter;
+		}
 
 		json_object_set_new(json_data_object, "icon", json_integer(weather->code));
 		json_object_set_new(json_data_object, "temp", json_real(weather->temp));
@@ -189,6 +200,7 @@ void
 		// inject data
 		g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
 
+	next_iter:
 		sleep(600);
 	}
 }
