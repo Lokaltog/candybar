@@ -14,6 +14,8 @@ blurred background without a desktop compositor running.
 Installation
 ------------
 
+wkline is available for Arch Linux users as ``wkline-git`` on the AUR.
+
 Dependencies:
 
 * gtk+ 3
