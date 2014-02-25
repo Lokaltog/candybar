@@ -93,7 +93,6 @@ static gboolean
 wk_web_view_inject (char *payload) {
 	char script[4096];
 
-	fprintf(stderr, "Injecting data into web view: %s\n", payload);
 	sprintf(script, "if(typeof wkInject!=='undefined'){try{wkInject(%s)}catch(e){console.log(e)}}else{console.log('Web page incompatible or not loaded yet')}", payload);
 
 	webkit_web_view_execute_script(web_view, script);
@@ -138,13 +137,13 @@ main (int argc, char *argv[]) {
 		return 1;
 	}
 
-	xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
-	xcb_ewmh_connection_t ewmh;
-	xcb_intern_atom_cookie_t *ewmh_cookie = xcb_ewmh_init_atoms(conn, &ewmh);
-	ewmh_data_t ewmh_data = {screen_nbr, &ewmh};
-	wk_dimensions_t dim = {.w = screen->width_in_pixels, .h = wkline_height};
+	xcb_ewmh_connection_t *ewmh = malloc(sizeof(xcb_ewmh_connection_t));
+	xcb_intern_atom_cookie_t *ewmh_cookie = xcb_ewmh_init_atoms(conn, ewmh);
+	xcb_ewmh_init_atoms_replies(ewmh, ewmh_cookie, NULL);
 
-	xcb_ewmh_init_atoms_replies(&ewmh, ewmh_cookie, NULL);
+	xcb_screen_t *screen = ewmh->screens[screen_nbr];
+	ewmh_data_t ewmh_data = {screen_nbr, ewmh};
+	wk_dimensions_t dim = {.w = screen->width_in_pixels, .h = wkline_height};
 
 	// init window
 	// TODO set command-line arguments
@@ -189,7 +188,7 @@ main (int argc, char *argv[]) {
 	xcb_change_property(conn,
 	                    XCB_PROP_MODE_REPLACE,
 	                    window_xid,
-	                    ewmh._NET_WM_STRUT_PARTIAL,
+	                    ewmh->_NET_WM_STRUT_PARTIAL,
 	                    XCB_ATOM_CARDINAL,
 	                    32,
 	                    sizeof(strut_partial), strut_partial);
@@ -205,6 +204,8 @@ main (int argc, char *argv[]) {
 	}
 
 	gtk_main();
+
+	free(ewmh);
 
 	return 0;
 }
