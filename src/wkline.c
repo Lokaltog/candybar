@@ -14,9 +14,9 @@
 #include <xcb/xcb_ewmh.h>
 #include <jansson.h>
 
+#include "config.h"
 #include "wkline.h"
 #include "widgets.h"
-#include "config.h"
 
 thread_data_t thread_data;
 WebKitWebView *web_view;
