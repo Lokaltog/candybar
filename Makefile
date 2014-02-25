@@ -1,6 +1,6 @@
 NAME = wkline
 CC = gcc -g -Wall
-CFLAGS = $(shell pkg-config --cflags --libs gtk+-3.0 webkitgtk-3.0 xcb xcb-ewmh jansson)
+CFLAGS = $(shell pkg-config --cflags --libs gtk+-3.0 webkitgtk-3.0 xcb xcb-ewmh jansson libcurl)
 
 wkline:
 	mkdir build

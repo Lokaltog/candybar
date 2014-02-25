@@ -1,19 +1,3 @@
-#include <ctype.h>
-#include <fcntl.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkx.h>
-#include <glib.h>
-#include <gtk/gtk.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <webkit/webkit.h>
-#include <xcb/xcb.h>
-#include <xcb/xcb_atom.h>
-#include <xcb/xcb_ewmh.h>
-#include <jansson.h>
-
 #include "config.h"
 #include "wkline.h"
 #include "widgets.h"

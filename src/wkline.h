@@ -1,3 +1,17 @@
+#include <curl/curl.h>
+#include <gdk/gdk.h>
+#include <gdk/gdkx.h>
+#include <glib.h>
+#include <gtk/gtk.h>
+#include <jansson.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <webkit/webkit.h>
+#include <xcb/xcb.h>
+#include <xcb/xcb_atom.h>
+#include <xcb/xcb_ewmh.h>
+
 #define PROPERTY_MAX_LEN 256
 #define DESKTOP_MAX_LEN 10
 
