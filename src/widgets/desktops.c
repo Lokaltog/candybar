@@ -16,7 +16,7 @@ void
 	}
 
 	for (;;) {
-		while ((evt = xcb_poll_for_event(thread_data->ewmh->conn->connection)) != NULL) {
+		while ((evt = xcb_wait_for_event(thread_data->ewmh->conn->connection)) != NULL) {
 			// FIXME probably not thread safe?
 			ewmh_get_active_window_name(thread_data->ewmh->conn, thread_data->ewmh->screen_nbr, thread_data->active_window_name);
 			ewmh_get_desktop_list(thread_data->ewmh->conn, thread_data->ewmh->screen_nbr, thread_data->desktops);
