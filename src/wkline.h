@@ -11,6 +11,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_atom.h>
 #include <xcb/xcb_ewmh.h>
+#include <xcb/xcb_icccm.h>
 
 #define PROPERTY_MAX_LEN 256
 #define DESKTOP_MAX_LEN 10

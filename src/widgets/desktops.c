@@ -30,6 +30,7 @@ ewmh_get_desktop_list(xcb_ewmh_connection_t *ewmh, int screen_nbr, desktop_t *de
 	unsigned short i;
 	uint32_t desktop_curr, desktop_len, client_desktop;
 	xcb_ewmh_get_windows_reply_t clients;
+	xcb_icccm_wm_hints_t window_hints;
 
 	// get current desktop
 	if (! xcb_ewmh_get_current_desktop_reply(ewmh, xcb_ewmh_get_current_desktop_unchecked(ewmh, screen_nbr), &desktop_curr, NULL)) {
@@ -46,6 +47,7 @@ ewmh_get_desktop_list(xcb_ewmh_connection_t *ewmh, int screen_nbr, desktop_t *de
 	for (i = 0; i < desktop_len; i++) {
 		desktops[i].is_selected = i == desktop_curr;
 		desktops[i].is_valid = true;
+		desktops[i].is_urgent = false;
 		desktops[i].clients_len = 0;
 	}
 
@@ -57,10 +59,18 @@ ewmh_get_desktop_list(xcb_ewmh_connection_t *ewmh, int screen_nbr, desktop_t *de
 
 	for (i = 0; i < clients.windows_len; i++) {
 		if (! xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop_unchecked(ewmh, clients.windows[i]), &client_desktop, NULL)) {
+			// window isn't associated with a desktop
 			continue;
 		}
 		desktops[client_desktop].clients_len++;
-		// TODO check urgent hint and assign to desktop
+
+		// check icccm urgency hint on client
+		if (! xcb_icccm_get_wm_hints_reply(ewmh->connection, xcb_icccm_get_wm_hints_unchecked(ewmh->connection, clients.windows[i]), &window_hints, NULL)) {
+			fprintf(stderr, "Could not get window hints\n");
+		}
+		if (window_hints.flags & XCB_ICCCM_WM_HINT_X_URGENCY) {
+			desktops[client_desktop].is_urgent = true;
+		}
 	}
 
 	xcb_ewmh_get_windows_reply_wipe(&clients);
@@ -113,6 +123,7 @@ void
 
 				json_t *json_desktop = json_object();
 				json_object_set_new(json_desktop, "clients_len", json_integer(thread_data->desktops[i].clients_len));
+				json_object_set_new(json_desktop, "is_urgent", json_boolean(thread_data->desktops[i].is_urgent));
 				json_array_append_new(json_desktops_array, json_desktop);
 
 				if (thread_data->desktops[i].is_selected) {

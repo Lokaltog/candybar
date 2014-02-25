@@ -22,7 +22,7 @@ Dependencies:
 * webkitgtk+
 * jansson
 * xcb
-* xcb-ewmh
+* xcb-wm
 * libcurl *(optional, weather widget support)*
 
 Installation instructions::
