@@ -127,18 +127,6 @@ wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, GtkWidget 
 	}
 }
 
-void
-*xcb_monitor_thread (ewmh_data_t *ewmh) {
-	for (;;) {
-		// FIXME probably not thread safe?
-		ewmh_get_active_window_name(ewmh->conn, ewmh->screen_nbr, thread_data.active_window_name);
-		ewmh_get_desktop_list(ewmh->conn, ewmh->screen_nbr, thread_data.desktops);
-
-		// TODO subscribe to xcb events instead
-		sleep(2);
-	}
-}
-
 int
 main (int argc, char *argv[]) {
 	unsigned short i;
@@ -207,10 +195,9 @@ main (int argc, char *argv[]) {
 	                    sizeof(strut_partial), strut_partial);
 	xcb_flush(conn);
 
-	// start xcb monitor thread
-	g_thread_new("xcb-monitor", (GThreadFunc)xcb_monitor_thread, &ewmh_data);
-
 	// start widget threads
+	thread_data.ewmh = &ewmh_data;
+
 	for (i = 0; i < WIDGETS_LEN; i++) {
 		fprintf(stderr, "Creating widget thread\n");
 

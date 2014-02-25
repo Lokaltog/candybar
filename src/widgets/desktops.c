@@ -7,6 +7,11 @@ void
 	char *json_payload;
 
 	for (;;) {
+		// FIXME probably not thread safe?
+		ewmh_get_active_window_name(thread_data->ewmh->conn, thread_data->ewmh->screen_nbr, thread_data->active_window_name);
+		ewmh_get_desktop_list(thread_data->ewmh->conn, thread_data->ewmh->screen_nbr, thread_data->desktops);
+
+		// TODO subscribe to xcb events instead
 		json_base_object = json_object();
 		json_desktop_object = json_object();
 		json_desktops_array = json_array();
