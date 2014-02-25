@@ -23,28 +23,17 @@ Dependencies:
 * xcb-ewmh
 * libcurl *(optional, weather widget support)*
 
-Theme build dependencies:
-
-* node
-* node-grunt
-
 Installation instructions::
 
-  # clone source repos
   git clone https://github.com/Lokaltog/wkline.git
-  git clone https://github.com/Lokaltog/wkline-theme-default.git
-
-  # build default theme
-  cd wkline-theme-default
-  npm install
-  grunt production
-
-  # build wkline
-  cd ../wkline
+  cd wkline
   make
-
-  # run wkline
   build/wkline
+
+Configuration
+-------------
+
+Edit ``src/config.h`` and recompile.
 
 Screenshots
 -----------
