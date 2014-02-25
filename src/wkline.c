@@ -140,8 +140,6 @@ main (int argc, char *argv[]) {
 	wk_dimensions_t dim = {.w = screen->width_in_pixels, .h = wkline_height};
 
 	// init window
-	// TODO set command-line arguments
-	gchar *uri = "file:///home/kim/projects/wkline-theme-default/webroot/index.html";
 	guint window_xid;
 	int strut_partial[12] = {0, 0, dim.h, 0, 0, 0, 0, 0, 0, dim.w, 0, 0};
 	GtkWindow *window;
@@ -172,8 +170,8 @@ main (int argc, char *argv[]) {
 	g_signal_connect(web_view, "notify::load-status", G_CALLBACK(wk_notify_load_status_cb), web_view);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-	fprintf(stderr, "Opening URI '%s'...\n\n", uri);
-	webkit_web_view_load_uri(web_view, uri);
+	fprintf(stderr, "Opening URI '%s'...\n\n", wkline_theme_uri);
+	webkit_web_view_load_uri(web_view, wkline_theme_uri);
 
 	gtk_widget_show_all(GTK_WIDGET(window));
 
