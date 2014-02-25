@@ -1,6 +1,6 @@
 #include "desktops.h"
 
-static bool
+static int
 ewmh_get_active_window_name(xcb_ewmh_connection_t *ewmh, int screen_nbr, char *window_name) {
 	xcb_window_t active_window;
 	xcb_ewmh_get_utf8_strings_reply_t window_data;
@@ -8,12 +8,12 @@ ewmh_get_active_window_name(xcb_ewmh_connection_t *ewmh, int screen_nbr, char *w
 
 	if (! xcb_ewmh_get_active_window_reply(ewmh, xcb_ewmh_get_active_window_unchecked(ewmh, screen_nbr), &active_window, NULL)) {
 		fprintf(stderr, "Found no active window\n");
-		return false;
+		return 1;
 	}
 
 	if (! xcb_ewmh_get_wm_name_reply(ewmh, xcb_ewmh_get_wm_name_unchecked(ewmh, active_window), &window_data, NULL)) {
 		fprintf(stderr, "Could not read WM_NAME from active window\n");
-		return false;
+		return 2;
 	}
 
 	len = MIN(PROPERTY_MAX_LEN, window_data.strings_len + 1);
@@ -22,10 +22,10 @@ ewmh_get_active_window_name(xcb_ewmh_connection_t *ewmh, int screen_nbr, char *w
 
 	xcb_ewmh_get_utf8_strings_reply_wipe(&window_data);
 
-	return true;
+	return 0;
 }
 
-static bool
+static int
 ewmh_get_desktop_list(xcb_ewmh_connection_t *ewmh, int screen_nbr, desktop_t *desktops) {
 	unsigned short i;
 	uint32_t desktop_curr, desktop_len, client_desktop;
@@ -34,13 +34,13 @@ ewmh_get_desktop_list(xcb_ewmh_connection_t *ewmh, int screen_nbr, desktop_t *de
 	// get current desktop
 	if (! xcb_ewmh_get_current_desktop_reply(ewmh, xcb_ewmh_get_current_desktop_unchecked(ewmh, screen_nbr), &desktop_curr, NULL)) {
 		fprintf(stderr, "Could not get current desktop\n");
-		return false;
+		return 1;
 	}
 
 	// get desktop count
 	if (! xcb_ewmh_get_number_of_desktops_reply(ewmh, xcb_ewmh_get_number_of_desktops_unchecked(ewmh, screen_nbr), &desktop_len, NULL)) {
 		fprintf(stderr, "Could not get desktop count\n");
-		return false;
+		return 2;
 	}
 
 	for (i = 0; i < desktop_len; i++) {
@@ -52,7 +52,7 @@ ewmh_get_desktop_list(xcb_ewmh_connection_t *ewmh, int screen_nbr, desktop_t *de
 	// get clients
 	if (! xcb_ewmh_get_client_list_reply(ewmh, xcb_ewmh_get_client_list_unchecked(ewmh, screen_nbr), &clients, NULL)) {
 		fprintf(stderr, "Could not get client list\n");
-		return false;
+		return 3;
 	}
 
 	for (i = 0; i < clients.windows_len; i++) {
@@ -65,7 +65,7 @@ ewmh_get_desktop_list(xcb_ewmh_connection_t *ewmh, int screen_nbr, desktop_t *de
 
 	xcb_ewmh_get_windows_reply_wipe(&clients);
 
-	return true;
+	return 0;
 }
 
 void
@@ -75,6 +75,7 @@ void
 	json_t *json_desktop_object;
 	json_t *json_desktops_array;
 	char *json_payload;
+	int active_window_name_err, active_desktop_list_err;
 
 	uint32_t values[] = {XCB_EVENT_MASK_PROPERTY_CHANGE};
 	xcb_generic_error_t *err = xcb_request_check(thread_data->ewmh->conn->connection, xcb_change_window_attributes_checked(thread_data->ewmh->conn->connection, thread_data->ewmh->conn->screens[thread_data->ewmh->screen_nbr]->root, XCB_CW_EVENT_MASK, values));
@@ -88,8 +89,13 @@ void
 	for (;;) {
 		while ((evt = xcb_wait_for_event(thread_data->ewmh->conn->connection)) != NULL) {
 			// FIXME probably not thread safe?
-			ewmh_get_active_window_name(thread_data->ewmh->conn, thread_data->ewmh->screen_nbr, thread_data->active_window_name);
-			ewmh_get_desktop_list(thread_data->ewmh->conn, thread_data->ewmh->screen_nbr, thread_data->desktops);
+			active_window_name_err = ewmh_get_active_window_name(thread_data->ewmh->conn, thread_data->ewmh->screen_nbr, thread_data->active_window_name);
+			active_desktop_list_err = ewmh_get_desktop_list(thread_data->ewmh->conn, thread_data->ewmh->screen_nbr, thread_data->desktops);
+
+			if (active_window_name_err > 0 || active_desktop_list_err > 0) {
+				fprintf(stderr, "Error while fetching EWMH properties (%i, %i), not updating\n", active_window_name_err, active_desktop_list_err);
+				goto cleanup;
+			}
 
 			json_base_object = json_object();
 			json_desktop_object = json_object();
@@ -102,7 +108,7 @@ void
 
 			for (i = 0; i < DESKTOP_MAX_LEN; i++) {
 				if (! thread_data->desktops[i].is_valid) {
-					break;
+					continue;
 				}
 
 				json_t *json_desktop = json_object();
@@ -119,6 +125,7 @@ void
 			// inject data
 			g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
 
+		cleanup:
 			free(evt);
 		}
 	}
