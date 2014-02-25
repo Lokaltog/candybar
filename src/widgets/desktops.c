@@ -12,7 +12,7 @@ void
 
 	if (err != NULL) {
 		fprintf(stderr, "Could not request EWMH property change notifications\n");
-		return false;
+		return 0;
 	}
 
 	for (;;) {

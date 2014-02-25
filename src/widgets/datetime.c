@@ -13,7 +13,7 @@ void
 		tmp = localtime(&t);
 		if (tmp == NULL) {
 			perror("localtime");
-			return false;
+			return 0;
 		}
 
 		strftime(datestr, sizeof(datestr), wkline_widget_datetime_date_format, tmp);

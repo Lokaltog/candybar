@@ -20,6 +20,7 @@
 
 thread_data_t thread_data;
 WebKitWebView *web_view;
+GThread *widget_threads[WIDGETS_LEN];
 
 static bool
 ewmh_get_active_window_name(xcb_ewmh_connection_t *ewmh, int screen_nbr, char *window_name) {
@@ -122,13 +123,22 @@ wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, GtkWidget 
 		json_object_set_new(json_base_object, "data", json_init_object);
 		json_object_set_new(json_init_object, "height", json_integer(wkline_height));
 		json_payload = json_dumps(json_base_object, 0);
+
+		unsigned short i;
+		for (i = 0; i < WIDGETS_LEN; i++) {
+			// FIXME this is pretty bad, it should probably join and recreate the threads instead
+			if (! widget_threads[i]) {
+				fprintf(stderr, "Creating widget thread\n");
+				widget_threads[i] = g_thread_new("widget", (GThreadFunc)wkline_enabled_widgets[i], &thread_data);
+			}
+		}
+
 		g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
 	}
 }
 
 int
 main (int argc, char *argv[]) {
-	unsigned short i;
 	int screen_nbr = 0;
 
 	xcb_connection_t *conn = xcb_connect(NULL, &screen_nbr);
@@ -194,14 +204,7 @@ main (int argc, char *argv[]) {
 	                    sizeof(strut_partial), strut_partial);
 	xcb_flush(conn);
 
-	// start widget threads
 	thread_data.ewmh = &ewmh_data;
-
-	for (i = 0; i < WIDGETS_LEN; i++) {
-		fprintf(stderr, "Creating widget thread\n");
-
-		g_thread_new("widget", (GThreadFunc)wkline_enabled_widgets[i], &thread_data);
-	}
 
 	gtk_main();
 
