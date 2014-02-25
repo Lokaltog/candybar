@@ -1,2 +1,4 @@
+#define WIDGETS_LEN 1
+
 static const int wkline_height = 26;
-static char wkline_fifo_path[] = "/tmp/wkline_fifo";
+static const void *wkline_enabled_widgets[WIDGETS_LEN] = {widget_desktops};
