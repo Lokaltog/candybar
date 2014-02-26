@@ -67,7 +67,7 @@ widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
 }
 
 void
-*widget_now_playing_mpd (thread_data_t *thread_data) {
+*widget_now_playing_mpd () {
 	// open mpd connection
 	struct mpd_connection *connection = mpd_connection_new(wkline_widget_now_playing_mpd_host, wkline_widget_now_playing_mpd_port, 5000);
 

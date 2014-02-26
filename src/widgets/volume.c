@@ -31,7 +31,7 @@ widget_volume_send_update (snd_mixer_elem_t* elem) {
 }
 
 void
-*widget_volume (thread_data_t *thread_data) {
+*widget_volume () {
 	snd_mixer_t *mixer;
 	snd_mixer_selem_id_t *sid;
 	struct pollfd *pollfds = NULL;

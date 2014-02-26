@@ -11,9 +11,13 @@ static gboolean
 wk_web_view_inject (char *payload) {
 	char script[4096];
 
+#ifdef DEBUG_JSON
+	wklog("Injecting JSON: %s", payload);
+#endif
 	sprintf(script, "if(typeof wkInject!=='undefined'){try{wkInject(%s)}catch(e){console.log(e)}}else{console.log('Web page incompatible or not loaded yet')}", payload);
 
 	webkit_web_view_execute_script(web_view, script);
+	free(payload);
 
 	return FALSE; // only run once
 }
@@ -46,7 +50,7 @@ wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, GtkWidget 
 			// FIXME this is pretty bad, it should probably join and recreate the threads instead
 			if (! widget_threads[i] && wkline_widgets[i]) {
 				wklog("Creating widget thread");
-				widget_threads[i] = g_thread_new("widget", (GThreadFunc)wkline_widgets[i], &thread_data);
+				widget_threads[i] = g_thread_new("widget", (GThreadFunc)wkline_widgets[i], NULL);
 			}
 		}
 
@@ -87,7 +91,6 @@ main (int argc, char *argv[]) {
 	xcb_ewmh_init_atoms_replies(ewmh, ewmh_cookie, NULL);
 
 	xcb_screen_t *screen = ewmh->screens[screen_nbr];
-	ewmh_data_t ewmh_data = {screen_nbr, ewmh};
 	wk_dimensions_t dim = {.w = screen->width_in_pixels, .h = wkline_height};
 
 	// init window
@@ -136,8 +139,12 @@ main (int argc, char *argv[]) {
 	                    32,
 	                    sizeof(strut_partial), strut_partial);
 	xcb_flush(conn);
-	thread_data.ewmh = &ewmh_data;
+
+	thread_data.screen_nbr = screen_nbr;
+	thread_data.ewmh = ewmh;
+
 	gtk_main();
+
 	free(ewmh);
 
 	return 0;

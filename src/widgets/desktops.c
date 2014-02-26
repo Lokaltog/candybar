@@ -78,66 +78,73 @@ ewmh_get_desktop_list(xcb_ewmh_connection_t *ewmh, int screen_nbr, desktop_t *de
 	return 0;
 }
 
-void
-*widget_desktops (thread_data_t *thread_data) {
+static int
+widget_desktops_send_update () {
 	unsigned short i;
-	json_t *json_base_object;
-	json_t *json_desktop_object;
-	json_t *json_desktops_array;
+	json_t *json_base_object = json_object();
+	json_t *json_data_object = json_object();
+	json_t *json_desktops_array = json_array();
 	char *json_payload;
-	int active_window_name_err, active_desktop_list_err;
+	char *active_window_name = malloc(PROPERTY_MAX_LEN + 1);
+	desktop_t *desktops = malloc(sizeof(desktop_t) * DESKTOP_MAX_LEN);
 
+	if (ewmh_get_active_window_name(thread_data.ewmh, thread_data.screen_nbr, active_window_name) > 0) {
+		wklog("error while fetching active window name");
+		return -1;
+	}
+	if (ewmh_get_desktop_list(thread_data.ewmh, thread_data.screen_nbr, desktops) > 0) {
+		wklog("error while fetching desktop list");
+		return -1;
+	}
+
+	for (i = 0; i < DESKTOP_MAX_LEN; i++) {
+		if (! desktops[i].is_valid) {
+			continue;
+		}
+
+		json_t *json_desktop = json_object();
+		json_object_set_new(json_desktop, "clients_len", json_integer(desktops[i].clients_len));
+		json_object_set_new(json_desktop, "is_urgent", json_boolean(desktops[i].is_urgent));
+		json_array_append_new(json_desktops_array, json_desktop);
+
+		if (desktops[i].is_selected) {
+			json_object_set_new(json_data_object, "current_desktop", json_integer(i));
+		}
+	}
+
+	json_object_set_new(json_base_object, "widget", json_string("desktop"));
+	json_object_set_new(json_base_object, "data", json_data_object);
+	json_object_set_new(json_data_object, "current_window", json_string(active_window_name));
+	json_object_set_new(json_data_object, "desktops", json_desktops_array);
+
+	json_payload = json_dumps(json_base_object, 0);
+
+	// inject data
+	g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
+
+	return 0;
+}
+
+void
+*widget_desktops () {
 	uint32_t values[] = {XCB_EVENT_MASK_PROPERTY_CHANGE};
-	xcb_generic_error_t *err = xcb_request_check(thread_data->ewmh->conn->connection, xcb_change_window_attributes_checked(thread_data->ewmh->conn->connection, thread_data->ewmh->conn->screens[thread_data->ewmh->screen_nbr]->root, XCB_CW_EVENT_MASK, values));
 	xcb_generic_event_t *evt;
-
+	xcb_generic_error_t *err = xcb_request_check(thread_data.ewmh->connection,
+	                                             xcb_change_window_attributes_checked(thread_data.ewmh->connection,
+	                                                                                  thread_data.ewmh->screens[thread_data.screen_nbr]->root,
+	                                                                                  XCB_CW_EVENT_MASK,
+	                                                                                  values));
 	if (err != NULL) {
 		wklog("desktops: could not request EWMH property change notifications");
 		return 0;
 	}
 
+	widget_desktops_send_update();
 	for (;;) {
-		while ((evt = xcb_wait_for_event(thread_data->ewmh->conn->connection)) != NULL) {
-			// FIXME probably not thread safe?
-			active_window_name_err = ewmh_get_active_window_name(thread_data->ewmh->conn, thread_data->ewmh->screen_nbr, thread_data->active_window_name);
-			active_desktop_list_err = ewmh_get_desktop_list(thread_data->ewmh->conn, thread_data->ewmh->screen_nbr, thread_data->desktops);
-
-			if (active_window_name_err > 0 || active_desktop_list_err > 0) {
-				wklog("desktops: error while fetching EWMH properties (%i, %i), not updating", active_window_name_err, active_desktop_list_err);
-				goto cleanup;
-			}
-
-			json_base_object = json_object();
-			json_desktop_object = json_object();
-			json_desktops_array = json_array();
-
-			json_object_set_new(json_base_object, "widget", json_string("desktop"));
-			json_object_set_new(json_base_object, "data", json_desktop_object);
-			json_object_set_new(json_desktop_object, "current_window", json_string(thread_data->active_window_name));
-			json_object_set_new(json_desktop_object, "desktops", json_desktops_array);
-
-			for (i = 0; i < DESKTOP_MAX_LEN; i++) {
-				if (! thread_data->desktops[i].is_valid) {
-					continue;
-				}
-
-				json_t *json_desktop = json_object();
-				json_object_set_new(json_desktop, "clients_len", json_integer(thread_data->desktops[i].clients_len));
-				json_object_set_new(json_desktop, "is_urgent", json_boolean(thread_data->desktops[i].is_urgent));
-				json_array_append_new(json_desktops_array, json_desktop);
-
-				if (thread_data->desktops[i].is_selected) {
-					json_object_set_new(json_desktop_object, "current_desktop", json_integer(i));
-				}
-			}
-
-			json_payload = json_dumps(json_base_object, 0);
-
-			// inject data
-			g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
-
-		cleanup:
+		while ((evt = xcb_wait_for_event(thread_data.ewmh->connection)) != NULL) {
+			widget_desktops_send_update();
 			free(evt);
 		}
 	}
+	return 0;
 }

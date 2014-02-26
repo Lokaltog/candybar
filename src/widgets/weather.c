@@ -93,7 +93,7 @@ static weather_t
 }
 
 void
-*widget_weather (thread_data_t *thread_data) {
+*widget_weather () {
 	json_t *json_base_object;
 	json_t *json_data_object;
 	char *json_payload;
