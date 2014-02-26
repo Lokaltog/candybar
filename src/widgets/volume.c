@@ -1,18 +1,42 @@
 #include "volume.h"
 
-void
-*widget_volume (thread_data_t *thread_data) {
+static int
+widget_volume_send_update (snd_mixer_elem_t* elem) {
 	json_t *json_base_object;
 	json_t *json_data_object;
 	char *json_payload;
 
+	json_base_object = json_object();
+	json_data_object = json_object();
+	json_object_set_new(json_base_object, "widget", json_string("volume"));
+	json_object_set_new(json_base_object, "data", json_data_object);
+
+	// TODO check if channel is muted
 	long volume_min, volume_max, volume = -1;
+
+	snd_mixer_selem_get_playback_volume_range(elem, &volume_min, &volume_max);
+
+	volume -= volume_min;
+	volume_max -= volume_min;
+	snd_mixer_selem_get_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, &volume);
+
+	json_object_set_new(json_data_object, "volume_percent", json_integer(100 * volume / volume_max));
+
+	json_payload = json_dumps(json_base_object, 0);
+
+	// inject data
+	g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
+
+	return 0;
+}
+
+void
+*widget_volume (thread_data_t *thread_data) {
 	snd_mixer_t *mixer;
 	snd_mixer_selem_id_t *sid;
 	struct pollfd *pollfds = NULL;
 	int nfds = 0, n, err;
 	unsigned short revents;
-	bool first_iter = true;
 
 	// open mixer
 	snd_mixer_open(&mixer, 0);
@@ -25,14 +49,9 @@ void
 	snd_mixer_selem_id_set_name(sid, wkline_widget_volume_selem);
 	snd_mixer_elem_t* elem = snd_mixer_find_selem(mixer, sid);
 
-	for (;;) {
-		if (first_iter) {
-			// FIXME should probably find a better way to do this
-			first_iter = false;
-			goto update_volume;
-		}
+	widget_volume_send_update(elem);
 
-		// TODO check if channel is muted
+	for (;;) {
 		// Code mostly from the alsamixer main loop
 		n = 1 + snd_mixer_poll_descriptors_count(mixer);
 		if (n != nfds) {
@@ -75,24 +94,7 @@ void
 			}
 		}
 
-	update_volume:
-		snd_mixer_selem_get_playback_volume_range(elem, &volume_min, &volume_max);
-
-		volume -= volume_min;
-		volume_max -= volume_min;
-		snd_mixer_selem_get_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, &volume);
-
-		json_base_object = json_object();
-		json_data_object = json_object();
-		json_object_set_new(json_base_object, "widget", json_string("volume"));
-		json_object_set_new(json_base_object, "data", json_data_object);
-
-		json_object_set_new(json_data_object, "volume_percent", json_integer(100 * volume / volume_max));
-
-		json_payload = json_dumps(json_base_object, 0);
-
-		// inject data
-		g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
+		widget_volume_send_update(elem);
 	}
 
 	free(pollfds);
