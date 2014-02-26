@@ -1,6 +1,3 @@
-#ifndef DISABLE_DATETIME
-#include "widgets/datetime.c"
-#endif
 #ifndef DISABLE_DESKTOPS
 #include "widgets/desktops.c"
 #endif
@@ -14,11 +11,8 @@
 #include "widgets/weather.c"
 #endif
 
-#define WIDGETS_LEN 5
+#define WIDGETS_LEN 4
 static const void *wkline_widgets[WIDGETS_LEN] = {
-#ifndef DISABLE_DATETIME
-	widget_datetime,
-#endif
 #ifndef DISABLE_DESKTOPS
 	widget_desktops,
 #endif
