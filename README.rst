@@ -24,6 +24,7 @@ Dependencies:
 * xcb
 * xcb-wm
 * libcurl *(optional, weather widget support)*
+* alsa *(optional, volume widget support)*
 
 Installation instructions::
 
