@@ -92,57 +92,59 @@ static weather_t
 	return weather;
 }
 
+static int
+widget_weather_send_update (location_t *location) {
+	json_t *json_base_object = json_object();
+	json_t *json_data_object = json_object();
+	char *json_payload;
+	weather_t *weather = get_weather_information(location, wkline_widget_weather_unit);
+
+	if (! weather) {
+		free(weather);
+		return -1;
+	}
+
+	json_object_set_new(json_base_object, "widget", json_string("weather"));
+	json_object_set_new(json_base_object, "data", json_data_object);
+
+	json_object_set_new(json_data_object, "icon", json_integer(weather->code));
+	json_object_set_new(json_data_object, "temp", json_real(weather->temp));
+	json_object_set_new(json_data_object, "unit", json_string(weather->unit));
+
+	json_payload = json_dumps(json_base_object, 0);
+
+	// inject data
+	g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
+	free(weather);
+	return 0;
+}
+
 void
 *widget_weather () {
-	json_t *json_base_object;
-	json_t *json_data_object;
-	char *json_payload;
 	location_t *location = malloc(sizeof(location_t));
 
-	for (;;) {
-		json_base_object = json_object();
-		json_data_object = json_object();
+	if (wkline_widget_weather_location[0] == '\0') {
+		location = get_geoip_location();
+	}
+	else {
+		location->city = strdup(wkline_widget_weather_location);
+	}
 
-		json_object_set_new(json_base_object, "widget", json_string("weather"));
-		json_object_set_new(json_base_object, "data", json_data_object);
-
-		// get location
-		if (wkline_widget_weather_location[0] == '\0') {
-			location = get_geoip_location();
-		}
-		else {
-			location->city = strdup(wkline_widget_weather_location);
-		}
-
-		if (! location) {
-			free(location);
-			goto next_iter;
-		}
-
-		weather_t *weather = get_weather_information(location, wkline_widget_weather_unit);
-
-		if (! weather) {
-			free(location);
-			free(weather);
-			goto next_iter;
-		}
-
-		json_object_set_new(json_data_object, "icon", json_integer(weather->code));
-		json_object_set_new(json_data_object, "temp", json_real(weather->temp));
-		json_object_set_new(json_data_object, "unit", json_string(weather->unit));
-
-		free(location->city);
-		free(location->region_code);
-		free(location->country_code);
+	if (! location) {
+		wklog("could not get GeoIP location, consider setting the location manually in config.h");
 		free(location);
-		free(weather);
+		return 0;
+	}
 
-		json_payload = json_dumps(json_base_object, 0);
+	for (;;) {
+		widget_weather_send_update(location);
 
-		// inject data
-		g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
-
-	next_iter:
 		sleep(600);
 	}
+
+	free(location->city);
+	free(location->region_code);
+	free(location->country_code);
+	free(location);
+	return 0;
 }
