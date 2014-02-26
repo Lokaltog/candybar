@@ -48,6 +48,13 @@ widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
 			}
 		}
 	}
+	else {
+		json_object_set_new(json_data_object, "title", json_null());
+		json_object_set_new(json_data_object, "artist", json_null());
+		json_object_set_new(json_data_object, "album", json_null());
+		json_object_set_new(json_data_object, "duration", json_null());
+		json_object_set_new(json_data_object, "playing", json_null());
+	}
 
 	mpd_send_idle_mask(connection, MPD_IDLE_PLAYER);
 
