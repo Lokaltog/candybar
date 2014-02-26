@@ -34,8 +34,10 @@ Installation instructions::
 
   git clone https://github.com/Lokaltog/wkline.git
   cd wkline
+  autoreconf --install
+  ./configure
   make
-  build/wkline
+  src/wkline
 
 Configuration
 -------------
