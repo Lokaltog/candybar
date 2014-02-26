@@ -19,12 +19,15 @@ wkline is available for Arch Linux users as ``wkline-git`` on the AUR.
 Dependencies:
 
 * gtk+ 3
-* webkitgtk+
 * jansson
+* webkitgtk+
 * xcb
 * xcb-wm
-* libcurl *(optional, weather widget support)*
-* alsa *(optional, volume widget support)*
+
+Optional dependencies:
+
+* alsa (volume widget)
+* libcurl (weather widget)
 
 Installation instructions::
 
