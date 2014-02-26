@@ -86,7 +86,7 @@ widget_desktops_send_update () {
 	json_t *json_desktops_array = json_array();
 	char *json_payload;
 	char *active_window_name = malloc(PROPERTY_MAX_LEN + 1);
-	desktop_t *desktops = malloc(sizeof(desktop_t) * DESKTOP_MAX_LEN);
+	desktop_t *desktops = calloc(DESKTOP_MAX_LEN, sizeof(desktop_t));
 
 	if (ewmh_get_active_window_name(thread_data.ewmh, thread_data.screen_nbr, active_window_name) > 0) {
 		wklog("error while fetching active window name");
@@ -122,6 +122,8 @@ widget_desktops_send_update () {
 	// inject data
 	g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
 
+	free(desktops);
+	free(active_window_name);
 	return 0;
 }
 
