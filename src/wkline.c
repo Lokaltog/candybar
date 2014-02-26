@@ -1,5 +1,6 @@
 #include "config.h"
 #include "wkline.h"
+#include "lib/curl.h"
 #include "widgets.h"
 
 thread_data_t thread_data;

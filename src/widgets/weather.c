@@ -1,70 +1,12 @@
 #include "weather.h"
 
-static size_t
-write_response (void *ptr, size_t size, size_t nmemb, void *stream) {
-	write_result_t *result = (write_result_t *)stream;
-
-	if (result->pos + size * nmemb >= CURL_BUF_SIZE - 1) {
-		fprintf(stderr, "error: too small buffer\n");
-		return 0;
-	}
-
-	memcpy(result->data + result->pos, ptr, size * nmemb);
-	result->pos += size * nmemb;
-
-	return size * nmemb;
-}
-
-static char
-*request (const char *url) {
-	CURL *curl;
-	CURLcode status;
-	char *data;
-	long code;
-
-	curl = curl_easy_init();
-	data = malloc(CURL_BUF_SIZE);
-	if (! curl || ! data) {
-		return NULL;
-	}
-
-	write_result_t write_result = {
-		.data = data,
-		.pos = 0
-	};
-
-	curl_easy_setopt(curl, CURLOPT_URL, url);
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_response);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &write_result);
-
-	status = curl_easy_perform(curl);
-	if (status != 0) {
-		fprintf(stderr, "error: unable to request data from %s:\n", url);
-		fprintf(stderr, "%s\n", curl_easy_strerror(status));
-		return NULL;
-	}
-
-	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
-	if (code != 200) {
-		fprintf(stderr, "error: server responded with code %ld\n", code);
-		return NULL;
-	}
-
-	curl_easy_cleanup(curl);
-	curl_global_cleanup();
-
-	data[write_result.pos] = '\0';
-
-	return data;
-}
-
 static location_t
 *get_geoip_location () {
 	json_t *location_data, *geoip_city, *geoip_region_code, *geoip_country_code;
 	json_error_t error;
 	location_t *location = malloc(sizeof(location_t));
 
-	char *geoip_raw_json = request("http://freegeoip.net/json/");
+	char *geoip_raw_json = wkline_curl_request("http://freegeoip.net/json/");
 	location_data = json_loads(geoip_raw_json, 0, &error);
 	free(geoip_raw_json);
 
@@ -113,7 +55,7 @@ static weather_t
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
 
-	char *weather_raw_json = request(request_uri);
+	char *weather_raw_json = wkline_curl_request(request_uri);
 	weather_data = json_loads(weather_raw_json, 0, &error);
 	free(weather_raw_json);
 
