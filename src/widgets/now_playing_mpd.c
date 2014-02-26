@@ -23,7 +23,6 @@ widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
 		return -1;
 	}
 	state = mpd_status_get_state(status);
-	mpd_status_free(status);
 	if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
 		wklog("mpd: state error: %s", mpd_connection_get_error_message(connection));
 		return -1;
@@ -37,7 +36,8 @@ widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
 			json_object_set_new(json_data_object, "title", json_string(mpd_song_get_tag(song, MPD_TAG_TITLE, 0)));
 			json_object_set_new(json_data_object, "artist", json_string(mpd_song_get_tag(song, MPD_TAG_ARTIST, 0)));
 			json_object_set_new(json_data_object, "album", json_string(mpd_song_get_tag(song, MPD_TAG_ALBUM, 0)));
-			json_object_set_new(json_data_object, "duration", json_integer(mpd_song_get_duration(song)));
+			json_object_set_new(json_data_object, "total_sec", json_integer(mpd_status_get_total_time(status)));
+			json_object_set_new(json_data_object, "elapsed_sec", json_integer(mpd_status_get_elapsed_time(status)));
 			json_object_set_new(json_data_object, "playing", json_boolean(state == MPD_STATE_PLAY));
 
 			mpd_song_free(song);
@@ -52,10 +52,12 @@ widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
 		json_object_set_new(json_data_object, "title", json_null());
 		json_object_set_new(json_data_object, "artist", json_null());
 		json_object_set_new(json_data_object, "album", json_null());
-		json_object_set_new(json_data_object, "duration", json_null());
+		json_object_set_new(json_data_object, "total_sec", json_null());
+		json_object_set_new(json_data_object, "elapsed_sec", json_null());
 		json_object_set_new(json_data_object, "playing", json_null());
 	}
 
+	mpd_status_free(status);
 	mpd_send_idle_mask(connection, MPD_IDLE_PLAYER);
 
 	json_payload = json_dumps(json_base_object, 0);
@@ -68,8 +70,9 @@ widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
 
 void
 *widget_now_playing_mpd () {
-	// open mpd connection
-	struct mpd_connection *connection = mpd_connection_new(wkline_widget_now_playing_mpd_host, wkline_widget_now_playing_mpd_port, 5000);
+	struct mpd_connection *connection = mpd_connection_new(wkline_widget_now_playing_mpd_host,
+	                                                       wkline_widget_now_playing_mpd_port,
+	                                                       5000);
 
 	if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
 		wklog("mpd: failed to connect to mpd server at %s:%i: %s",
