@@ -63,10 +63,6 @@ Screenshots
 .. image:: http://i.imgur.com/gpEKgyS.png
    :alt: Concept screenshot
 
-What currently works?
----------------------
-
-Tag list, current window name, weather information, date and time.
-
-mpd status, sound level and notification widgets are currently not implemented (they
-are being ported to C).
+*Please note that some of these screenshots may showcase features that were part of
+the Python concept, and may not have been ported to C yet. Every feature that was
+part of the concept (see commit 4b59f4) is being ported to C.*
