@@ -30,7 +30,7 @@ widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
 	}
 
 	// only update if playing/paused
-	if (state == MPD_STATE_STOP || state == MPD_STATE_UNKNOWN) {
+	if (! (state == MPD_STATE_STOP || state == MPD_STATE_UNKNOWN)) {
 		mpd_send_current_song(connection);
 
 		while ((song = mpd_recv_song(connection)) != NULL) {
