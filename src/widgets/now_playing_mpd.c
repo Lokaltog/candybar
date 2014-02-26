@@ -19,13 +19,13 @@ widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
 	mpd_send_status(connection);
 	status = mpd_recv_status(connection);
 	if (status == NULL) {
-		fprintf(stderr, "mpd status error: %s\n", mpd_connection_get_error_message(connection));
+		wklog("mpd: status error: %s", mpd_connection_get_error_message(connection));
 		return -1;
 	}
 	state = mpd_status_get_state(status);
 	mpd_status_free(status);
 	if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
-		fprintf(stderr, "mpd state error: %s\n", mpd_connection_get_error_message(connection));
+		wklog("mpd: state error: %s", mpd_connection_get_error_message(connection));
 		return -1;
 	}
 
@@ -43,7 +43,7 @@ widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
 			mpd_song_free(song);
 
 			if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
-				fprintf(stderr, "mpd song error: %s\n", mpd_connection_get_error_message(connection));
+				wklog("mpd: song error: %s", mpd_connection_get_error_message(connection));
 				return -1;
 			}
 		}
@@ -65,7 +65,10 @@ void
 	struct mpd_connection *connection = mpd_connection_new(wkline_widget_now_playing_mpd_host, wkline_widget_now_playing_mpd_port, 5000);
 
 	if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
-		fprintf(stderr, "Failed to connect to mpd server: %s\n", mpd_connection_get_error_message(connection));
+		wklog("mpd: failed to connect to mpd server at %s:%i: %s",
+		      wkline_widget_now_playing_mpd_host,
+		      wkline_widget_now_playing_mpd_port,
+		      mpd_connection_get_error_message(connection));
 		mpd_connection_free(connection);
 		return 0;
 	}
@@ -81,11 +84,11 @@ void
 
 		s = select(FD_SETSIZE, &fds, NULL, NULL, NULL);
 		if (s < 0) {
-			fprintf(stderr, "mpd: select error\n");
+			wklog("mpd: select error");
 			break;
 		}
 		if (! s) {
-			fprintf(stderr, "mpd: select timeout\n");
+			wklog("mpd: select timeout");
 			break;
 		}
 
@@ -93,7 +96,7 @@ void
 			// empty event buffer
 			mpd_recv_idle(connection, true);
 			if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
-				fprintf(stderr, "mpd recv error: %s\n", mpd_connection_get_error_message(connection));
+				wklog("mpd: recv error: %s", mpd_connection_get_error_message(connection));
 				break;
 			}
 			widget_now_playing_mpd_send_update(connection);

@@ -44,7 +44,7 @@ wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, GtkWidget 
 		for (i = 0; i < WIDGETS_LEN; i++) {
 			// FIXME this is pretty bad, it should probably join and recreate the threads instead
 			if (! widget_threads[i] && wkline_widgets[i]) {
-				fprintf(stderr, "Creating widget thread\n");
+				wklog("Creating widget thread");
 				widget_threads[i] = g_thread_new("widget", (GThreadFunc)wkline_widgets[i], &thread_data);
 			}
 		}
@@ -53,13 +53,31 @@ wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, GtkWidget 
 	}
 }
 
+void
+wklog (char const *format, ...) {
+#ifdef DEBUG
+	va_list args;
+	time_t rawtime;
+	struct tm *date;
+
+	time(&rawtime);
+	date = localtime(&rawtime);
+
+	fprintf(stderr, "[%02d:%02d:%02d] wkline: ", date->tm_hour, date->tm_min, date->tm_sec);
+	va_start(args, format);
+	vfprintf(stderr, format, args);
+	va_end(args);
+	fprintf(stderr, "\n");
+#endif
+}
+
 int
 main (int argc, char *argv[]) {
 	int screen_nbr = 0;
 
 	xcb_connection_t *conn = xcb_connect(NULL, &screen_nbr);
 	if (xcb_connection_has_error(conn)) {
-		fprintf(stderr, "Could not connect to display %s.\n", getenv("DISPLAY"));
+		wklog("Could not connect to display %s.", getenv("DISPLAY"));
 		return 1;
 	}
 
@@ -102,7 +120,7 @@ main (int argc, char *argv[]) {
 	g_signal_connect(web_view, "notify::load-status", G_CALLBACK(wk_notify_load_status_cb), web_view);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-	fprintf(stderr, "Opening URI '%s'...\n\n", wkline_theme_uri);
+	wklog("Opening URI '%s'", wkline_theme_uri);
 	webkit_web_view_load_uri(web_view, wkline_theme_uri);
 
 	gtk_widget_show_all(GTK_WIDGET(window));
@@ -117,11 +135,8 @@ main (int argc, char *argv[]) {
 	                    32,
 	                    sizeof(strut_partial), strut_partial);
 	xcb_flush(conn);
-
 	thread_data.ewmh = &ewmh_data;
-
 	gtk_main();
-
 	free(ewmh);
 
 	return 0;

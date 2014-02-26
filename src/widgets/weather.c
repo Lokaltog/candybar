@@ -69,23 +69,23 @@ static location_t
 	free(geoip_raw_json);
 
 	if (! location_data) {
-		fprintf(stderr, "Error while fetching GeoIP data\n");
+		wklog("error while fetching GeoIP data");
 		return NULL;
 	}
 
 	geoip_city = json_object_get(location_data, "city");
 	if (! json_is_string(geoip_city)) {
-		fprintf(stderr, "GeoIP city is not a string\n");
+		wklog("received GeoIP city is not a string");
 		return NULL;
 	}
 	geoip_region_code = json_object_get(location_data, "region_code");
 	if (! json_is_string(geoip_region_code)) {
-		fprintf(stderr, "GeoIP region code is not a string\n");
+		wklog("received GeoIP region code is not a string");
 		return NULL;
 	}
 	geoip_country_code = json_object_get(location_data, "country_code");
 	if (! json_is_string(geoip_country_code)) {
-		fprintf(stderr, "GeoIP country code is not a string\n");
+		wklog("received GeoIP country code is not a string");
 		return NULL;
 	}
 
@@ -118,7 +118,7 @@ static weather_t
 	free(weather_raw_json);
 
 	if (! weather_data) {
-		fprintf(stderr, "Error while fetching weather data\n");
+		wklog("error while fetching weather data");
 		return NULL;
 	}
 

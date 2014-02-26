@@ -63,7 +63,7 @@ void
 		}
 		err = snd_mixer_poll_descriptors(mixer, &pollfds[1], nfds - 1);
 		if (err < 0) {
-			fprintf(stderr, "widget_volume: can't get poll descriptors: %i\n", err);
+			wklog("alsa: can't get poll descriptors: %i", err);
 			break;
 		}
 		n = poll(pollfds, nfds, -1);
@@ -72,7 +72,7 @@ void
 				pollfds[0].revents = 0;
 			}
 			else {
-				fprintf(stderr, "widget_volume: poll error\n");
+				wklog("alsa: poll error");
 				break;
 			}
 		}
@@ -82,11 +82,11 @@ void
 		if (n > 0) {
 			err = snd_mixer_poll_descriptors_revents(mixer, &pollfds[1], nfds - 1, &revents);
 			if (err < 0) {
-				fprintf(stderr, "widget_volume: fatal error: %i\n", err);
+				wklog("alsa: fatal error: %i", err);
 				break;
 			}
 			if (revents & (POLLERR | POLLNVAL)){
-				fprintf(stderr, "widget_volume: close mixer\n");
+				wklog("alsa: closing mixer");
 				break;
 			}
 			else if (revents & POLLIN) {

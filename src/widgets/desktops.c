@@ -7,12 +7,12 @@ ewmh_get_active_window_name(xcb_ewmh_connection_t *ewmh, int screen_nbr, char *w
 	size_t len;
 
 	if (! xcb_ewmh_get_active_window_reply(ewmh, xcb_ewmh_get_active_window_unchecked(ewmh, screen_nbr), &active_window, NULL)) {
-		fprintf(stderr, "Found no active window\n");
+		wklog("ewmh: found no active window");
 		return 1;
 	}
 
 	if (! xcb_ewmh_get_wm_name_reply(ewmh, xcb_ewmh_get_wm_name_unchecked(ewmh, active_window), &window_data, NULL)) {
-		fprintf(stderr, "Could not read WM_NAME from active window\n");
+		wklog("ewmh: could not read WM_NAME from active window");
 		return 2;
 	}
 
@@ -34,13 +34,13 @@ ewmh_get_desktop_list(xcb_ewmh_connection_t *ewmh, int screen_nbr, desktop_t *de
 
 	// get current desktop
 	if (! xcb_ewmh_get_current_desktop_reply(ewmh, xcb_ewmh_get_current_desktop_unchecked(ewmh, screen_nbr), &desktop_curr, NULL)) {
-		fprintf(stderr, "Could not get current desktop\n");
+		wklog("ewmh: could not get current desktop");
 		return 1;
 	}
 
 	// get desktop count
 	if (! xcb_ewmh_get_number_of_desktops_reply(ewmh, xcb_ewmh_get_number_of_desktops_unchecked(ewmh, screen_nbr), &desktop_len, NULL)) {
-		fprintf(stderr, "Could not get desktop count\n");
+		wklog("ewmh: could not get desktop count");
 		return 2;
 	}
 
@@ -53,7 +53,7 @@ ewmh_get_desktop_list(xcb_ewmh_connection_t *ewmh, int screen_nbr, desktop_t *de
 
 	// get clients
 	if (! xcb_ewmh_get_client_list_reply(ewmh, xcb_ewmh_get_client_list_unchecked(ewmh, screen_nbr), &clients, NULL)) {
-		fprintf(stderr, "Could not get client list\n");
+		wklog("ewmh: could not get client list");
 		return 3;
 	}
 
@@ -66,7 +66,7 @@ ewmh_get_desktop_list(xcb_ewmh_connection_t *ewmh, int screen_nbr, desktop_t *de
 
 		// check icccm urgency hint on client
 		if (! xcb_icccm_get_wm_hints_reply(ewmh->connection, xcb_icccm_get_wm_hints_unchecked(ewmh->connection, clients.windows[i]), &window_hints, NULL)) {
-			fprintf(stderr, "Could not get window hints\n");
+			wklog("icccm: could not get window hints");
 		}
 		if (window_hints.flags & XCB_ICCCM_WM_HINT_X_URGENCY) {
 			desktops[client_desktop].is_urgent = true;
@@ -92,7 +92,7 @@ void
 	xcb_generic_event_t *evt;
 
 	if (err != NULL) {
-		fprintf(stderr, "Could not request EWMH property change notifications\n");
+		wklog("desktops: could not request EWMH property change notifications");
 		return 0;
 	}
 
@@ -103,7 +103,7 @@ void
 			active_desktop_list_err = ewmh_get_desktop_list(thread_data->ewmh->conn, thread_data->ewmh->screen_nbr, thread_data->desktops);
 
 			if (active_window_name_err > 0 || active_desktop_list_err > 0) {
-				fprintf(stderr, "Error while fetching EWMH properties (%i, %i), not updating\n", active_window_name_err, active_desktop_list_err);
+				wklog("desktops: error while fetching EWMH properties (%i, %i), not updating", active_window_name_err, active_desktop_list_err);
 				goto cleanup;
 			}
 
