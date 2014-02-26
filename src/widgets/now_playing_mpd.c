@@ -1,9 +1,7 @@
 #include "now_playing_mpd.h"
 
-
 static int
-update_mpd_status(struct mpd_connection *connection)
-{
+widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
 	json_t *json_base_object;
 	json_t *json_data_object;
 	char *json_payload;
@@ -75,7 +73,7 @@ void
 	fd_set fds;
 	int s, mpd_fd = mpd_connection_get_fd(connection);
 
-	update_mpd_status(connection);
+	widget_now_playing_mpd_send_update(connection);
 
 	for (;;) {
 		FD_ZERO(&fds);
@@ -98,7 +96,7 @@ void
 				fprintf(stderr, "mpd recv error: %s\n", mpd_connection_get_error_message(connection));
 				break;
 			}
-			update_mpd_status(connection);
+			widget_now_playing_mpd_send_update(connection);
 		}
 	}
 
