@@ -7,8 +7,6 @@ void
 	long volume_min, volume_max, volume = -1;
 	snd_mixer_t *mixer;
 	snd_mixer_selem_id_t *sid;
-	const char *card = "default";
-	const char *selem_name = "Master";
 	struct pollfd *pollfds = NULL;
 	int nfds = 0, n, err;
 	unsigned short revents;
@@ -16,13 +14,13 @@ void
 
 	// open mixer
 	snd_mixer_open(&mixer, 0);
-	snd_mixer_attach(mixer, card);
+	snd_mixer_attach(mixer, wkline_widget_volume_card);
 	snd_mixer_selem_register(mixer, NULL, NULL);
 	snd_mixer_load(mixer);
 
 	snd_mixer_selem_id_alloca(&sid);
 	snd_mixer_selem_id_set_index(sid, 0);
-	snd_mixer_selem_id_set_name(sid, selem_name);
+	snd_mixer_selem_id_set_name(sid, wkline_widget_volume_selem);
 	snd_mixer_elem_t* elem = snd_mixer_find_selem(mixer, sid);
 
 	for (;;) {
