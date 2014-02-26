@@ -1,5 +1,3 @@
-#include <alsa/asoundlib.h>
-#include <curl/curl.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <glib.h>

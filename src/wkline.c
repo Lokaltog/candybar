@@ -43,9 +43,9 @@ wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, GtkWidget 
 		unsigned short i;
 		for (i = 0; i < WIDGETS_LEN; i++) {
 			// FIXME this is pretty bad, it should probably join and recreate the threads instead
-			if (! widget_threads[i]) {
+			if (! widget_threads[i] && wkline_widgets[i]) {
 				fprintf(stderr, "Creating widget thread\n");
-				widget_threads[i] = g_thread_new("widget", (GThreadFunc)wkline_enabled_widgets[i], &thread_data);
+				widget_threads[i] = g_thread_new("widget", (GThreadFunc)wkline_widgets[i], &thread_data);
 			}
 		}
 

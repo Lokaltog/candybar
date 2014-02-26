@@ -1,3 +1,5 @@
+#include "volume.h"
+
 void
 *widget_volume (thread_data_t *thread_data) {
 	json_t *json_base_object;
