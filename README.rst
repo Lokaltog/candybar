@@ -28,6 +28,7 @@ Optional dependencies:
 
 * alsa (volume widget)
 * libcurl (weather widget)
+* libmpdclient (now playing/mpd widget)
 
 Installation instructions::
 
