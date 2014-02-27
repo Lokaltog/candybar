@@ -1,4 +1,6 @@
 #include <poll.h>
 #include <mpd/client.h>
+#include <webkit/webkit.h>
 
-static int widget_now_playing_mpd_send_update (struct mpd_connection *connection);
+#include "src/config.h"
+#include "util/log.h"

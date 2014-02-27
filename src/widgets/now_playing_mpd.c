@@ -1,5 +1,3 @@
-#include "../wkline.h"
-#include "../config.h"
 #include "widgets.h"
 #include "now_playing_mpd.h"
 

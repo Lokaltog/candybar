@@ -1,3 +1,12 @@
+#include <glib.h>
+#include <string.h>
+
+#include "util/curl.h"
+#include "src/config.h"
+
+#define CURL_BUF_SIZE (256 * 1024)
+#define WEATHER_BUF_SIZE 512
+
 typedef struct location_t {
 	char *city;
 	char *region_code;
@@ -9,6 +18,3 @@ typedef struct weather_t {
 	double temp;
 	char unit[1];
 } weather_t;
-
-static location_t *get_geoip_location ();
-static weather_t *get_weather_information (location_t *location, const char *unit);

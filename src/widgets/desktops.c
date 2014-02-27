@@ -1,9 +1,3 @@
-#include <xcb/xcb.h>
-#include <xcb/xcb_atom.h>
-#include <xcb/xcb_ewmh.h>
-#include <xcb/xcb_icccm.h>
-
-#include "../wkline.h"
 #include "widgets.h"
 #include "desktops.h"
 

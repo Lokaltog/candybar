@@ -1,11 +1,5 @@
-#include "../wkline.h"
-#include "../config.h"
 #include "widgets.h"
 #include "weather.h"
-#include "../lib/curl.h"
-
-#define CURL_BUF_SIZE (256 * 1024)
-#define WEATHER_BUF_SIZE 512
 
 static location_t
 *get_geoip_location () {
