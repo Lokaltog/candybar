@@ -23,16 +23,16 @@ gboolean update_widget (widget_data_t *widget_data);
 
 #define WIDGETS_LEN 4
 static const void *wkline_widgets[WIDGETS_LEN] = {
-#ifndef DISABLE_DESKTOPS
+#ifndef DISABLE_WIDGET_DESKTOPS
 	widget_desktops,
 #endif
-#ifndef DISABLE_NOW_PLAYING
+#ifndef DISABLE_WIDGET_NOW_PLAYING_MPD
 	widget_now_playing_mpd,
 #endif
-#ifndef DISABLE_VOLUME
+#ifndef DISABLE_WIDGET_VOLUME
 	widget_volume,
 #endif
-#ifndef DISABLE_WEATHER
+#ifndef DISABLE_WIDGET_WEATHER
 	widget_weather,
 #endif
 };
