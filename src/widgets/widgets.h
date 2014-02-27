@@ -1,3 +1,5 @@
+#include <glib.h>
+#include <jansson.h>
 #include <xcb/xcb_ewmh.h>
 
 typedef struct thread_data_t {

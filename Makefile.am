@@ -4,7 +4,8 @@ wkline_SOURCES = \
 	src/widgets/desktops.c  \
 	src/widgets/now_playing_mpd.c  \
 	src/widgets/weather.c \
-	src/lib/curl.c \
+	util/curl.c \
+	util/log.c \
 	src/wkline.c
 
 wkline_LDADD = \
