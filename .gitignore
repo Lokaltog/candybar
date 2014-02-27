@@ -14,5 +14,6 @@ Makefile.in
 /install-sh
 /missing
 /stamp-h1
+/wkline
 .deps/
 .dirstamp

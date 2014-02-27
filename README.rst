@@ -37,7 +37,7 @@ Installation instructions::
   autoreconf --install
   ./configure
   make
-  src/wkline
+  ./wkline
 
 Configuration
 -------------
