@@ -2,14 +2,8 @@
 
 static int
 widget_volume_send_update (snd_mixer_elem_t* elem) {
-	json_t *json_base_object;
-	json_t *json_data_object;
+	json_t *json_data_object = json_object();
 	char *json_payload;
-
-	json_base_object = json_object();
-	json_data_object = json_object();
-	json_object_set_new(json_base_object, "widget", json_string("volume"));
-	json_object_set_new(json_base_object, "data", json_data_object);
 
 	// TODO check if channel is muted
 	long volume_min, volume_max, volume;
@@ -17,12 +11,14 @@ widget_volume_send_update (snd_mixer_elem_t* elem) {
 	snd_mixer_selem_get_playback_volume_range(elem, &volume_min, &volume_max);
 	snd_mixer_selem_get_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, &volume);
 
-	json_object_set_new(json_data_object, "volume_percent", json_real(100 * (volume - volume_min) / (volume_max - volume_min)));
+	json_object_set_new(json_data_object, "percent", json_real(100 * (volume - volume_min) / (volume_max - volume_min)));
 
-	json_payload = json_dumps(json_base_object, 0);
+	json_payload = json_dumps(json_data_object, 0);
 
-	// inject data
-	g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
+	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
+	widget_data->widget = "volume";
+	widget_data->data = json_payload;
+	g_idle_add((GSourceFunc)update_widget, widget_data);
 
 	return 0;
 }

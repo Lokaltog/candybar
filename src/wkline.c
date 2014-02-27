@@ -8,16 +8,17 @@ WebKitWebView *web_view;
 GThread *widget_threads[WIDGETS_LEN];
 
 static gboolean
-wk_web_view_inject (char *payload) {
+update_widget (widget_data_t *widget_data) {
+	char *script_template = "if(typeof widgets!=='undefined'){try{widgets.update('%s',%s)}catch(e){console.log('Could not update widget: '+e)}}";
 	char script[4096];
 
 #ifdef DEBUG_JSON
-	wklog("Injecting JSON: %s", payload);
+	wklog("Updating widget %s: %s", widget_data->widget, widget_data->data);
 #endif
-	sprintf(script, "if(typeof wkInject!=='undefined'){try{wkInject(%s)}catch(e){console.log(e)}}else{console.log('Web page incompatible or not loaded yet')}", payload);
+	sprintf(script, script_template, widget_data->widget, widget_data->data);
 
 	webkit_web_view_execute_script(web_view, script);
-	free(payload);
+	free(widget_data);
 
 	return FALSE; // only run once
 }
@@ -32,19 +33,7 @@ static void
 wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, GtkWidget *window) {
 	WebKitLoadStatus status = webkit_web_view_get_load_status(web_view);
 
-	json_t *json_base_object;
-	json_t *json_init_object;
-	char *json_payload;
-
 	if (status == WEBKIT_LOAD_FINISHED) {
-		// send init data
-		json_base_object = json_object();
-		json_init_object = json_object();
-		json_object_set_new(json_base_object, "event", json_string("init"));
-		json_object_set_new(json_base_object, "data", json_init_object);
-		json_object_set_new(json_init_object, "height", json_integer(wkline_height));
-		json_payload = json_dumps(json_base_object, 0);
-
 		unsigned short i;
 		for (i = 0; i < WIDGETS_LEN; i++) {
 			// FIXME this is pretty bad, it should probably join and recreate the threads instead
@@ -53,8 +42,6 @@ wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, GtkWidget 
 				widget_threads[i] = g_thread_new("widget", (GThreadFunc)wkline_widgets[i], NULL);
 			}
 		}
-
-		g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
 	}
 }
 

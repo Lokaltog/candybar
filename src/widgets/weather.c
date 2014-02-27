@@ -94,7 +94,6 @@ static weather_t
 
 static int
 widget_weather_send_update (location_t *location) {
-	json_t *json_base_object = json_object();
 	json_t *json_data_object = json_object();
 	char *json_payload;
 	weather_t *weather = get_weather_information(location, wkline_widget_weather_unit);
@@ -104,18 +103,17 @@ widget_weather_send_update (location_t *location) {
 		return -1;
 	}
 
-	json_object_set_new(json_base_object, "widget", json_string("weather"));
-	json_object_set_new(json_base_object, "data", json_data_object);
-
 	json_object_set_new(json_data_object, "icon", json_integer(weather->code));
 	json_object_set_new(json_data_object, "temp", json_real(weather->temp));
 	json_object_set_new(json_data_object, "unit", json_string(weather->unit));
 
-	json_payload = json_dumps(json_base_object, 0);
+	json_payload = json_dumps(json_data_object, 0);
 
-	// inject data
-	g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
-	free(weather);
+	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
+	widget_data->widget = "weather";
+	widget_data->data = json_payload;
+	g_idle_add((GSourceFunc)update_widget, widget_data);
+
 	return 0;
 }
 

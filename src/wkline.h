@@ -22,7 +22,12 @@ typedef struct thread_data_t {
 	xcb_ewmh_connection_t *ewmh;
 } thread_data_t;
 
-static gboolean wk_web_view_inject (char *payload);
+typedef struct widget_data_t {
+	char *widget;
+	char *data;
+} widget_data_t;
+
+static gboolean update_widget (widget_data_t *widget_data);
 static gboolean wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window);
 void wklog (char const *format, ...);
 static void wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, GtkWidget *window);

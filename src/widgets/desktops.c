@@ -81,7 +81,6 @@ ewmh_get_desktop_list(xcb_ewmh_connection_t *ewmh, int screen_nbr, desktop_t *de
 static int
 widget_desktops_send_update () {
 	unsigned short i;
-	json_t *json_base_object = json_object();
 	json_t *json_data_object = json_object();
 	json_t *json_desktops_array = json_array();
 	char *json_payload;
@@ -112,18 +111,19 @@ widget_desktops_send_update () {
 		}
 	}
 
-	json_object_set_new(json_base_object, "widget", json_string("desktop"));
-	json_object_set_new(json_base_object, "data", json_data_object);
 	json_object_set_new(json_data_object, "current_window", json_string(active_window_name));
 	json_object_set_new(json_data_object, "desktops", json_desktops_array);
 
-	json_payload = json_dumps(json_base_object, 0);
+	json_payload = json_dumps(json_data_object, 0);
 
-	// inject data
-	g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
+	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
+	widget_data->widget = "desktops";
+	widget_data->data = json_payload;
+	g_idle_add((GSourceFunc)update_widget, widget_data);
 
 	free(desktops);
 	free(active_window_name);
+
 	return 0;
 }
 

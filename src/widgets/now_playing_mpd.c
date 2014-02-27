@@ -2,14 +2,8 @@
 
 static int
 widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
-	json_t *json_base_object;
-	json_t *json_data_object;
+	json_t *json_data_object = json_object();
 	char *json_payload;
-
-	json_base_object = json_object();
-	json_data_object = json_object();
-	json_object_set_new(json_base_object, "widget", json_string("now_playing"));
-	json_object_set_new(json_base_object, "data", json_data_object);
 
 	struct mpd_song *song;
 	struct mpd_status *status;
@@ -60,10 +54,12 @@ widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
 	mpd_status_free(status);
 	mpd_send_idle_mask(connection, MPD_IDLE_PLAYER);
 
-	json_payload = json_dumps(json_base_object, 0);
+	json_payload = json_dumps(json_data_object, 0);
 
-	// inject data
-	g_idle_add((GSourceFunc)wk_web_view_inject, json_payload);
+	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
+	widget_data->widget = "now_playing";
+	widget_data->data = json_payload;
+	g_idle_add((GSourceFunc)update_widget, widget_data);
 
 	return 0;
 }
