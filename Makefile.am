@@ -24,7 +24,8 @@ wkline_CFLAGS += $(MPD_CFLAGS)
 endif
 if HAVE_LIBCURL
 wkline_SOURCES += util/curl.c \
-	src/widgets/weather.c
+	src/widgets/weather.c \
+	src/widgets/external_ip.c
 wkline_LDADD += $(CURL_LIBS)
 wkline_CFLAGS += $(CURL_CFLAGS)
 endif

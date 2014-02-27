@@ -14,17 +14,21 @@ typedef struct widget_data_t {
 
 extern thread_data_t thread_data;
 
-void *widget_weather();
-void *widget_volume();
-void *widget_now_playing_mpd();
 void *widget_desktops();
+void *widget_external_ip();
+void *widget_now_playing_mpd();
+void *widget_volume();
+void *widget_weather();
 
 gboolean update_widget (widget_data_t *widget_data);
 
-#define WIDGETS_LEN 4
+#define WIDGETS_LEN 5
 static const void *wkline_widgets[WIDGETS_LEN] = {
 #ifndef DISABLE_WIDGET_DESKTOPS
 	widget_desktops,
+#endif
+#ifndef DISABLE_WIDGET_EXTERNAL_IP
+	widget_external_ip,
 #endif
 #ifndef DISABLE_WIDGET_NOW_PLAYING_MPD
 	widget_now_playing_mpd,
