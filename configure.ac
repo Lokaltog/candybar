@@ -18,6 +18,5 @@ PKG_CHECK_MODULES([MPD], [libmpdclient])
 
 AC_CONFIG_FILES([
  Makefile
- src/Makefile
 ])
 AC_OUTPUT
