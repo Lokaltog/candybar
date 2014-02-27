@@ -13,5 +13,6 @@ Makefile.in
 /depcomp
 /install-sh
 /missing
-/src/.deps
 /stamp-h1
+.deps/
+.dirstamp

@@ -1,13 +1,14 @@
 #include "config.h"
 #include "wkline.h"
+#include "widgets/widgets.h"
+#include "widgets/desktops.h"
 #include "lib/curl.h"
-#include "widgets.h"
 
 thread_data_t thread_data;
 WebKitWebView *web_view;
 GThread *widget_threads[WIDGETS_LEN];
 
-static gboolean
+gboolean
 update_widget (widget_data_t *widget_data) {
 	char *script_template = "if(typeof widgets!=='undefined'){try{widgets.update('%s',%s)}catch(e){console.log('Could not update widget: '+e)}}";
 	char script[4096];
