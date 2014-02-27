@@ -1,6 +1,5 @@
 #include "config.h"
 #include "wkline.h"
-#include "util/curl.h"
 #include "util/log.h"
 #include "widgets/widgets.h"
 
