@@ -1,13 +1,14 @@
 #include "config.h"
 #include "wkline.h"
+#include "widgets/widgets.h"
+#include "widgets/desktops.h"
 #include "lib/curl.h"
-#include "widgets.h"
 
 thread_data_t thread_data;
 WebKitWebView *web_view;
 GThread *widget_threads[WIDGETS_LEN];
 
-static gboolean
+gboolean
 wk_web_view_inject (char *payload) {
 	char script[4096];
 

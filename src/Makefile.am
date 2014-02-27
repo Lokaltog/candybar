@@ -1,5 +1,11 @@
 bin_PROGRAMS = wkline
-wkline_SOURCES = wkline.c
+wkline_SOURCES = \
+	widgets/volume.c  \
+	widgets/desktops.c  \
+	widgets/now_playing_mpd.c  \
+	widgets/weather.c \
+	lib/curl.c \
+	wkline.c
 
 wkline_LDADD = \
 	$(GTK3_LIBS) \
