@@ -1,4 +1,8 @@
-static size_t
+#include <stdlib.h>
+#include <string.h>
+#include "curl.h"
+
+size_t
 wkline_curl_write_response (void *ptr, size_t size, size_t nmemb, void *stream) {
 	write_result_t *result = (write_result_t *)stream;
 
@@ -13,7 +17,7 @@ wkline_curl_write_response (void *ptr, size_t size, size_t nmemb, void *stream) 
 	return size * nmemb;
 }
 
-static char
+char
 *wkline_curl_request (const char *url) {
 	CURL *curl;
 	CURLcode status;
