@@ -32,7 +32,7 @@ void
 	snd_mixer_t *mixer;
 	snd_mixer_selem_id_t *sid;
 	struct pollfd *pollfds = NULL;
-	int nfds = 0, n, err;
+	int nfds = 0, n, err, wait_err;
 	unsigned short revents;
 
 	// open mixer
@@ -62,6 +62,10 @@ void
 		if (err < 0) {
 			wklog("alsa: can't get poll descriptors: %i", err);
 			break;
+		}
+		wait_err = snd_mixer_wait(mixer, -1);
+		if (wait_err < 0) {
+			wklog("alsa: wait error");
 		}
 		n = poll(pollfds, nfds, -1);
 		if (n < 0) {
