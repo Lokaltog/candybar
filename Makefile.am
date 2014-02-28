@@ -23,14 +23,18 @@ wkline_LDADD += $(MPD_LIBS)
 wkline_CFLAGS += $(MPD_CFLAGS)
 endif
 if HAVE_LIBCURL
-wkline_SOURCES += util/curl.c \
+wkline_SOURCES += \
+	util/curl.c \
 	src/widgets/weather.c \
 	src/widgets/external_ip.c
 wkline_LDADD += $(CURL_LIBS)
 wkline_CFLAGS += $(CURL_CFLAGS)
 endif
 if HAVE_DBUS
-wkline_SOURCES += src/widgets/notifications.c
+wkline_SOURCES += \
+	util/dbus_helpers.c \
+	src/widgets/notifications.c \
+	src/widgets/battery.c
 wkline_LDADD += $(DBUS_LIBS)
 wkline_CFLAGS += $(DBUS_CFLAGS)
 endif

@@ -5,7 +5,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_ARG_WITH([alsa], AS_HELP_STRING([--without-alsa], [compile without alsa support]))
 AC_ARG_WITH([curl], AS_HELP_STRING([--without-curl], [compile without libcurl support]))
-AC_ARG_WITH([dbus], AS_HELP_STRING([--without-dbus], [compile without dbus support]))
+AC_ARG_WITH([dbus], AS_HELP_STRING([--without-dbus], [compile without dbus-glib support]))
 AC_ARG_WITH([mpd], AS_HELP_STRING([--without-mpd], [compile without libmpdclient support]))
 
 AS_IF([test "x$with_alsa" != "xno"],
@@ -25,7 +25,7 @@ AS_IF([test "x$have_libcurl" = "xyes"], [], [
       ])
 
 AS_IF([test "x$with_dbus" != "xno"],
-      [PKG_CHECK_MODULES([DBUS], [dbus-1], [have_dbus=yes], [have_dbus=no])],
+      [PKG_CHECK_MODULES([DBUS], [dbus-glib-1], [have_dbus=yes], [have_dbus=no])],
       [have_dbus=no])
 AS_IF([test "x$have_dbus" = "xyes"], [], [
       AC_DEFINE([DISABLE_WIDGET_NOTIFICATIONS], [], [disable dbus])
