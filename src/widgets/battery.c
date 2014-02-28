@@ -32,7 +32,7 @@ widget_battery_send_update (char *pathbuf) {
 	json_payload = json_dumps(json_data_object, 0);
 
 	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
-	widget_data->widget = "notifications";
+	widget_data->widget = "battery";
 	widget_data->data = json_payload;
 	g_idle_add((GSourceFunc)update_widget, widget_data);
 
