@@ -29,6 +29,11 @@ wkline_SOURCES += util/curl.c \
 wkline_LDADD += $(CURL_LIBS)
 wkline_CFLAGS += $(CURL_CFLAGS)
 endif
+if HAVE_DBUS
+wkline_SOURCES += src/widgets/notifications.c
+wkline_LDADD += $(DBUS_LIBS)
+wkline_CFLAGS += $(DBUS_CFLAGS)
+endif
 if HAVE_ALSA
 wkline_SOURCES += src/widgets/volume.c
 wkline_LDADD += $(ALSA_LIBS)
