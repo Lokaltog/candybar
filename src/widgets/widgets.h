@@ -16,6 +16,7 @@ extern thread_data_t thread_data;
 
 void *widget_desktops();
 void *widget_external_ip();
+void *widget_notifications();
 void *widget_now_playing_mpd();
 void *widget_volume();
 void *widget_weather();
@@ -28,6 +29,9 @@ static const void *wkline_widgets[] = {
 #endif
 #ifndef DISABLE_WIDGET_EXTERNAL_IP
 	widget_external_ip,
+#endif
+#ifndef DISABLE_WIDGET_NOTIFICATIONS
+	widget_notifications,
 #endif
 #ifndef DISABLE_WIDGET_NOW_PLAYING_MPD
 	widget_now_playing_mpd,
