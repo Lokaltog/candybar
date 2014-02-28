@@ -12,3 +12,5 @@ static const char *wkline_widget_weather_unit = "c"; // c, f or k
 
 // alternatives: ipv6.icanhazip.com or icanhazip.com for ipv6 with ipv4 fallback
 static const char *wkline_widget_external_ip_address = "http://ipv4.icanhazip.com/";
+
+static const char *wkline_widget_battery_name = "BAT0";

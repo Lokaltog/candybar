@@ -29,6 +29,7 @@ AS_IF([test "x$with_dbus" != "xno"],
       [have_dbus=no])
 AS_IF([test "x$have_dbus" = "xyes"], [], [
       AC_DEFINE([DISABLE_WIDGET_NOTIFICATIONS], [], [disable dbus])
+      AC_DEFINE([DISABLE_WIDGET_BATTERY], [], [disable dbus])
       AS_IF([test "x$with_dbus" = "xyes"], [AC_MSG_ERROR([dbus requested but not found])])
       ])
 

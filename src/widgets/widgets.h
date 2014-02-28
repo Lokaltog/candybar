@@ -14,6 +14,7 @@ typedef struct widget_data_t {
 
 extern thread_data_t thread_data;
 
+void *widget_battery();
 void *widget_desktops();
 void *widget_external_ip();
 void *widget_notifications();
@@ -24,6 +25,9 @@ void *widget_weather();
 gboolean update_widget (widget_data_t *widget_data);
 
 static const void *wkline_widgets[] = {
+#ifndef DISABLE_WIDGET_BATTERY
+	widget_battery,
+#endif
 #ifndef DISABLE_WIDGET_DESKTOPS
 	widget_desktops,
 #endif
