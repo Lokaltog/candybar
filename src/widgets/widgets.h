@@ -22,8 +22,7 @@ void *widget_weather();
 
 gboolean update_widget (widget_data_t *widget_data);
 
-#define WIDGETS_LEN 5
-static const void *wkline_widgets[WIDGETS_LEN] = {
+static const void *wkline_widgets[] = {
 #ifndef DISABLE_WIDGET_DESKTOPS
 	widget_desktops,
 #endif
