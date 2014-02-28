@@ -5,6 +5,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_ARG_WITH([alsa], AS_HELP_STRING([--without-alsa], [compile without alsa support]))
 AC_ARG_WITH([curl], AS_HELP_STRING([--without-curl], [compile without libcurl support]))
+AC_ARG_WITH([dbus], AS_HELP_STRING([--without-dbus], [compile without dbus-glib support]))
 AC_ARG_WITH([mpd], AS_HELP_STRING([--without-mpd], [compile without libmpdclient support]))
 
 AS_IF([test "x$with_alsa" != "xno"],
@@ -23,6 +24,15 @@ AS_IF([test "x$have_libcurl" = "xyes"], [], [
       AS_IF([test "x$with_libcurl" = "xyes"], [AC_MSG_ERROR([libcurl requested but not found])])
       ])
 
+AS_IF([test "x$with_dbus" != "xno"],
+      [PKG_CHECK_MODULES([DBUS], [dbus-glib-1], [have_dbus=yes], [have_dbus=no])],
+      [have_dbus=no])
+AS_IF([test "x$have_dbus" = "xyes"], [], [
+      AC_DEFINE([DISABLE_WIDGET_NOTIFICATIONS], [], [disable dbus])
+      AC_DEFINE([DISABLE_WIDGET_BATTERY], [], [disable dbus])
+      AS_IF([test "x$with_dbus" = "xyes"], [AC_MSG_ERROR([dbus requested but not found])])
+      ])
+
 AS_IF([test "x$with_mpd" != "xno"],
       [PKG_CHECK_MODULES([MPD], [libmpdclient], [have_libmpdclient=yes], [have_libmpdclient=no])],
       [have_libmpdclient=no])
@@ -33,6 +43,7 @@ AS_IF([test "x$have_libmpdclient" = "xyes"], [], [
 
 AM_CONDITIONAL([HAVE_ALSA], [test "x$have_alsa" = "xyes"])
 AM_CONDITIONAL([HAVE_LIBCURL], [test "x$have_libcurl" = "xyes"])
+AM_CONDITIONAL([HAVE_DBUS], [test "x$have_dbus" = "xyes"])
 AM_CONDITIONAL([HAVE_LIBMPDCLIENT], [test "x$have_libmpdclient" = "xyes"])
 
 # Remove if you wish to see full compiler command lines

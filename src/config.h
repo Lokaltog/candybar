@@ -14,3 +14,5 @@ static const char *wkline_widget_weather_unit = "c"; // c, f or k
 static const char *wkline_widget_external_ip_address = "http://ipv4.icanhazip.com/";
 
 static const char *wkline_widget_free_space_mount_points[] = {"/", "/home"};
+
+static const char *wkline_widget_battery_name = "BAT0";

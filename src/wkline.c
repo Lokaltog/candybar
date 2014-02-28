@@ -5,7 +5,7 @@
 
 thread_data_t thread_data;
 WebKitWebView *web_view;
-GThread *widget_threads[WIDGETS_LEN];
+GThread *widget_threads[LENGTH(wkline_widgets)];
 
 gboolean
 update_widget (widget_data_t *widget_data) {
@@ -35,7 +35,7 @@ wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, GtkWidget 
 
 	if (status == WEBKIT_LOAD_FINISHED) {
 		unsigned short i;
-		for (i = 0; i < WIDGETS_LEN; i++) {
+		for (i = 0; i < LENGTH(wkline_widgets); i++) {
 			// FIXME this is pretty bad, it should probably join and recreate the threads instead
 			if (! widget_threads[i] && wkline_widgets[i]) {
 				wklog("Creating widget thread");

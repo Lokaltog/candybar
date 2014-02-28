@@ -5,12 +5,13 @@ static int
 widget_volume_send_update (snd_mixer_elem_t* elem) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
-
-	// TODO check if channel is muted
 	long volume_min, volume_max, volume;
+	int muted;
 
 	snd_mixer_selem_get_playback_volume_range(elem, &volume_min, &volume_max);
 	snd_mixer_selem_get_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, &volume);
+	snd_mixer_selem_get_playback_switch(elem, SND_MIXER_SCHN_FRONT_LEFT , &muted);
+	volume *= muted; /* if muted set volume to 0 */
 
 	json_object_set_new(json_data_object, "percent", json_real(100 * (volume - volume_min) / (volume_max - volume_min)));
 

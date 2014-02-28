@@ -8,7 +8,7 @@ widget_external_ip_send_update () {
 	json_t *json_data_object = json_object();
 	char *json_payload;
 
-	json_object_set_new(json_data_object, "ip", json_string("ip"));
+	json_object_set_new(json_data_object, "ip", json_string(external_ip));
 
 	json_payload = json_dumps(json_data_object, 0);
 
