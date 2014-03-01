@@ -13,7 +13,9 @@ widget_free_space_send_update () {
         struct statvfs buf;
         if (statvfs(wkline_widget_free_space_mount_points[i], &buf) != -1) {
             json_t *json_list_entry = json_object();
+            json_object_set_new(json_data_object, "mount_point", json_string(wkline_widget_free_space_mount_points[i]));
             json_object_set_new(json_data_object, "space_free", json_real((double) buf.f_bavail * buf.f_bsize));
+            json_object_set_new(json_data_object, "space_total", json_real((double) buf.f_blocks * buf.f_frsize));
             json_array_append(json_list, json_list_entry);
         }
     }
