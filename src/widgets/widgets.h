@@ -47,3 +47,5 @@ static const void *wkline_widgets[] = {
 	widget_weather,
 #endif
 };
+
+#define MISSING_VALUE ""
