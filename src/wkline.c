@@ -60,7 +60,14 @@ main (int argc, char *argv[]) {
 	xcb_ewmh_init_atoms_replies(ewmh, ewmh_cookie, NULL);
 
 	xcb_screen_t *screen = ewmh->screens[screen_nbr];
-	wk_dimensions_t dim = {.w = screen->width_in_pixels, .h = wkline_height};
+
+    xcb_randr_get_screen_resources_cookie_t screen_res_c = xcb_randr_get_screen_resources(conn, screen->root);
+    xcb_randr_get_screen_resources_reply_t *screen_res_r = xcb_randr_get_screen_resources_reply(conn, screen_res_c, NULL);
+    xcb_randr_crtc_t *randr_crtcs = xcb_randr_get_screen_resources_crtcs(screen_res_r);
+    xcb_randr_get_crtc_info_cookie_t crtc_info_c = xcb_randr_get_crtc_info(conn, randr_crtcs[0], XCB_CURRENT_TIME);
+    xcb_randr_get_crtc_info_reply_t *crtc_info_r = xcb_randr_get_crtc_info_reply(conn, crtc_info_c, NULL);
+
+	wk_dimensions_t dim = {.w = crtc_info_r->width, .h = wkline_height};
 
 	// init window
 	guint window_xid;

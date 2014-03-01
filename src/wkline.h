@@ -1,6 +1,7 @@
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
+#include <xcb/randr.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
