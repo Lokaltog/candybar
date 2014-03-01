@@ -10,7 +10,15 @@ GThread *widget_threads[LENGTH(wkline_widgets)];
 gboolean
 update_widget (widget_data_t *widget_data) {
 	char *script_template = "if(typeof widgets!=='undefined'){try{widgets.update('%s',%s)}catch(e){console.log('Could not update widget: '+e)}}";
-	char script[4096];
+	int script_length = 0;
+	char *script;
+
+	// Get the length of the script payload.
+	script_length = snprintf(
+			NULL, 0, script_template, widget_data->widget, widget_data->data
+			);
+	// Add 1 for \0
+	script = malloc(script_length + 1);
 
 #ifdef DEBUG_JSON
 	wklog("Updating widget %s: %s", widget_data->widget, widget_data->data);
@@ -19,6 +27,7 @@ update_widget (widget_data_t *widget_data) {
 
 	webkit_web_view_execute_script(web_view, script);
 	free(widget_data);
+	free(script);
 
 	return FALSE; // only run once
 }
