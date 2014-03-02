@@ -12,4 +12,9 @@ typedef struct wk_dimensions_t {
 	int h;
 } wk_dimensions_t;
 
+typedef struct wk_display_info_t {
+    int width;
+    int offset;
+} wk_display_info_t;
+
 #define LENGTH(X) (sizeof X / sizeof X[0])
