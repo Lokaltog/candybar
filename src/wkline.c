@@ -60,7 +60,36 @@ main (int argc, char *argv[]) {
 	xcb_ewmh_init_atoms_replies(ewmh, ewmh_cookie, NULL);
 
 	xcb_screen_t *screen = ewmh->screens[screen_nbr];
-	wk_dimensions_t dim = {.w = screen->width_in_pixels, .h = wkline_height};
+
+	xcb_randr_get_screen_resources_cookie_t screen_res_c = xcb_randr_get_screen_resources(conn, screen->root);
+	xcb_randr_get_screen_resources_reply_t *screen_res_r = xcb_randr_get_screen_resources_reply(conn, screen_res_c, NULL);
+	xcb_randr_crtc_t *randr_crtcs = xcb_randr_get_screen_resources_crtcs(screen_res_r);
+	
+	int i;
+	wk_display_info_t displays[screen_res_r->num_crtcs];
+	for (i = 0; i < screen_res_r->num_crtcs; i++) {
+		xcb_randr_get_crtc_info_cookie_t tmp_c = xcb_randr_get_crtc_info(conn, randr_crtcs[i], XCB_CURRENT_TIME);
+		xcb_randr_get_crtc_info_reply_t *tmp_r = xcb_randr_get_crtc_info_reply(conn, tmp_c, NULL);
+	
+		displays[i].width = tmp_r->width;
+		displays[i].offset = tmp_r->x;
+	}
+	
+	int comp(struct wk_display_info_t *a, struct wk_display_info_t *b) {
+		if (a->width > 0 && b->width > 0) {
+			if (a->offset == b->offset)
+				return 0;
+			else
+				if (a->offset < b->offset)
+					return -1;
+			else
+			    return 1;
+		}
+	}
+	
+	qsort(displays, screen_res_r->num_crtcs, sizeof(struct wk_display_info_t), comp);
+
+	wk_dimensions_t dim = {.w = displays[wkline_monitor].width, .h = wkline_height};
 
 	// init window
 	guint window_xid;
@@ -76,7 +105,7 @@ main (int argc, char *argv[]) {
 	web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
 
 	// set window dock properties
-	gtk_window_move(window, 0, 0);
+	gtk_window_move(window, displays[wkline_monitor].offset, 0);
 	gtk_window_resize(window, dim.w, dim.h);
 	gtk_window_set_gravity(window, GDK_GRAVITY_STATIC);
 	gtk_window_set_skip_pager_hint(window, TRUE);

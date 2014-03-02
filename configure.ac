@@ -53,7 +53,7 @@ AM_SILENT_RULES([yes])
 # Access the variables via GTK3_CFLAGS and GTK3_LIBS
 PKG_CHECK_MODULES([GTK3], [gtk+-3.0])
 PKG_CHECK_MODULES([WEBKIT], [webkitgtk-3.0])
-PKG_CHECK_MODULES([XCB], [xcb-util xcb-ewmh xcb-icccm])
+PKG_CHECK_MODULES([XCB], [xcb-util xcb-ewmh xcb-icccm xcb-randr])
 PKG_CHECK_MODULES([JSON_GLIB], [jansson])
 
 AC_CONFIG_FILES([
