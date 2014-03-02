@@ -3,7 +3,6 @@
 #include "util/log.h"
 #include "widgets/widgets.h"
 
-thread_data_t thread_data;
 WebKitWebView *web_view;
 GThread *widget_threads[LENGTH(wkline_widgets)];
 
@@ -58,26 +57,12 @@ wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, GtkWidget 
 
 int
 main (int argc, char *argv[]) {
-	int screen_nbr = 0;
-
-	xcb_connection_t *conn = xcb_connect(NULL, &screen_nbr);
-	if (xcb_connection_has_error(conn)) {
-		wklog("Could not connect to display %s.", getenv("DISPLAY"));
-		return 1;
-	}
-
-	xcb_ewmh_connection_t *ewmh = malloc(sizeof(xcb_ewmh_connection_t));
-	xcb_intern_atom_cookie_t *ewmh_cookie = xcb_ewmh_init_atoms(conn, ewmh);
-	xcb_ewmh_init_atoms_replies(ewmh, ewmh_cookie, NULL);
-
-	xcb_screen_t *screen = ewmh->screens[screen_nbr];
-	wk_dimensions_t dim = {.w = screen->width_in_pixels, .h = wkline_height};
-
-	// init window
-	guint window_xid;
-	int strut_partial[12] = {0, 0, dim.h, 0, 0, 0, 0, 0, 0, dim.w, 0, 0};
 	GtkWindow *window;
 	GtkLayout *layout;
+	GdkScreen *screen;
+	GdkRectangle dest;
+	gint monitor_num;
+	wk_dimensions_t dim;
 
 	gtk_init(&argc, &argv);
 
@@ -86,14 +71,21 @@ main (int argc, char *argv[]) {
 	layout = GTK_LAYOUT(gtk_layout_new(NULL, NULL));
 	web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
 
+	// get window size
+	screen = gtk_window_get_screen(window);
+	gdk_screen_get_monitor_geometry (screen, 0, &dest);
+	dim.w = dest.width; 
+	dim.h = wkline_height; /* defined in config.h */
+
 	// set window dock properties
-	gtk_window_move(window, 0, 0);
-	gtk_window_resize(window, dim.w, dim.h);
-	gtk_window_set_gravity(window, GDK_GRAVITY_STATIC);
+	gtk_window_set_default_size(window, dim.w, dim.h);
+	gtk_window_stick(window);	
+	gtk_window_set_decorated(window, FALSE);
 	gtk_window_set_skip_pager_hint(window, TRUE);
 	gtk_window_set_skip_taskbar_hint(window, TRUE);
+	gtk_window_set_gravity(window, GDK_GRAVITY_STATIC);
 	gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DOCK);
-	gtk_window_stick(window);
+
 
 	gtk_widget_set_size_request(GTK_WIDGET(web_view), dim.w, dim.h);
 
@@ -109,23 +101,6 @@ main (int argc, char *argv[]) {
 
 	gtk_widget_show_all(GTK_WIDGET(window));
 
-	// reserve space on top of root window with _NET_WM_STRUT_PARTIAL
-	window_xid = GDK_WINDOW_XID(gtk_widget_get_window(GTK_WIDGET(window)));
-	xcb_change_property(conn,
-	                    XCB_PROP_MODE_REPLACE,
-	                    window_xid,
-	                    ewmh->_NET_WM_STRUT_PARTIAL,
-	                    XCB_ATOM_CARDINAL,
-	                    32,
-	                    sizeof(strut_partial), strut_partial);
-	xcb_flush(conn);
-
-	thread_data.screen_nbr = screen_nbr;
-	thread_data.ewmh = ewmh;
-
 	gtk_main();
-
-	free(ewmh);
-
 	return 0;
 }

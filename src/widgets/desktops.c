@@ -162,8 +162,16 @@ window_title_send_update () {
 
 void
 *widget_desktops () {
-	ewmh = thread_data.ewmh;
-	screen_nbr = thread_data.screen_nbr;
+	xcb_connection_t *conn = xcb_connect(NULL, NULL);
+	if (xcb_connection_has_error(conn)) {
+		wklog("Could not connect to display %s.", getenv("DISPLAY"));
+		return 0;
+	}
+
+	/* FIXME ewmh should not be a global */
+	ewmh = malloc(sizeof(xcb_ewmh_connection_t));
+	xcb_intern_atom_cookie_t *ewmh_cookie = xcb_ewmh_init_atoms(conn, ewmh);
+	xcb_ewmh_init_atoms_replies(ewmh, ewmh_cookie, NULL);
 
 	uint32_t values[] = {XCB_EVENT_MASK_PROPERTY_CHANGE};
 	xcb_generic_event_t *evt;
