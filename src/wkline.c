@@ -88,11 +88,12 @@ main (int argc, char *argv[]) {
 
 	// get window size
 	screen = gtk_window_get_screen(window);
-	gdk_screen_get_monitor_geometry (screen, 0, &dest);
+	gdk_screen_get_monitor_geometry (screen, wkline_monitor, &dest);
 	dim.w = dest.width; 
 	dim.h = wkline_height; /* defined in config.h */
 
 	// set window dock properties
+	gtk_window_move(window, dest.x, 0);
 	gtk_window_set_default_size(window, dim.w, dim.h);
 	gtk_window_stick(window);	
 	gtk_window_set_decorated(window, FALSE);
