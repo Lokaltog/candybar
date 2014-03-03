@@ -106,6 +106,7 @@ main (int argc, char *argv[]) {
 	gtk_container_add(GTK_CONTAINER(layout), GTK_WIDGET(web_view));
 	gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(layout));
 
+	g_signal_connect (G_OBJECT (web_view), "window-object-cleared", G_CALLBACK(window_object_cleared_cb), NULL);
 	g_signal_connect(web_view, "context-menu", G_CALLBACK(wk_context_menu_cb), web_view);
 	g_signal_connect(web_view, "notify::load-status", G_CALLBACK(wk_notify_load_status_cb), web_view);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
