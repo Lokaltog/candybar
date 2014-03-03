@@ -2,20 +2,13 @@
 #include <jansson.h>
 #include <xcb/xcb_ewmh.h>
 
-typedef struct thread_data_t {
-	int screen_nbr;
-	xcb_ewmh_connection_t *ewmh;
-} thread_data_t;
-
 typedef struct widget_data_t {
 	char *widget;
 	char *data;
 } widget_data_t;
 
-extern thread_data_t thread_data;
-
-void *widget_free_space();
 void *widget_battery();
+void *widget_free_space();
 void *widget_desktops();
 void *widget_external_ip();
 void *widget_notifications();
@@ -51,3 +44,5 @@ static const void *wkline_widgets[] = {
 	widget_weather,
 #endif
 };
+
+#define MISSING_VALUE ""

@@ -1,8 +1,8 @@
 #include <string.h>
 #include <stdbool.h>
+#include <xcb/xcb_event.h>
 #include <xcb/xcb_icccm.h>
 
-#define PROPERTY_MAX_LEN 256
 #define DESKTOP_MAX_LEN 10
 
 typedef struct desktop_t {

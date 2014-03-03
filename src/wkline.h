@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
