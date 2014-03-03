@@ -1,5 +1,4 @@
 static const int wkline_monitor = 0; // indexed at 0
-
 static const int wkline_height = 26;
 static const char *wkline_theme_uri = "http://lokaltog.github.io/wkline-theme-default/";
 

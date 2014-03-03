@@ -65,8 +65,8 @@ wk_realize_handler(GtkWidget *window, gpointer user_data){
 	atom = gdk_atom_intern ("_NET_WM_STRUT", FALSE);
 
 	gdkw = gtk_widget_get_window(GTK_WIDGET(window));
-	gdk_property_change (gdkw, atom, gdk_atom_intern("CARDINAL", FALSE), 
-							32, GDK_PROP_MODE_REPLACE, (guchar *)vals, LENGTH(vals));
+	gdk_property_change (gdkw, atom, gdk_atom_intern("CARDINAL", FALSE),
+	                     32, GDK_PROP_MODE_REPLACE, (guchar *)vals, LENGTH(vals));
 }
 
 int
@@ -78,7 +78,6 @@ main (int argc, char *argv[]) {
 	gint monitor_num;
 	wk_dimensions_t dim;
 
-
 	gtk_init(&argc, &argv);
 
 	// GtkScrolledWindow fails to lock small heights (<25px), so a GtkLayout is used instead
@@ -89,13 +88,13 @@ main (int argc, char *argv[]) {
 	// get window size
 	screen = gtk_window_get_screen(window);
 	gdk_screen_get_monitor_geometry (screen, wkline_monitor, &dest);
-	dim.w = dest.width; 
+	dim.w = dest.width;
 	dim.h = wkline_height; /* defined in config.h */
 
 	// set window dock properties
 	gtk_window_move(window, dest.x, 0);
 	gtk_window_set_default_size(window, dim.w, dim.h);
-	gtk_window_stick(window);	
+	gtk_window_stick(window);
 	gtk_window_set_decorated(window, FALSE);
 	gtk_window_set_skip_pager_hint(window, TRUE);
 	gtk_window_set_skip_taskbar_hint(window, TRUE);
