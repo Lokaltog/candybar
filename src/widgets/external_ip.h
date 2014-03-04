@@ -1,2 +1,2 @@
 #include "util/curl.h"
-#include "src/config.h"
+#include "util/load_config.h"

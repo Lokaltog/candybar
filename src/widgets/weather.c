@@ -1,11 +1,10 @@
 #include "widgets.h"
 #include "weather.h"
 
-static location_t
-*get_geoip_location () {
+static struct location_t *
+get_geoip_location (struct location_t *location) {
 	json_t *location_data, *geoip_city, *geoip_region_code, *geoip_country_code;
 	json_error_t error;
-	location_t *location = malloc(sizeof(location_t));
 
 	char *geoip_raw_json = wkline_curl_request("http://freegeoip.net/json/");
 	location_data = json_loads(geoip_raw_json, 0, &error);
@@ -41,14 +40,16 @@ static location_t
 	return location;
 }
 
-static weather_t
-*get_weather_information (location_t *location, const char *unit) {
+static struct weather_t *
+get_weather_information (struct location_t *location) {
 	char request_uri[WEATHER_BUF_SIZE];
 	char query[WEATHER_BUF_SIZE];
 	json_t *weather_data;
 	json_error_t error;
-	weather_t *weather = malloc(sizeof(weather_t));
+	struct weather_t *weather;
 	CURL *curl;
+
+	weather = malloc(sizeof( weather));
 
 	curl = curl_easy_init();
 	sprintf(query, "use \"http://github.com/yql/yql-tables/raw/master/weather/weather.bylocation.xml\" as we;select * from we where location=\"%s, %s, %s\" and unit=\"c\"", location->city, location->region_code, location->country_code);
@@ -61,9 +62,10 @@ static weather_t
 	free(weather_raw_json);
 
 	if (! weather_data) {
-		wklog("error while fetching weather data");
+		free(weather);
 		return NULL;
 	}
+
 
 	json_t *tmp_obj, *weather_code, *weather_temp;
 	tmp_obj = json_object_get(weather_data, "query");
@@ -86,7 +88,7 @@ static weather_t
 
 	sscanf(json_string_value(weather_code), "%u", &weather->code);
 	sscanf(json_string_value(weather_temp), "%lf", &weather->temp);
-	strcpy(weather->unit, unit);
+	weather->unit = location->unit;
 
 	json_decref(weather_data);
 
@@ -94,13 +96,14 @@ static weather_t
 }
 
 static int
-widget_weather_send_update (location_t *location) {
+widget_weather_send_update (struct location_t *location) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
-	weather_t *weather = get_weather_information(location, wkline_widget_weather_unit);
+	struct weather_t *weather;
 
-	if (! weather) {
-		free(weather);
+	weather = get_weather_information(location);
+	if (!weather) {
+		wklog("error while fetching weather data");
 		return -1;
 	}
 
@@ -118,17 +121,16 @@ widget_weather_send_update (location_t *location) {
 	return 0;
 }
 
-void
-*widget_weather () {
-	location_t *location = malloc(sizeof(location_t));
+void *
+widget_weather (struct wkline_widget_t *widget) {
+	struct location_t *location;
+	location = calloc(0, sizeof( location));
 
-	if (wkline_widget_weather_location[0] == '\0') {
-		location = get_geoip_location();
+	location->unit = strdup(json_string_value(wkline_widget_get_config(widget, "unit")));
+	location->city = strdup(json_string_value(wkline_widget_get_config(widget, "location")));
+	if (location->city[0] == '\0') {
+		location = get_geoip_location(location);
 	}
-	else {
-		location->city = strdup(wkline_widget_weather_location);
-	}
-
 	if (! location) {
 		wklog("could not get GeoIP location, consider setting the location manually in config.h");
 		free(location);
@@ -141,6 +143,7 @@ void
 		sleep(600);
 	}
 
+	free(location->unit);
 	free(location->city);
 	free(location->region_code);
 	free(location->country_code);

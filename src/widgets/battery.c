@@ -39,12 +39,13 @@ widget_battery_send_update (char *pathbuf) {
 	return 0;
 }
 
-void
-*widget_battery () {
+void *
+widget_battery (struct wkline_widget_t *widget) {
 	char pathbuf[128];
 	GError *error = NULL;
 	conn = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
-	sprintf(pathbuf, "/org/freedesktop/UPower/devices/battery_%s", wkline_widget_battery_name);
+	sprintf(pathbuf, "/org/freedesktop/UPower/devices/battery_%s", 
+					json_string_value(wkline_widget_get_config(widget, "name")));
 
 	if (conn == NULL) {
 		wklog("dbus: failed to open connection to bus: %s\n", error->message);

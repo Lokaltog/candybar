@@ -2,4 +2,6 @@
 #include <string.h>
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib.h>
-#include "src/config.h"
+
+#include "util/load_config.h"
+#include "util/dbus_helpers.h"

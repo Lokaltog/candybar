@@ -88,8 +88,8 @@ widget_notifications_send_update (DBusConnection *connection, DBusMessage *msg) 
 	return 0;
 }
 
-void
-*widget_notifications () {
+void *
+widget_notifications () {
 	DBusConnection* connection;
 	DBusError dbus_error;
 	DBusError* err = &dbus_error;

@@ -1,6 +1,5 @@
 #include "widgets.h"
 #include "external_ip.h"
-#include "util/load_config.h"
 
 static int
 widget_external_ip_send_update (struct wkline_widget_t *widget) {
@@ -24,8 +23,8 @@ widget_external_ip_send_update (struct wkline_widget_t *widget) {
 	return 0;
 }
 
-void
-*widget_external_ip (struct wkline_widget_t *widget) {
+void *
+widget_external_ip (struct wkline_widget_t *widget) {
 	for (;;) {
 		widget_external_ip_send_update(widget);
 
