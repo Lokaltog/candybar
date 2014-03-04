@@ -30,7 +30,7 @@ copy_prop (char *dest, char *src, int len, int idx, int num_itm)
 }
 
 static void
-desktops_send_update () {
+desktops_send_update (widget_data_t *widget_data) {
 	unsigned short i;
 	uint32_t desktop_curr, desktop_len, client_desktop;
 	xcb_ewmh_get_windows_reply_t clients;
@@ -104,16 +104,14 @@ desktops_send_update () {
 
 	json_payload = json_dumps(json_data_object, 0);
 
-	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
-	widget_data->widget = "desktops";
-	widget_data->data = json_payload;
+	widget_data->data = strdup(json_payload);
 	g_idle_add((GSourceFunc)update_widget, widget_data);
-
+	json_decref(json_data_object);
 	free(desktops);
 }
 
 static void
-window_title_send_update () {
+window_title_send_update (widget_data_t *widget_data) {
 	xcb_window_t win;
 	xcb_ewmh_get_utf8_strings_reply_t ewmh_txt_prop;
 	xcb_icccm_get_text_property_reply_t icccm_txt_prop;
@@ -154,14 +152,13 @@ window_title_send_update () {
 
 	json_payload = json_dumps(json_data_object, 0);
 
-	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
-	widget_data->widget = "window_title";
-	widget_data->data = json_payload;
+	widget_data->data = strdup(json_payload);
 	g_idle_add((GSourceFunc)update_widget, widget_data);
+	json_decref(json_data_object);
 }
 
 void
-*widget_desktops () {
+*widget_desktops (widget_data_t *widget_data) {
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	if (xcb_connection_has_error(conn)) {
 		wklog("Could not connect to display %s.", getenv("DISPLAY"));
@@ -186,8 +183,8 @@ void
 		return 0;
 	}
 
-	desktops_send_update();
-	window_title_send_update();
+	desktops_send_update(widget_data);
+	window_title_send_update(widget_data);
 
 	for (;;) {
 		while ((evt = xcb_wait_for_event(ewmh->connection)) != NULL) {
@@ -196,19 +193,19 @@ void
 			case XCB_PROPERTY_NOTIFY:
 				pne = (xcb_property_notify_event_t *) evt;
 				if (pne->atom == ewmh->_NET_DESKTOP_NAMES) {
-					desktops_send_update();
+					desktops_send_update(widget_data);
 				}
 				else if (pne->atom == ewmh->_NET_ACTIVE_WINDOW) {
-					window_title_send_update();
+					window_title_send_update(widget_data);
 				}
 				else if (pne->window != ewmh->screens[screen_nbr]->root && (pne->atom == ewmh->_NET_WM_NAME || pne->atom == XCB_ATOM_WM_NAME)) {
-					window_title_send_update();
+					window_title_send_update(widget_data);
 				}
 				else if (pne->atom == ewmh->_NET_NUMBER_OF_DESKTOPS) {
-					desktops_send_update();
+					desktops_send_update(widget_data);
 				}
 				else if (pne->atom == ewmh->_NET_CURRENT_DESKTOP) {
-					desktops_send_update();
+					desktops_send_update(widget_data);
 				}
 			default:
 				break;

@@ -2,7 +2,7 @@
 #include "now_playing_mpd.h"
 
 static int
-widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
+widget_now_playing_mpd_send_update (widget_data_t *widget_data, struct mpd_connection *connection) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
 
@@ -57,16 +57,15 @@ widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
 
 	json_payload = json_dumps(json_data_object, 0);
 
-	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
-	widget_data->widget = "now_playing";
-	widget_data->data = json_payload;
+	widget_data->data = strdup(json_payload);
 	g_idle_add((GSourceFunc)update_widget, widget_data);
+	json_decref(json_data_object);
 
 	return 0;
 }
 
 void
-*widget_now_playing_mpd () {
+*widget_now_playing_mpd (widget_data_t *widget_data) {
 	struct mpd_connection *connection = mpd_connection_new(wkline_widget_now_playing_mpd_host,
 	                                                       wkline_widget_now_playing_mpd_port,
 	                                                       5000);
@@ -83,7 +82,7 @@ void
 	fd_set fds;
 	int s, mpd_fd = mpd_connection_get_fd(connection);
 
-	widget_now_playing_mpd_send_update(connection);
+	widget_now_playing_mpd_send_update(widget_data, connection);
 
 	for (;;) {
 		FD_ZERO(&fds);
@@ -106,7 +105,7 @@ void
 				wklog("mpd: recv error: %s", mpd_connection_get_error_message(connection));
 				break;
 			}
-			widget_now_playing_mpd_send_update(connection);
+			widget_now_playing_mpd_send_update(widget_data, connection);
 		}
 	}
 
