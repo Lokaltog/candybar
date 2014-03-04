@@ -4,6 +4,10 @@
 #include <webkit/webkit.h>
 #include <xcb/xcb_ewmh.h>
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 typedef struct widget_data_t {
 	char widget[32];
 	char *data;
