@@ -45,7 +45,7 @@ static const widget_t widgets[] = {
 	(widget_t){widget_notifications, "notifications"},
 #endif
 #ifndef DISABLE_WIDGET_NOW_PLAYING_MPD
-	(widget_t){widget_now_playing_mpd, "now_playing"},
+	(widget_t){widget_now_playing_mpd, "now_playing_mpd"},
 #endif
 #ifndef DISABLE_WIDGET_VOLUME
 	(widget_t){widget_volume, "volume"},
