@@ -22,6 +22,7 @@ void *widget_notifications();
 void *widget_now_playing_mpd();
 void *widget_volume();
 void *widget_weather();
+void *widget_window_title();
 gboolean update_widget (struct widget *widget);
 void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data);
 
@@ -33,6 +34,7 @@ static const struct widget_call wkline_widgets[] = {
 	{.func=widget_now_playing_mpd, .name="now_playing_mpd"},
 	{.func=widget_volume,          .name="volume"},
 	{.func=widget_weather,         .name="weather"},
+	{.func=widget_window_title,    .name="window_title"},
 };
 
 #define MISSING_VALUE ""
