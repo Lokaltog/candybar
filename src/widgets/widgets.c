@@ -36,6 +36,7 @@ window_object_cleared_cb (WebKitWebView *web_view,
                           gpointer user_data) {
 	unsigned short i;
 
+	wklog("webkit: window object cleared");
 	for (i = 0; i < LENGTH(widgets); i++) {
 		// FIXME this is pretty bad, it should probably join and recreate the threads instead
 		if (! widget_threads[i]) {
@@ -43,6 +44,7 @@ window_object_cleared_cb (WebKitWebView *web_view,
 			strcpy(widget_data->widget, widgets[i].id);
 			widget_data->web_view = web_view;
 
+			wklog("creating thread for widget '%s'", widgets[i].id);
 			widget_threads[i] = g_thread_new(widgets[i].id, (GThreadFunc)widgets[i].func, widget_data);
 		}
 	}
