@@ -1,11 +1,9 @@
 bin_PROGRAMS = wkline
 wkline_SOURCES = \
-	util/copy_prop.c \
 	util/log.c \
 	src/wkline.c \
 	src/widgets/widgets.c \
-	src/widgets/desktops.c \
-	src/widgets/window_title.c
+	src/widgets/desktops.c
 
 wkline_LDADD = \
 	$(GTK3_LIBS) \

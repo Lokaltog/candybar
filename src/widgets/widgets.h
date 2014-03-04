@@ -23,7 +23,6 @@ void *widget_notifications();
 void *widget_now_playing_mpd();
 void *widget_volume();
 void *widget_weather();
-void *widget_window_title();
 
 gboolean update_widget (widget_data_t *widget_data);
 void window_object_cleared_cb(WebKitWebView  *web_view,
@@ -53,9 +52,6 @@ static const widget_t widgets[] = {
 #endif
 #ifndef DISABLE_WIDGET_WEATHER
 	(widget_t){widget_weather, "weather"},
-#endif
-#ifndef DISABLE_WIDGET_WINDOW_TITLE
-	(widget_t){widget_window_title, "window_title"},
 #endif
 };
 
