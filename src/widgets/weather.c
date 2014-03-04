@@ -94,7 +94,7 @@ static weather_t
 }
 
 static int
-widget_weather_send_update (widget_data_t *widget_data, location_t *location) {
+widget_weather_send_update (location_t *location) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
 	weather_t *weather = get_weather_information(location, wkline_widget_weather_unit);
@@ -110,15 +110,16 @@ widget_weather_send_update (widget_data_t *widget_data, location_t *location) {
 
 	json_payload = json_dumps(json_data_object, 0);
 
-	widget_data->data = strdup(json_payload);
+	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
+	widget_data->widget = "weather";
+	widget_data->data = json_payload;
 	g_idle_add((GSourceFunc)update_widget, widget_data);
-	json_decref(json_data_object);
 
 	return 0;
 }
 
 void
-*widget_weather (widget_data_t *widget_data) {
+*widget_weather () {
 	location_t *location = malloc(sizeof(location_t));
 
 	if (wkline_widget_weather_location[0] == '\0') {
@@ -135,7 +136,7 @@ void
 	}
 
 	for (;;) {
-		widget_weather_send_update(widget_data, location);
+		widget_weather_send_update(location);
 
 		sleep(600);
 	}

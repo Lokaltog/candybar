@@ -7,7 +7,7 @@ DBusGProxy *proxy;
 DBusGProxy *properties_proxy;
 
 static int
-widget_battery_send_update (widget_data_t *widget_data, char *pathbuf) {
+widget_battery_send_update (char *pathbuf) {
 	gdouble percentage;
 	guint state;
 	gint64 time_to_empty64, time_to_full64;
@@ -31,15 +31,16 @@ widget_battery_send_update (widget_data_t *widget_data, char *pathbuf) {
 
 	json_payload = json_dumps(json_data_object, 0);
 
-	widget_data->data = strdup(json_payload);
+	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
+	widget_data->widget = "battery";
+	widget_data->data = json_payload;
 	g_idle_add((GSourceFunc)update_widget, widget_data);
-	json_decref(json_data_object);
 
 	return 0;
 }
 
 void
-*widget_battery (widget_data_t *widget_data) {
+*widget_battery () {
 	char pathbuf[128];
 	GError *error = NULL;
 	conn = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
@@ -75,7 +76,7 @@ void
 	}
 
 	for (;;) {
-		widget_battery_send_update(widget_data, pathbuf);
+		widget_battery_send_update(pathbuf);
 
 		sleep(20);
 	}

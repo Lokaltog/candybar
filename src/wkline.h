@@ -11,3 +11,5 @@ typedef struct wk_dimensions_t {
 	int w;
 	int h;
 } wk_dimensions_t;
+
+#define LENGTH(X) (sizeof X / sizeof X[0])

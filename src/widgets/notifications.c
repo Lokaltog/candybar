@@ -23,7 +23,7 @@ dbus_array_reply(DBusConnection *connection, DBusMessage* msg, char* array[]) {
 }
 
 static int
-widget_notifications_send_update (widget_data_t *widget_data, DBusConnection *connection, DBusMessage *msg) {
+widget_notifications_send_update (DBusConnection *connection, DBusMessage *msg) {
 	unsigned short i;
 	DBusMessage *reply;
 	DBusMessageIter args;
@@ -80,15 +80,16 @@ widget_notifications_send_update (widget_data_t *widget_data, DBusConnection *co
 
 	json_payload = json_dumps(json_data_object, 0);
 
-	widget_data->data = strdup(json_payload);
+	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
+	widget_data->widget = "notifications";
+	widget_data->data = json_payload;
 	g_idle_add((GSourceFunc)update_widget, widget_data);
-	json_decref(json_data_object);
 
 	return 0;
 }
 
 void
-*widget_notifications (widget_data_t *widget_data) {
+*widget_notifications () {
 	DBusConnection* connection;
 	DBusError dbus_error;
 	DBusError* err = &dbus_error;
@@ -124,7 +125,7 @@ void
 
 		while (msg = dbus_connection_pop_message(connection)) {
 			if (dbus_message_is_method_call(msg, "org.freedesktop.Notifications", "Notify")) {
-				if (widget_notifications_send_update(widget_data, connection, msg) != 0) {
+				if (widget_notifications_send_update (connection, msg) != 0) {
 					wklog("dbus: error while handling notification");
 					break;
 				}

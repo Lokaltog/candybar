@@ -2,7 +2,7 @@
 #include "volume.h"
 
 static int
-widget_volume_send_update (widget_data_t *widget_data, snd_mixer_elem_t* elem) {
+widget_volume_send_update (snd_mixer_elem_t* elem) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
 	long volume_min, volume_max, volume;
@@ -17,15 +17,16 @@ widget_volume_send_update (widget_data_t *widget_data, snd_mixer_elem_t* elem) {
 
 	json_payload = json_dumps(json_data_object, 0);
 
-	widget_data->data = strdup(json_payload);
+	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
+	widget_data->widget = "volume";
+	widget_data->data = json_payload;
 	g_idle_add((GSourceFunc)update_widget, widget_data);
-	json_decref(json_data_object);
 
 	return 0;
 }
 
 void
-*widget_volume (widget_data_t *widget_data) {
+*widget_volume () {
 	snd_mixer_t *mixer;
 	snd_mixer_selem_id_t *sid;
 	struct pollfd *pollfds = NULL;
@@ -43,7 +44,7 @@ void
 	snd_mixer_selem_id_set_name(sid, wkline_widget_volume_selem);
 	snd_mixer_elem_t* elem = snd_mixer_find_selem(mixer, sid);
 
-	widget_volume_send_update(widget_data, elem);
+	widget_volume_send_update(elem);
 
 	for (;;) {
 		// Code mostly from the alsamixer main loop
@@ -92,7 +93,7 @@ void
 			}
 		}
 
-		widget_volume_send_update(widget_data, elem);
+		widget_volume_send_update(elem);
 	}
 
 	free(pollfds);
