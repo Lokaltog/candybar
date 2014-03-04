@@ -160,8 +160,8 @@ window_title_send_update () {
 	g_idle_add((GSourceFunc)update_widget, widget_data);
 }
 
-void
-*widget_desktops () {
+void *
+widget_desktops () {
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	if (xcb_connection_has_error(conn)) {
 		wklog("Could not connect to display %s.", getenv("DISPLAY"));
