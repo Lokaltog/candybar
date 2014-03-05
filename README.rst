@@ -35,15 +35,22 @@ Installation instructions::
 
   git clone https://github.com/Lokaltog/wkline.git
   cd wkline
+
   autoreconf --install
   ./configure
   make
+
+  mkdir -p ~/.config/wkline
+  cp config.def.json ~/.config/wkline/config.json
+
   ./wkline
 
 Configuration
 -------------
 
-Edit ``src/config.h`` and recompile.
+Copy ``config.def.json`` to ``$XDG_CONFIG_HOME/wkline/config.json`` (usually at
+``~/.config/wkline/config.json``) and change the configuration. Please make sure that
+your config file is valid JSON, this can be checked with e.g. ``jsonlint``.
 
 Screenshots
 -----------
@@ -65,7 +72,3 @@ Screenshots
 
 .. image:: http://i.imgur.com/gpEKgyS.png
    :alt: Concept screenshot
-
-*Please note that some of these screenshots may showcase features that were part of
-the Python concept, and may not have been ported to C yet. Every feature that was
-part of the concept (see commit 4b59f4) is being ported to C.*
