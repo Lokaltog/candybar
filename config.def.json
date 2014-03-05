@@ -6,29 +6,50 @@
 	"monitor": 0,
 	"widgets": {
 		"desktops": {
+			"position": 0,
+			"enabled": true,
+
 			"names": ["I", "II", "III", "IV", "V"]
 		},
 		"now_playing_mpd": {
+			"position": 1,
+			"enabled": true,
+
 			"update_interval": 1000,
 			"host": "localhost",
 			"port": 6060,
 			"timeout": 5000
 		},
 		"volume": {
+			"position": 2,
+			"enabled": true,
+
 			"card": "default",
 			"selem": "Master"
 		},
 		"weather": {
+			"position": 3,
+			"enabled": true,
+
 			"location": "",
 			"unit": "c"
 		},
 		"external_ip": {
+			"position": 4,
+			"enabled": true,
+
 			"address": "http://ipv4.icanhazip.com/"
 		},
 		"battery": {
+			"position": 5,
+			"enabled": true,
+
 			"name": "BAT0"
 		},
 		"datetime": {
+			"position": 6,
+			"enabled": true,
+
 			"update_interval": 1000,
 			"date_format": "DDDD-MM-YY",
 			"time_format": "HH:mm:ss"
