@@ -46,7 +46,7 @@ main (int argc, char *argv[]) {
 	const char *wkline_theme_uri;
 
 	gtk_init(&argc, &argv);
-	wkline = malloc(sizeof(struct wkline *));
+	wkline = malloc(sizeof(struct wkline));
 
 	wkline->config = load_config_file();
 	wkline->position = json_string_value(wkline_get_config(wkline, "position"));
