@@ -2,12 +2,8 @@
 #include "battery.h"
 #include "util/dbus_helpers.h"
 
-DBusGConnection *conn;
-DBusGProxy *proxy;
-DBusGProxy *properties_proxy;
-
 static int
-widget_battery_send_update (struct widget *widget, char *pathbuf) {
+widget_battery_send_update (struct widget *widget, DBusGProxy *properties_proxy, char *pathbuf) {
 	gdouble percentage;
 	guint state;
 	gint64 time_to_empty64, time_to_full64;
@@ -40,8 +36,12 @@ widget_battery_send_update (struct widget *widget, char *pathbuf) {
 
 void *
 widget_battery (struct widget *widget) {
+	DBusGConnection *conn;
+	DBusGProxy *proxy;
+	DBusGProxy *properties_proxy;
 	char pathbuf[128];
 	GError *error = NULL;
+
 	conn = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
 	sprintf(pathbuf, "/org/freedesktop/UPower/devices/battery_%s",
 	        json_string_value(wkline_widget_get_config(widget, "name")));
@@ -76,7 +76,7 @@ widget_battery (struct widget *widget) {
 	}
 
 	for (;;) {
-		widget_battery_send_update(widget, pathbuf);
+		widget_battery_send_update(widget, properties_proxy, pathbuf);
 
 		sleep(20);
 	}
