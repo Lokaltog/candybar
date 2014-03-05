@@ -1,7 +1,6 @@
 #include <curl/curl.h>
 
 #define CURL_BUF_SIZE (256 * 1024)
-#define WEATHER_BUF_SIZE 512
 
 typedef struct write_result_t {
     char *data;

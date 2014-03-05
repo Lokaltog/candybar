@@ -67,16 +67,15 @@ widget_now_playing_mpd_send_update (struct mpd_connection *connection) {
 
 void
 *widget_now_playing_mpd (struct wkline_widget_t *widget) {
-	struct mpd_connection *connection = mpd_connection_new(
-						json_string_value(wkline_widget_get_config(widget, "name")),
-						json_integer_value(wkline_widget_get_config(widget, "port")),
-						5000);
+	struct mpd_connection *connection = mpd_connection_new(json_string_value(wkline_widget_get_config(widget, "name")),
+	                                                       json_integer_value(wkline_widget_get_config(widget, "port")),
+	                                                       json_integer_value(wkline_widget_get_config(widget, "timeout")));
 
 	if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
 		wklog("mpd: failed to connect to mpd server at %s:%i: %s",
-						json_string_value(wkline_widget_get_config(widget, "host")),
-						json_integer_value(wkline_widget_get_config(widget, "port")),
-						mpd_connection_get_error_message(connection));
+		      json_string_value(wkline_widget_get_config(widget, "host")),
+		      json_integer_value(wkline_widget_get_config(widget, "port")),
+		      mpd_connection_get_error_message(connection));
 		mpd_connection_free(connection);
 		return 0;
 	}

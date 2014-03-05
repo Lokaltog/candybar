@@ -1,36 +1,34 @@
 {
 	"height": 26,
 	"position": "top",
-	"theme_uri": "http://lokaltog.github.io/wkline-default-theme/",
+	"theme_uri": "http://lokaltog.github.io/wkline-theme-default/",
 	"background": "#111",
 	"monitor": 0,
 	"widgets": {
-		"Desktops" : 
-		{
+		"desktops": {
 			"names": ["I", "II", "III", "IV", "V"]
 		},
-		"NowPlayingMpd" : 
-		{
+		"now_playing_mpd": {
 			"update_interval": 1000,
 			"host": "localhost",
-			"port": 6060
+			"port": 6060,
+			"timeout": 5000
 		},
-		"Volume" : {
+		"volume": {
 			"card": "default",
 			"selem": "Master"
 		},
-		"Weather" : 
-		{
+		"weather": {
 			"location": "",
 			"unit": "c"
 		},
-		"ExternalIp" : {
+		"external_ip": {
 			"address": "http://ipv4.icanhazip.com/"
 		},
-		"Battery" : {
+		"battery": {
 			"name": "BAT0"
 		},
-		"Datetime" : {
+		"datetime": {
 			"update_interval": 1000,
 			"date_format": "DDDD-MM-YY",
 			"time_format": "HH:mm:ss"

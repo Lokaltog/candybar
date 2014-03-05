@@ -4,7 +4,6 @@
 #include "util/curl.h"
 #include "util/load_config.h"
 
-#define CURL_BUF_SIZE (256 * 1024)
 #define WEATHER_BUF_SIZE 512
 
 struct location_t {

@@ -52,7 +52,12 @@ get_weather_information (struct location_t *location) {
 	weather = malloc(sizeof( weather));
 
 	curl = curl_easy_init();
-	sprintf(query, "use \"http://github.com/yql/yql-tables/raw/master/weather/weather.bylocation.xml\" as we;select * from we where location=\"%s, %s, %s\" and unit=\"c\"", location->city, location->region_code, location->country_code);
+	sprintf(query,
+	        "use \"http://github.com/yql/yql-tables/raw/master/weather/weather.bylocation.xml\" as we;"
+	        "select * from we where location=\"%s, %s, %s\" and unit=\"c\"",
+	        location->city,
+	        location->region_code,
+	        location->country_code);
 	sprintf(request_uri, "http://query.yahooapis.com/v1/public/yql?q=%s&format=json", curl_easy_escape(curl, query, 0));
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
@@ -65,7 +70,6 @@ get_weather_information (struct location_t *location) {
 		free(weather);
 		return NULL;
 	}
-
 
 	json_t *tmp_obj, *weather_code, *weather_temp;
 	tmp_obj = json_object_get(weather_data, "query");
@@ -102,7 +106,7 @@ widget_weather_send_update (struct location_t *location) {
 	struct weather_t *weather;
 
 	weather = get_weather_information(location);
-	if (!weather) {
+	if (! weather) {
 		wklog("error while fetching weather data");
 		return -1;
 	}
@@ -123,8 +127,7 @@ widget_weather_send_update (struct location_t *location) {
 
 void *
 widget_weather (struct wkline_widget_t *widget) {
-	struct location_t *location;
-	location = calloc(0, sizeof( location));
+	struct location_t *location = calloc(0, sizeof(location));
 
 	location->unit = strdup(json_string_value(wkline_widget_get_config(widget, "unit")));
 	location->city = strdup(json_string_value(wkline_widget_get_config(widget, "location")));

@@ -61,7 +61,7 @@ wk_notify_load_status_cb (WebKitWebView *web_view, GParamSpec *pspec, struct wkl
 }
 
 static void
-wk_realize_handler(GtkWidget *window, gpointer user_data){
+wk_realize_handler (GtkWidget *window, gpointer user_data) {
 	struct wkline_t *wkline = user_data;
 	GdkAtom atom;
 	GdkWindow *gdkw;
@@ -69,12 +69,12 @@ wk_realize_handler(GtkWidget *window, gpointer user_data){
 
 	vals[0] = 0;
 	vals[1] = 0;
-	if (!strcmp(wkline->position,"top")){
+	if (! strcmp(wkline->position, "top")){
 		vals[2] = wkline->dim.h;
-		vals[3]	= 0;
+		vals[3] = 0;
 	}
-	else if (!strcmp(wkline->position,"bottom")){
-		vals[2]	= 0;
+	else if (! strcmp(wkline->position, "bottom")){
+		vals[2] = 0;
 		vals[3] = wkline->dim.h;
 	}
 
@@ -96,7 +96,7 @@ main (int argc, char *argv[]) {
 	const char *wkline_theme_uri;
 
 	gtk_init(&argc, &argv);
-	wkline = malloc(sizeof(struct wkline*));
+	wkline = malloc(sizeof(struct wkline *));
 
 	wkline->config = load_config_file();
 	wkline->position = json_string_value(wkline_get_config(wkline, "position"));
@@ -108,24 +108,25 @@ main (int argc, char *argv[]) {
 
 	// get window size
 	screen = gtk_window_get_screen(window);
-	gdk_screen_get_monitor_geometry (
-						screen, 
-						json_integer_value(wkline_get_config(wkline, "monitor")), 
-						&dest);
-	wkline->dim.w = dest.width; 
+	gdk_screen_get_monitor_geometry(screen,
+	                                json_integer_value(wkline_get_config(wkline, "monitor")),
+	                                &dest);
+	wkline->dim.w = dest.width;
 	wkline->dim.h = json_integer_value(wkline_get_config(wkline, "height"));
 
 	// set window dock properties
-	if (!strcmp(wkline->position,"top"))
+	if (! strcmp(wkline->position, "top")) {
 		gtk_window_move(window, dest.x, 0);
-	else if (!strcmp(wkline->position,"bottom"))
-		gtk_window_move(window, dest.x, dest.y-wkline->dim.h);
+	}
+	else if (! strcmp(wkline->position, "bottom")) {
+		gtk_window_move(window, dest.x, dest.y - wkline->dim.h);
+	}
 
 	gtk_window_set_default_size(window, wkline->dim.w, wkline->dim.h);
 	gtk_window_stick(window);
 	gtk_window_set_decorated(window, FALSE);
 	gtk_window_set_skip_pager_hint(window, TRUE);
-	gtk_window_set_skip_taskbar_hint(window, TRUE); 
+	gtk_window_set_skip_taskbar_hint(window, TRUE);
 	gtk_window_set_gravity(window, GDK_GRAVITY_STATIC);
 	gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DOCK);
 
@@ -146,6 +147,7 @@ main (int argc, char *argv[]) {
 	gtk_widget_show_all(GTK_WIDGET(window));
 
 	gtk_main();
+
 	json_decref(wkline->config);
 	free(wkline);
 	return 0;

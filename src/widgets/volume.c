@@ -35,15 +35,13 @@ widget_volume (struct wkline_widget_t *widget) {
 
 	// open mixer
 	snd_mixer_open(&mixer, 0);
-	snd_mixer_attach(mixer, 
-					json_string_value(wkline_widget_get_config(widget, "card")));
+	snd_mixer_attach(mixer, json_string_value(wkline_widget_get_config(widget, "card")));
 	snd_mixer_selem_register(mixer, NULL, NULL);
 	snd_mixer_load(mixer);
 
 	snd_mixer_selem_id_alloca(&sid);
 	snd_mixer_selem_id_set_index(sid, 0);
-	snd_mixer_selem_id_set_name(sid, 
-					json_string_value(wkline_widget_get_config(widget, "selem")));
+	snd_mixer_selem_id_set_name(sid, json_string_value(wkline_widget_get_config(widget, "selem")));
 	snd_mixer_elem_t* elem = snd_mixer_find_selem(mixer, sid);
 
 	widget_volume_send_update(elem);

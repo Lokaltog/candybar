@@ -22,19 +22,19 @@ void *widget_weather();
 
 gboolean update_widget (widget_data_t *widget_data);
 
-struct widget_call{
+struct widget_call {
 	void *call;
 	const char *name;
 };
 
 static const struct widget_call wkline_widgets[] = {
-	{.call = widget_battery, .name = "Battery"},
-	{.call = widget_desktops, .name = "Desktops"},
-	{.call = widget_external_ip, .name = "ExternalIp"},
-	{.call = widget_notifications, .name = "Notifications"},
-	{.call = widget_now_playing_mpd, .name = "NowPlayingMpd"},
-	{.call = widget_volume, .name = "Volume"},
-	{.call = widget_weather, .name = "Weather"}
+	{.call = widget_battery, .name = "battery"},
+	{.call = widget_desktops, .name = "desktops"},
+	{.call = widget_external_ip, .name = "external_ip"},
+	{.call = widget_notifications, .name = "notifications"},
+	{.call = widget_now_playing_mpd, .name = "now_playing_mpd"},
+	{.call = widget_volume, .name = "volume"},
+	{.call = widget_weather, .name = "weather"}
 };
 
 #define MISSING_VALUE ""
