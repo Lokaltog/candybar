@@ -47,7 +47,7 @@ get_weather_information (struct location *location) {
 	char query[WEATHER_BUF_SIZE];
 	json_t *weather_data;
 	json_error_t error;
-	struct weather *weather = calloc(0, sizeof(struct weather));
+	struct weather *weather = calloc(1, sizeof(struct weather));
 	CURL *curl;
 
 	curl = curl_easy_init();
@@ -133,7 +133,7 @@ widget_weather_send_update (struct widget *widget, struct location *location) {
 
 void *
 widget_weather (struct widget *widget) {
-	struct location *location = calloc(0, sizeof(location));
+	struct location *location = calloc(1, sizeof(location));
 
 	location->city = strdup(json_string_value(wkline_widget_get_config(widget, "location")));
 	if (location->city[0] == '\0') {
