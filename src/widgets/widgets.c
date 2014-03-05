@@ -38,7 +38,7 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 	for (i = 0; i < LENGTH(wkline_widgets); i++) {
 		// FIXME this is pretty bad, it should probably join and recreate the threads instead
 		if (! widget_threads[i]) {
-			struct widget *widget = calloc(0, sizeof(struct widget));
+			struct widget *widget = malloc(sizeof(struct widget));
 
 			widget->config = wkline->config;
 			widget->web_view = web_view;
