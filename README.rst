@@ -21,11 +21,11 @@ Dependencies:
 * gtk+ 3
 * jansson
 * webkitgtk+
-* xcb
-* xcb-wm
 
 Optional dependencies:
 
+* xcb (desktops widget)
+* xcb-wm (desktops widget)
 * alsa (volume widget)
 * libcurl (weather widget)
 * libdbus (notification daemon widget)
