@@ -6,14 +6,13 @@
 
 #define WEATHER_BUF_SIZE 512
 
-struct location_t {
+struct location {
 	char *city;
 	char *region_code;
 	char *country_code;
-	char *unit;
 };
 
-struct weather_t {
+struct weather {
 	int code;
 	double temp;
 	char *unit;

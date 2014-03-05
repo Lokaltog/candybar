@@ -1,15 +1,21 @@
 #include <glib.h>
 #include <jansson.h>
+#include <string.h>
+#include <webkit/webkit.h>
 #include <xcb/xcb_ewmh.h>
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
-typedef struct widget_data_t {
-	char *widget;
-	char *data;
-} widget_data_t;
-
-struct wkline_widget_t{
-	char *name;
+struct widget {
+	const char *name;
 	json_t *config;
+	WebKitWebView *web_view;
+	char *data;
+};
+struct widget_call {
+	void *func;
+	const char *name;
 };
 
 void *widget_battery();
@@ -19,22 +25,36 @@ void *widget_notifications();
 void *widget_now_playing_mpd();
 void *widget_volume();
 void *widget_weather();
-
-gboolean update_widget (widget_data_t *widget_data);
-
-struct widget_call {
-	void *call;
-	const char *name;
-};
+void *widget_window_title();
+gboolean update_widget (struct widget *widget);
+void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data);
 
 static const struct widget_call wkline_widgets[] = {
-	{.call = widget_battery, .name = "battery"},
-	{.call = widget_desktops, .name = "desktops"},
-	{.call = widget_external_ip, .name = "external_ip"},
-	{.call = widget_notifications, .name = "notifications"},
-	{.call = widget_now_playing_mpd, .name = "now_playing_mpd"},
-	{.call = widget_volume, .name = "volume"},
-	{.call = widget_weather, .name = "weather"}
+#ifndef DISABLE_WIDGET_BATTERY
+	{.func=widget_battery, .name="battery"},
+#endif
+#ifndef DISABLE_WIDGET_DESKTOPS
+	{.func=widget_desktops, .name="desktops"},
+#endif
+#ifndef DISABLE_WIDGET_EXTERNAL_IP
+	{.func=widget_external_ip, .name="external_ip"},
+#endif
+#ifndef DISABLE_WIDGET_NOTIFICATIONS
+	{.func=widget_notifications, .name="notifications"},
+#endif
+#ifndef DISABLE_WIDGET_NOW_PLAYING_MPD
+	{.func=widget_now_playing_mpd, .name="now_playing_mpd"},
+#endif
+#ifndef DISABLE_WIDGET_VOLUME
+	{.func=widget_volume, .name="volume"},
+#endif
+#ifndef DISABLE_WIDGET_WEATHER
+	{.func=widget_weather, .name="weather"},
+#endif
+#ifndef DISABLE_WIDGET_WINDOW_TITLE
+	{.func=widget_window_title, .name="window_title"},
+#endif
 };
 
 #define MISSING_VALUE ""
+#define LENGTH(X) (sizeof X / sizeof X[0])

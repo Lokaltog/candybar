@@ -8,15 +8,13 @@
 #include <config.h>
 #endif
 
-typedef struct wk_dimensions_t {
+struct wkline_dimensions {
 	int w;
 	int h;
-} wk_dimensions_t;
+};
 
-struct wkline_t{
-	struct wk_dimensions_t dim;
+struct wkline {
+	struct wkline_dimensions dim;
 	json_t *config;
 	const char *position;
 };
-
-#define LENGTH(X) (sizeof X / sizeof X[0])
