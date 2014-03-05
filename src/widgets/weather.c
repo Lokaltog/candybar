@@ -1,8 +1,8 @@
 #include "widgets.h"
 #include "weather.h"
 
-static struct location_t *
-get_geoip_location (struct location_t *location) {
+static struct location *
+get_geoip_location (struct location *location) {
 	json_t *location_data, *geoip_city, *geoip_region_code, *geoip_country_code;
 	json_error_t error;
 
@@ -40,13 +40,13 @@ get_geoip_location (struct location_t *location) {
 	return location;
 }
 
-static struct weather_t *
-get_weather_information (struct location_t *location) {
+static struct weather *
+get_weather_information (struct location *location) {
 	char request_uri[WEATHER_BUF_SIZE];
 	char query[WEATHER_BUF_SIZE];
 	json_t *weather_data;
 	json_error_t error;
-	struct weather_t *weather;
+	struct weather *weather;
 	CURL *curl;
 
 	weather = malloc(sizeof( weather));
@@ -100,10 +100,10 @@ get_weather_information (struct location_t *location) {
 }
 
 static int
-widget_weather_send_update (struct location_t *location) {
+widget_weather_send_update (struct widget *widget, struct location *location) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
-	struct weather_t *weather;
+	struct weather *weather;
 
 	weather = get_weather_information(location);
 	if (! weather) {
@@ -117,17 +117,16 @@ widget_weather_send_update (struct location_t *location) {
 
 	json_payload = json_dumps(json_data_object, 0);
 
-	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
-	widget_data->widget = "weather";
-	widget_data->data = json_payload;
-	g_idle_add((GSourceFunc)update_widget, widget_data);
+	widget->data = strdup(json_payload);
+	g_idle_add((GSourceFunc)update_widget, widget);
+	json_decref(json_data_object);
 
 	return 0;
 }
 
 void *
-widget_weather (struct wkline_widget_t *widget) {
-	struct location_t *location = calloc(0, sizeof(location));
+widget_weather (struct widget *widget) {
+	struct location *location = calloc(0, sizeof(location));
 
 	location->unit = strdup(json_string_value(wkline_widget_get_config(widget, "unit")));
 	location->city = strdup(json_string_value(wkline_widget_get_config(widget, "location")));
@@ -141,7 +140,7 @@ widget_weather (struct wkline_widget_t *widget) {
 	}
 
 	for (;;) {
-		widget_weather_send_update(location);
+		widget_weather_send_update(widget, location);
 
 		sleep(600);
 	}

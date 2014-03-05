@@ -5,9 +5,9 @@
 
 #define DESKTOP_MAX_LEN 10
 
-typedef struct desktop_t {
+struct desktop {
 	bool is_selected;
 	bool is_urgent;
 	bool is_valid;
 	int clients_len;
-} desktop_t;
+};

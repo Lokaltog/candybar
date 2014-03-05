@@ -2,7 +2,7 @@
 #include "external_ip.h"
 
 static int
-widget_external_ip_send_update (struct wkline_widget_t *widget) {
+widget_external_ip_send_update (struct widget *widget) {
 	char *json_payload;
 	char *external_ip;
 	json_t *json_data_object;
@@ -13,10 +13,9 @@ widget_external_ip_send_update (struct wkline_widget_t *widget) {
 
 	json_payload = json_dumps(json_data_object, 0);
 
-	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
-	widget_data->widget = "external_ip";
-	widget_data->data = json_payload;
-	g_idle_add((GSourceFunc)update_widget, widget_data);
+	widget->data = strdup(json_payload);
+	g_idle_add((GSourceFunc)update_widget, widget);
+	json_decref(json_data_object);
 
 	free(external_ip);
 
@@ -24,7 +23,7 @@ widget_external_ip_send_update (struct wkline_widget_t *widget) {
 }
 
 void *
-widget_external_ip (struct wkline_widget_t *widget) {
+widget_external_ip (struct widget *widget) {
 	for (;;) {
 		widget_external_ip_send_update(widget);
 

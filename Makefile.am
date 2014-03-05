@@ -3,6 +3,7 @@ wkline_SOURCES = \
 	util/log.c \
 	util/load_config.c \
 	src/wkline.c \
+	src/widgets/widgets.c \
 	src/widgets/desktops.c
 
 wkline_LDADD = \

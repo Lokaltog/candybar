@@ -4,7 +4,7 @@
 xcb_window_t cur_win = 0;
 xcb_ewmh_connection_t *ewmh;
 int screen_nbr;
-desktop_t *desktops;
+struct desktop *desktops;
 char window_title[BUFSIZ];
 
 void
@@ -30,13 +30,13 @@ copy_prop (char *dest, char *src, int len, int idx, int num_itm)
 }
 
 static void
-desktops_send_update () {
+desktops_send_update (struct widget *widget) {
 	unsigned short i;
 	uint32_t desktop_curr, desktop_len, client_desktop;
 	xcb_ewmh_get_windows_reply_t clients;
 	xcb_icccm_wm_hints_t window_hints;
 
-	desktops = calloc(DESKTOP_MAX_LEN, sizeof(desktop_t));
+	desktops = calloc(DESKTOP_MAX_LEN, sizeof(struct desktop));
 
 	// get current desktop
 	if (! xcb_ewmh_get_current_desktop_reply(ewmh, xcb_ewmh_get_current_desktop_unchecked(ewmh, screen_nbr), &desktop_curr, NULL)) {
@@ -104,16 +104,15 @@ desktops_send_update () {
 
 	json_payload = json_dumps(json_data_object, 0);
 
-	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
-	widget_data->widget = "desktops";
-	widget_data->data = json_payload;
-	g_idle_add((GSourceFunc)update_widget, widget_data);
+	widget->data = strdup(json_payload);
+	g_idle_add((GSourceFunc)update_widget, widget);
+	json_decref(json_data_object);
 
 	free(desktops);
 }
 
 static void
-window_title_send_update () {
+window_title_send_update (struct widget *widget) {
 	xcb_window_t win;
 	xcb_ewmh_get_utf8_strings_reply_t ewmh_txt_prop;
 	xcb_icccm_get_text_property_reply_t icccm_txt_prop;
@@ -154,14 +153,13 @@ window_title_send_update () {
 
 	json_payload = json_dumps(json_data_object, 0);
 
-	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
-	widget_data->widget = "window_title";
-	widget_data->data = json_payload;
-	g_idle_add((GSourceFunc)update_widget, widget_data);
+	widget->data = strdup(json_payload);
+	g_idle_add((GSourceFunc)update_widget, widget);
+	json_decref(json_data_object);
 }
 
 void *
-widget_desktops () {
+widget_desktops (struct widget *widget) {
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	if (xcb_connection_has_error(conn)) {
 		wklog("Could not connect to display %s.", getenv("DISPLAY"));
@@ -186,8 +184,8 @@ widget_desktops () {
 		return 0;
 	}
 
-	desktops_send_update();
-	window_title_send_update();
+	desktops_send_update(widget);
+	window_title_send_update(widget);
 
 	for (;;) {
 		while ((evt = xcb_wait_for_event(ewmh->connection)) != NULL) {
@@ -196,19 +194,19 @@ widget_desktops () {
 			case XCB_PROPERTY_NOTIFY:
 				pne = (xcb_property_notify_event_t *) evt;
 				if (pne->atom == ewmh->_NET_DESKTOP_NAMES) {
-					desktops_send_update();
+					desktops_send_update(widget);
 				}
 				else if (pne->atom == ewmh->_NET_ACTIVE_WINDOW) {
-					window_title_send_update();
+					window_title_send_update(widget);
 				}
 				else if (pne->window != ewmh->screens[screen_nbr]->root && (pne->atom == ewmh->_NET_WM_NAME || pne->atom == XCB_ATOM_WM_NAME)) {
-					window_title_send_update();
+					window_title_send_update(widget);
 				}
 				else if (pne->atom == ewmh->_NET_NUMBER_OF_DESKTOPS) {
-					desktops_send_update();
+					desktops_send_update(widget);
 				}
 				else if (pne->atom == ewmh->_NET_CURRENT_DESKTOP) {
-					desktops_send_update();
+					desktops_send_update(widget);
 				}
 			default:
 				break;
