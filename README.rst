@@ -24,10 +24,10 @@ Dependencies:
 
 Optional dependencies:
 
-* xcb (desktops widget)
-* xcb-wm (desktops widget)
+* xcb (desktops/window title widgets)
+* xcb-wm (desktops/window title widgets)
 * alsa (volume widget)
-* libcurl (weather widget)
+* libcurl (weather/remote IP widgets)
 * libdbus (notification daemon widget)
 * libmpdclient (now playing/mpd widget)
 
