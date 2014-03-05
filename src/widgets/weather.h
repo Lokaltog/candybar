@@ -1,6 +1,3 @@
-#include <glib.h>
-#include <string.h>
-
 #include "util/curl.h"
 #include "util/load_config.h"
 

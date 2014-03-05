@@ -1,4 +1,3 @@
-#include <glib.h>
 #include <jansson.h>
 #include <string.h>
 #include <webkit/webkit.h>
