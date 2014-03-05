@@ -1,0 +1,39 @@
+{
+	"height": 26,
+	"position": "top",
+	"theme_uri": "http://lokaltog.github.io/wkline-default-theme/",
+	"background": "#111",
+	"monitor": 0,
+	"widgets": {
+		"Desktops" : 
+		{
+			"names": ["I", "II", "III", "IV", "V"]
+		},
+		"NowPlayingMpd" : 
+		{
+			"update_interval": 1000,
+			"host": "localhost",
+			"port": 6060
+		},
+		"Volume" : {
+			"card": "default",
+			"selem": "Master"
+		},
+		"Weather" : 
+		{
+			"location": "",
+			"unit": "c"
+		},
+		"ExternalIp" : {
+			"address": "http://ipv4.icanhazip.com/"
+		},
+		"Battery" : {
+			"name": "BAT0"
+		},
+		"Datetime" : {
+			"update_interval": 1000,
+			"date_format": "DDDD-MM-YY",
+			"time_format": "HH:mm:ss"
+		}
+	}
+}
