@@ -7,6 +7,7 @@ AC_ARG_WITH([alsa], AS_HELP_STRING([--without-alsa], [compile without alsa suppo
 AC_ARG_WITH([curl], AS_HELP_STRING([--without-curl], [compile without libcurl support]))
 AC_ARG_WITH([dbus], AS_HELP_STRING([--without-dbus], [compile without dbus-glib support]))
 AC_ARG_WITH([mpd], AS_HELP_STRING([--without-mpd], [compile without libmpdclient support]))
+AC_ARG_WITH([xcb], AS_HELP_STRING([--without-xcb], [compile without xcb support]))
 
 AS_IF([test "x$with_alsa" != "xno"],
       [PKG_CHECK_MODULES([ALSA], [alsa], [have_alsa=yes], [have_alsa=no])],
@@ -41,22 +42,29 @@ AS_IF([test "x$have_libmpdclient" = "xyes"], [], [
       AS_IF([test "x$with_mpd" = "xyes"], [AC_MSG_ERROR([libmpdclient requested but not found])])
       ])
 
+AS_IF([test "x$with_xcb" != "xno"],
+      [PKG_CHECK_MODULES([XCB], [xcb-util xcb-ewmh xcb-icccm], [have_xcb=yes], [have_xcb=no])],
+      [have_xcb=no])
+AS_IF([test "x$have_xcb" = "xyes"], [], [
+      AC_DEFINE([DISABLE_WIDGET_DESKTOPS], [], [disable xcb])
+      AC_DEFINE([DISABLE_WIDGET_WINDOW_TITLE], [], [disable xcb])
+      AS_IF([test "x$with_xcb" = "xyes"], [AC_MSG_ERROR([xcb requested but not found])])
+      ])
+
 AM_CONDITIONAL([HAVE_ALSA], [test "x$have_alsa" = "xyes"])
 AM_CONDITIONAL([HAVE_LIBCURL], [test "x$have_libcurl" = "xyes"])
 AM_CONDITIONAL([HAVE_DBUS], [test "x$have_dbus" = "xyes"])
 AM_CONDITIONAL([HAVE_LIBMPDCLIENT], [test "x$have_libmpdclient" = "xyes"])
+AM_CONDITIONAL([HAVE_XCB], [test "x$have_xcb" = "xyes"])
 
 # Remove if you wish to see full compiler command lines
 AM_SILENT_RULES([yes])
 
 # Request dependencies via pkg-config
-# Access the variables via GTK3_CFLAGS and GTK3_LIBS
+# Access the variables via *_CFLAGS and *_LIBS
 PKG_CHECK_MODULES([GTK3], [gtk+-3.0])
 PKG_CHECK_MODULES([WEBKIT], [webkitgtk-3.0])
-PKG_CHECK_MODULES([XCB], [xcb-util xcb-ewmh xcb-icccm])
-PKG_CHECK_MODULES([JSON_GLIB], [jansson])
+PKG_CHECK_MODULES([JSON], [jansson])
 
-AC_CONFIG_FILES([
- Makefile
-])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

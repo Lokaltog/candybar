@@ -21,13 +21,13 @@ Dependencies:
 * gtk+ 3
 * jansson
 * webkitgtk+
-* xcb
-* xcb-wm
 
 Optional dependencies:
 
+* xcb (desktops/window title widgets)
+* xcb-wm (desktops/window title widgets)
 * alsa (volume widget)
-* libcurl (weather widget)
+* libcurl (weather/remote IP widgets)
 * libdbus (notification daemon widget)
 * libmpdclient (now playing/mpd widget)
 

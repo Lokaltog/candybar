@@ -4,27 +4,23 @@ wkline_SOURCES = \
 	util/log.c \
 	util/load_config.c \
 	src/wkline.c \
-	src/widgets/widgets.c \
-	src/widgets/desktops.c \
-	src/widgets/window_title.c
+	src/widgets/widgets.c
 
 wkline_LDADD = \
 	$(GTK3_LIBS) \
 	$(WEBKIT_LIBS) \
-	$(XCB_LIBS) \
-	$(JSON_GLIB_LIBS)
+	$(JSON_LIBS)
 
 wkline_CFLAGS = \
 	$(GTK3_CFLAGS) \
 	$(WEBKIT_CFLAGS) \
-	$(XCB_CFLAGS) \
-	$(JSON_GLIB_CFLAGS) \
+	$(JSON_CFLAGS) \
 	$(AM_CFLAGS)
 
-if HAVE_LIBMPDCLIENT
-wkline_SOURCES += src/widgets/now_playing_mpd.c
-wkline_LDADD += $(MPD_LIBS)
-wkline_CFLAGS += $(MPD_CFLAGS)
+if HAVE_ALSA
+wkline_SOURCES += src/widgets/volume.c
+wkline_LDADD += $(ALSA_LIBS)
+wkline_CFLAGS += $(ALSA_CFLAGS)
 endif
 if HAVE_LIBCURL
 wkline_SOURCES += \
@@ -42,10 +38,17 @@ wkline_SOURCES += \
 wkline_LDADD += $(DBUS_LIBS)
 wkline_CFLAGS += $(DBUS_CFLAGS)
 endif
-if HAVE_ALSA
-wkline_SOURCES += src/widgets/volume.c
-wkline_LDADD += $(ALSA_LIBS)
-wkline_CFLAGS += $(ALSA_CFLAGS)
+if HAVE_LIBMPDCLIENT
+wkline_SOURCES += src/widgets/now_playing_mpd.c
+wkline_LDADD += $(MPD_LIBS)
+wkline_CFLAGS += $(MPD_CFLAGS)
+endif
+if HAVE_XCB
+wkline_SOURCES += \
+	src/widgets/desktops.c \
+	src/widgets/window_title.c
+wkline_LDADD += $(XCB_LIBS)
+wkline_CFLAGS += $(XCB_CFLAGS)
 endif
 
 dist_doc_DATA = README.rst
