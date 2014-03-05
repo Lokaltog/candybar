@@ -1,0 +1,18 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+  <h1>Extending JavaScript with WebKit. externalIp class.</h1>
+  <script type="text/javascript">
+    document.write("IP: " + externalIp.get_address() + "<br>");
+    //document.write("Song: " + NowPlaying.get_song() + "<br>");
+    var display = function () {
+    document.write("Volume: " + Volume.get_volume() + "<br>");
+    }
+    var volume = new Volume();
+    volume.onChange = display;
+    display();
+  </script>
+</body>
+</html>
