@@ -2,6 +2,7 @@ bin_PROGRAMS = wkline
 wkline_SOURCES = \
 	util/log.c \
 	src/wkline.c \
+	src/widgets/widgets.c \
 	src/widgets/desktops.c
 
 wkline_LDADD = \
