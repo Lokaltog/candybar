@@ -8,12 +8,13 @@ get_geoip_location (struct location *location) {
 
 	char *geoip_raw_json = wkline_curl_request("http://freegeoip.net/json/");
 	location_data = json_loads(geoip_raw_json, 0, &error);
-	free(geoip_raw_json);
 
 	if (! location_data) {
 		wklog("error while fetching GeoIP data");
 		return NULL;
 	}
+
+	free(geoip_raw_json);
 
 	geoip_city = json_object_get(location_data, "city");
 	if (! json_is_string(geoip_city)) {
@@ -46,10 +47,8 @@ get_weather_information (struct location *location) {
 	char query[WEATHER_BUF_SIZE];
 	json_t *weather_data;
 	json_error_t error;
-	struct weather *weather;
+	struct weather *weather = calloc(0, sizeof(struct weather));
 	CURL *curl;
-
-	weather = malloc(sizeof( weather));
 
 	curl = curl_easy_init();
 	sprintf(query,
@@ -64,12 +63,13 @@ get_weather_information (struct location *location) {
 
 	char *weather_raw_json = wkline_curl_request(request_uri);
 	weather_data = json_loads(weather_raw_json, 0, &error);
-	free(weather_raw_json);
 
 	if (! weather_data) {
 		free(weather);
 		return NULL;
 	}
+
+	free(weather_raw_json);
 
 	json_t *tmp_obj, *weather_code, *weather_temp;
 	tmp_obj = json_object_get(weather_data, "query");
@@ -90,9 +90,15 @@ get_weather_information (struct location *location) {
 	weather_code = json_object_get(tmp_obj, "code");
 	weather_temp = json_object_get(tmp_obj, "temp");
 
+	if (! json_is_string(weather_code) || ! json_is_string(weather_temp)) {
+		json_decref(weather_data);
+		free(weather);
+		wklog("weather: invalid weather query result (weather code or temp missing)");
+		return NULL;
+	}
+
 	sscanf(json_string_value(weather_code), "%u", &weather->code);
 	sscanf(json_string_value(weather_temp), "%lf", &weather->temp);
-	weather->unit = location->unit;
 
 	json_decref(weather_data);
 
@@ -113,13 +119,14 @@ widget_weather_send_update (struct widget *widget, struct location *location) {
 
 	json_object_set_new(json_data_object, "icon", json_integer(weather->code));
 	json_object_set_new(json_data_object, "temp", json_real(weather->temp));
-	json_object_set_new(json_data_object, "unit", json_string(weather->unit));
+	json_object_set_new(json_data_object, "unit", json_string(json_string_value(wkline_widget_get_config(widget, "unit"))));
 
 	json_payload = json_dumps(json_data_object, 0);
 
 	widget->data = strdup(json_payload);
 	g_idle_add((GSourceFunc)update_widget, widget);
 	json_decref(json_data_object);
+	free(weather);
 
 	return 0;
 }
@@ -128,7 +135,6 @@ void *
 widget_weather (struct widget *widget) {
 	struct location *location = calloc(0, sizeof(location));
 
-	location->unit = strdup(json_string_value(wkline_widget_get_config(widget, "unit")));
 	location->city = strdup(json_string_value(wkline_widget_get_config(widget, "location")));
 	if (location->city[0] == '\0') {
 		location = get_geoip_location(location);
@@ -145,7 +151,6 @@ widget_weather (struct widget *widget) {
 		sleep(600);
 	}
 
-	free(location->unit);
 	free(location->city);
 	free(location->region_code);
 	free(location->country_code);
