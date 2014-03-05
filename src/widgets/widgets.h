@@ -2,7 +2,7 @@
 #include <jansson.h>
 #include <string.h>
 #include <webkit/webkit.h>
-#include <xcb/xcb_ewmh.h>
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
