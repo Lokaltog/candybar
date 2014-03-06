@@ -1,8 +1,6 @@
 #include <glib.h>
 #include <jansson.h>
 
-#include "config.h"
-
 struct wkline;
 struct widget;
 
