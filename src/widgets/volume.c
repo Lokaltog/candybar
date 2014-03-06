@@ -12,7 +12,7 @@ struct volume_data{
 	snd_mixer_elem_t *elem;
 	snd_mixer_t *mixer;
 	RefContextObject *ref;
-	int volume;
+	int running;
 };
 
 static void call_on_change(RefContextObject *ref) {
@@ -36,15 +36,13 @@ static void call_on_change(RefContextObject *ref) {
 											NULL); // A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception.
 }
 
-
 void
 thread_wait_mixer_change(void *user_data){
 	struct volume_data *widget = user_data;
 	snd_mixer_selem_id_t *sid;
 	struct pollfd *pollfds = NULL;
-	int nfds = 0, n, err, wait_err,  muted;
+	int nfds = 0, n, err, wait_err;
 	unsigned short revents;
-	long volume_min, volume_max, volume;
 
 	while(1){
 		// Code mostly from the alsamixer main loop
@@ -92,12 +90,15 @@ thread_wait_mixer_change(void *user_data){
 				snd_mixer_handle_events(widget->mixer);
 			}
 		}
-		snd_mixer_selem_get_playback_volume_range(widget->elem, &volume_min, &volume_max);
-		snd_mixer_selem_get_playback_volume(widget->elem, SND_MIXER_SCHN_FRONT_LEFT, &volume);
-		snd_mixer_selem_get_playback_switch(widget->elem, SND_MIXER_SCHN_FRONT_LEFT , &muted);
-		volume *= muted; /* if muted set volume to 0 */
-		widget->volume = 100 * (volume - volume_min) / (volume_max - volume_min);
-		call_on_change(widget->ref);
+		if(widget->running)
+			call_on_change(widget->ref);
+		else{
+			free(pollfds);
+			snd_mixer_close(widget->mixer);
+			free(widget);
+			g_thread_exit(NULL);
+		}
+
 	}
 }
 
@@ -105,11 +106,13 @@ thread_wait_mixer_change(void *user_data){
 static void widget_init_cb(JSContextRef ctx,
                             JSObjectRef object)
 {
-	struct volume_data *widget = JSObjectGetPrivate(object);
+	struct volume_data *widget;
 	snd_mixer_selem_id_t *sid;
-	struct pollfd *pollfds = NULL;
-	int nfds = 0, n, err, wait_err;
-	unsigned short revents;
+
+	printf("Class Init\n");
+
+	widget = calloc(1, sizeof( *widget));
+	JSObjectSetPrivate(object,widget);
 
 	widget->ref = g_new(RefContextObject, 1);
 	widget->ref->context = ctx;
@@ -126,6 +129,7 @@ static void widget_init_cb(JSContextRef ctx,
 	snd_mixer_selem_id_set_name(sid, wkline_widget_volume_selem);
 	widget->elem = snd_mixer_find_selem(widget->mixer, sid);
 
+	widget->running = 1;
 	g_thread_new("widget", (GThreadFunc)thread_wait_mixer_change, widget);
 }
 
@@ -133,9 +137,7 @@ static void widget_init_cb(JSContextRef ctx,
 static void widget_destroy_cb(JSObjectRef object)
 {
 	struct volume_data *widget = JSObjectGetPrivate(object);
-	//free(pollfds);
-	//snd_mixer_close(widget->mixer);
-	//free(widget);
+	widget->running = 0;
 }
 
 static JSValueRef get_volume(JSContextRef context,
@@ -146,8 +148,17 @@ static JSValueRef get_volume(JSContextRef context,
 									JSValueRef *exception)
 {
 	struct volume_data *widget = JSObjectGetPrivate(thisObject);
-	printf("%d\n", widget->volume);
-	return JSValueMakeNumber(context, widget->volume);
+	long volume_min, volume_max, volume;
+	int muted;
+	if (argumentCount == 0) {
+		snd_mixer_selem_get_playback_volume_range(widget->elem, &volume_min, &volume_max);
+		snd_mixer_selem_get_playback_volume(widget->elem, SND_MIXER_SCHN_FRONT_LEFT, &volume);
+		snd_mixer_selem_get_playback_switch(widget->elem, SND_MIXER_SCHN_FRONT_LEFT , &muted);
+		volume *= muted; /* if muted set volume to 0 */
+		printf("get_volume: %d\n", 100 * (volume - volume_min) / (volume_max - volume_min));
+		return JSValueMakeNumber(context, 100 * (volume - volume_min) / (volume_max - volume_min));
+	}
+	return JSValueMakeUndefined(context);
 }
 
 /* Class constructor */
@@ -195,11 +206,9 @@ void add_class_volume(WebKitWebView  *web_view,
 							gpointer window_object,
 							gpointer user_data)
 {
-	struct volume_data *widget;
-	widget = calloc(0, sizeof widget);
 	/* Add classes to JavaScriptCore */
 	JSClassRef classDef = JSClassCreate(&notification_def);
-	JSObjectRef classObj = JSObjectMake(context, classDef, widget);
+	JSObjectRef classObj = JSObjectMake(context, classDef, NULL);
 	JSObjectRef globalObj = JSContextGetGlobalObject(context);
 	JSStringRef str = JSStringCreateWithUTF8CString("Volume");
 	JSObjectSetProperty(context, globalObj, str, classObj, kJSPropertyAttributeNone, NULL);

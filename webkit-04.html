@@ -4,11 +4,14 @@
 </head>
 <body>
   <h1>Extending JavaScript with WebKit. externalIp class.</h1>
+  <div id="volume-control"></div>
   <script type="text/javascript">
     document.write("IP: " + externalIp.get_address() + "<br>");
     //document.write("Song: " + NowPlaying.get_song() + "<br>");
     var display = function () {
-    document.write("Volume: " + Volume.get_volume() + "<br>");
+    	var div = document.getElementById("volume-control");
+    	var volume_control = "Volume: " + volume.get_volume() + "<br>";
+    	div.innerHTML = volume_control;
     }
     var volume = new Volume();
     volume.onChange = display;
