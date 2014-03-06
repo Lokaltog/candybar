@@ -1,5 +1,5 @@
 #include "widgets.h"
-#include "../wkline.h" // required for struct wkline
+#include "../wkline.h" /* required for struct wkline */
 
 GThread *widget_threads[LENGTH(wkline_widgets)];
 
@@ -9,13 +9,14 @@ update_widget (struct widget *widget) {
 	int script_length = 0;
 	char *script;
 
-	// Get the length of the script payload.
+	/* Get the length of the script payload. */
 	script_length = snprintf(NULL,
 	                         0,
 	                         script_template,
 	                         widget->name,
 	                         widget->data);
-	// Add 1 for \0
+
+	/* Add 1 for \0 */
 	script = malloc(script_length + 1);
 
 #ifdef DEBUG_JSON
@@ -26,7 +27,7 @@ update_widget (struct widget *widget) {
 	webkit_web_view_execute_script(widget->web_view, script);
 	free(script);
 
-	return FALSE; // only run once
+	return FALSE; /* only run once */
 }
 
 void
@@ -36,13 +37,15 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 
 	wklog("webkit: window object cleared");
 	for (i = 0; i < LENGTH(wkline_widgets); i++) {
-		// FIXME this is pretty bad, it should probably join and recreate the threads instead
-		if (! widget_threads[i]) {
+		/* FIXME this is pretty bad, it should probably join and
+		   recreate the threads instead */
+		if (!widget_threads[i]) {
 			struct widget *widget = malloc(sizeof(struct widget));
 
 			widget->config = wkline->config;
 			widget->web_view = web_view;
-			// Dont forget to free this one
+
+			/* Dont forget to free this one */
 			widget->name = strdup(wkline_widgets[i].name);
 
 			wklog("creating thread for widget '%s'", wkline_widgets[i].name);

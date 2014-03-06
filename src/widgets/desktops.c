@@ -9,15 +9,17 @@ desktops_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int sc
 	xcb_icccm_wm_hints_t window_hints;
 	struct desktop *desktops = calloc(DESKTOP_MAX_LEN, sizeof(struct desktop));
 
-	// get current desktop
-	if (! xcb_ewmh_get_current_desktop_reply(ewmh, xcb_ewmh_get_current_desktop_unchecked(ewmh, screen_nbr), &desktop_curr, NULL)) {
+	/* get current desktop */
+	if (!xcb_ewmh_get_current_desktop_reply(ewmh, xcb_ewmh_get_current_desktop_unchecked(ewmh, screen_nbr), &desktop_curr, NULL)) {
 		wklog("ewmh: could not get current desktop");
+
 		return;
 	}
 
-	// get desktop count
-	if (! xcb_ewmh_get_number_of_desktops_reply(ewmh, xcb_ewmh_get_number_of_desktops_unchecked(ewmh, screen_nbr), &desktop_len, NULL)) {
+	/* get desktop count */
+	if (!xcb_ewmh_get_number_of_desktops_reply(ewmh, xcb_ewmh_get_number_of_desktops_unchecked(ewmh, screen_nbr), &desktop_len, NULL)) {
 		wklog("ewmh: could not get desktop count");
+
 		return;
 	}
 
@@ -28,21 +30,22 @@ desktops_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int sc
 		desktops[i].clients_len = 0;
 	}
 
-	// get clients
-	if (! xcb_ewmh_get_client_list_reply(ewmh, xcb_ewmh_get_client_list_unchecked(ewmh, screen_nbr), &clients, NULL)) {
+	/* get clients */
+	if (!xcb_ewmh_get_client_list_reply(ewmh, xcb_ewmh_get_client_list_unchecked(ewmh, screen_nbr), &clients, NULL)) {
 		wklog("ewmh: could not get client list");
+
 		return;
 	}
 
 	for (i = 0; i < clients.windows_len; i++) {
-		if (! xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop_unchecked(ewmh, clients.windows[i]), &client_desktop, NULL)) {
-			// window isn't associated with a desktop
+		if (!xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop_unchecked(ewmh, clients.windows[i]), &client_desktop, NULL)) {
+			/* window isn't associated with a desktop */
 			continue;
 		}
 		desktops[client_desktop].clients_len++;
 
-		// check icccm urgency hint on client
-		if (! xcb_icccm_get_wm_hints_reply(ewmh->connection, xcb_icccm_get_wm_hints_unchecked(ewmh->connection, clients.windows[i]), &window_hints, NULL)) {
+		/* check icccm urgency hint on client */
+		if (!xcb_icccm_get_wm_hints_reply(ewmh->connection, xcb_icccm_get_wm_hints_unchecked(ewmh->connection, clients.windows[i]), &window_hints, NULL)) {
 			wklog("icccm: could not get window hints");
 		}
 		if (window_hints.flags & XCB_ICCCM_WM_HINT_X_URGENCY) {
@@ -57,7 +60,7 @@ desktops_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int sc
 	char *json_payload;
 
 	for (i = 0; i < DESKTOP_MAX_LEN; i++) {
-		if (! desktops[i].is_valid) {
+		if (!desktops[i].is_valid) {
 			continue;
 		}
 
@@ -82,20 +85,21 @@ desktops_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int sc
 	free(desktops);
 }
 
-void *
+void*
 widget_desktops (struct widget *widget) {
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	if (xcb_connection_has_error(conn)) {
 		wklog("Could not connect to display %s.", getenv("DISPLAY"));
+
 		return 0;
 	}
 
-	int screen_nbr = 0; // FIXME load from config
+	int screen_nbr = 0; /* FIXME load from config */
 	xcb_ewmh_connection_t *ewmh = malloc(sizeof(xcb_ewmh_connection_t));
 	xcb_intern_atom_cookie_t *ewmh_cookie = xcb_ewmh_init_atoms(conn, ewmh);
 	xcb_ewmh_init_atoms_replies(ewmh, ewmh_cookie, NULL);
 
-	uint32_t values[] = {XCB_EVENT_MASK_PROPERTY_CHANGE};
+	uint32_t values[] = { XCB_EVENT_MASK_PROPERTY_CHANGE };
 	xcb_generic_event_t *evt;
 	xcb_generic_error_t *err = xcb_request_check(ewmh->connection,
 	                                             xcb_change_window_attributes_checked(ewmh->connection,
@@ -105,6 +109,7 @@ widget_desktops (struct widget *widget) {
 
 	if (err != NULL) {
 		wklog("desktops: could not request EWMH property change notifications");
+
 		return 0;
 	}
 
@@ -115,7 +120,7 @@ widget_desktops (struct widget *widget) {
 			xcb_property_notify_event_t *pne;
 			switch (XCB_EVENT_RESPONSE_TYPE(evt)) {
 			case XCB_PROPERTY_NOTIFY:
-				pne = (xcb_property_notify_event_t *) evt;
+				pne = (xcb_property_notify_event_t*)evt;
 				if (pne->atom == ewmh->_NET_DESKTOP_NAMES) {
 					desktops_send_update(widget, ewmh, screen_nbr);
 				}
@@ -133,5 +138,6 @@ widget_desktops (struct widget *widget) {
 	}
 
 	xcb_ewmh_connection_wipe(ewmh);
+
 	return 0;
 }

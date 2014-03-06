@@ -1,7 +1,7 @@
 #include "widgets.h"
 #include "weather.h"
 
-static struct location *
+static struct location*
 get_geoip_location (struct location *location) {
 	json_t *location_data, *geoip_city, *geoip_region_code, *geoip_country_code;
 	json_error_t error;
@@ -9,26 +9,30 @@ get_geoip_location (struct location *location) {
 	char *geoip_raw_json = wkline_curl_request("http://freegeoip.net/json/");
 	location_data = json_loads(geoip_raw_json, 0, &error);
 
-	if (! location_data) {
+	if (!location_data) {
 		wklog("error while fetching GeoIP data");
+
 		return NULL;
 	}
 
 	free(geoip_raw_json);
 
 	geoip_city = json_object_get(location_data, "city");
-	if (! json_is_string(geoip_city)) {
+	if (!json_is_string(geoip_city)) {
 		wklog("received GeoIP city is not a string");
+
 		return NULL;
 	}
 	geoip_region_code = json_object_get(location_data, "region_code");
-	if (! json_is_string(geoip_region_code)) {
+	if (!json_is_string(geoip_region_code)) {
 		wklog("received GeoIP region code is not a string");
+
 		return NULL;
 	}
 	geoip_country_code = json_object_get(location_data, "country_code");
-	if (! json_is_string(geoip_country_code)) {
+	if (!json_is_string(geoip_country_code)) {
 		wklog("received GeoIP country code is not a string");
+
 		return NULL;
 	}
 
@@ -41,7 +45,7 @@ get_geoip_location (struct location *location) {
 	return location;
 }
 
-static struct weather *
+static struct weather*
 get_weather_information (struct location *location) {
 	char request_uri[WEATHER_BUF_SIZE];
 	char query[WEATHER_BUF_SIZE];
@@ -64,8 +68,9 @@ get_weather_information (struct location *location) {
 	char *weather_raw_json = wkline_curl_request(request_uri);
 	weather_data = json_loads(weather_raw_json, 0, &error);
 
-	if (! weather_data) {
+	if (!weather_data) {
 		free(weather);
+
 		return NULL;
 	}
 
@@ -73,27 +78,42 @@ get_weather_information (struct location *location) {
 
 	json_t *tmp_obj, *weather_code, *weather_temp;
 	tmp_obj = json_object_get(weather_data, "query");
-	if (! json_is_object(tmp_obj)) return NULL;
+	if (!json_is_object(tmp_obj)) {
+		return NULL;
+	}
 	tmp_obj = json_object_get(tmp_obj, "results");
-	if (! json_is_object(tmp_obj)) return NULL;
+	if (!json_is_object(tmp_obj)) {
+		return NULL;
+	}
 	tmp_obj = json_object_get(tmp_obj, "weather");
-	if (! json_is_object(tmp_obj)) return NULL;
+	if (!json_is_object(tmp_obj)) {
+		return NULL;
+	}
 	tmp_obj = json_object_get(tmp_obj, "rss");
-	if (! json_is_object(tmp_obj)) return NULL;
+	if (!json_is_object(tmp_obj)) {
+		return NULL;
+	}
 	tmp_obj = json_object_get(tmp_obj, "channel");
-	if (! json_is_object(tmp_obj)) return NULL;
+	if (!json_is_object(tmp_obj)) {
+		return NULL;
+	}
 	tmp_obj = json_object_get(tmp_obj, "item");
-	if (! json_is_object(tmp_obj)) return NULL;
+	if (!json_is_object(tmp_obj)) {
+		return NULL;
+	}
 	tmp_obj = json_object_get(tmp_obj, "condition");
-	if (! json_is_object(tmp_obj)) return NULL;
+	if (!json_is_object(tmp_obj)) {
+		return NULL;
+	}
 
 	weather_code = json_object_get(tmp_obj, "code");
 	weather_temp = json_object_get(tmp_obj, "temp");
 
-	if (! json_is_string(weather_code) || ! json_is_string(weather_temp)) {
+	if (!json_is_string(weather_code) || !json_is_string(weather_temp)) {
 		json_decref(weather_data);
 		free(weather);
 		wklog("weather: invalid weather query result (weather code or temp missing)");
+
 		return NULL;
 	}
 
@@ -112,8 +132,9 @@ widget_weather_send_update (struct widget *widget, struct location *location) {
 	struct weather *weather;
 
 	weather = get_weather_information(location);
-	if (! weather) {
+	if (!weather) {
 		wklog("error while fetching weather data");
+
 		return -1;
 	}
 
@@ -131,7 +152,7 @@ widget_weather_send_update (struct widget *widget, struct location *location) {
 	return 0;
 }
 
-void *
+void*
 widget_weather (struct widget *widget) {
 	struct location *location = calloc(1, sizeof(location));
 
@@ -139,9 +160,10 @@ widget_weather (struct widget *widget) {
 	if (location->city[0] == '\0') {
 		location = get_geoip_location(location);
 	}
-	if (! location) {
+	if (!location) {
 		wklog("could not get GeoIP location, consider setting the location manually in config.h");
 		free(location);
+
 		return 0;
 	}
 
@@ -155,5 +177,6 @@ widget_weather (struct widget *widget) {
 	free(location->region_code);
 	free(location->country_code);
 	free(location);
+
 	return 0;
 }

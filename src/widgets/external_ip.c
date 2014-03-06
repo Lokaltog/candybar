@@ -22,7 +22,7 @@ widget_external_ip_send_update (struct widget *widget) {
 	return 0;
 }
 
-void *
+void*
 widget_external_ip (struct widget *widget) {
 	for (;;) {
 		widget_external_ip_send_update(widget);

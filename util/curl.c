@@ -4,10 +4,11 @@
 
 size_t
 wkline_curl_write_response (void *ptr, size_t size, size_t nmemb, void *stream) {
-	write_result_t *result = (write_result_t *)stream;
+	write_result_t *result = (write_result_t*)stream;
 
 	if (result->pos + size * nmemb >= CURL_BUF_SIZE - 1) {
 		wklog("curl: too small buffer");
+
 		return 0;
 	}
 
@@ -17,8 +18,8 @@ wkline_curl_write_response (void *ptr, size_t size, size_t nmemb, void *stream) 
 	return size * nmemb;
 }
 
-char
-*wkline_curl_request (const char *url) {
+char*
+wkline_curl_request (const char *url) {
 	CURL *curl;
 	CURLcode status;
 	char *data;
@@ -26,7 +27,7 @@ char
 
 	curl = curl_easy_init();
 	data = malloc(CURL_BUF_SIZE);
-	if (! curl || ! data) {
+	if (!curl || !data) {
 		return NULL;
 	}
 
@@ -42,12 +43,14 @@ char
 	status = curl_easy_perform(curl);
 	if (status != 0) {
 		wklog("curl: unable to request data from %s:\n%s", url, curl_easy_strerror(status));
+
 		return NULL;
 	}
 
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
 	if (code != 200) {
 		wklog("curl: server responded with code %ld", code);
+
 		return NULL;
 	}
 
