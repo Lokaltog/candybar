@@ -13,7 +13,8 @@ widget_battery_send_update (struct widget *widget, DBusGProxy *properties_proxy,
 	proxy_int64_value(&time_to_empty64, properties_proxy, pathbuf, "TimeToEmpty");
 	proxy_int64_value(&time_to_full64, properties_proxy, pathbuf, "TimeToFull");
 
-	// jansson fails with 64-bit integers, but the time left on the battery should fit in a 32-bit integer
+	/* jansson fails with 64-bit integers, but the time left on the battery
+	   should fit in a 32-bit integer */
 	unsigned int time_to_empty = time_to_empty64 & 0xffffffff;
 	unsigned int time_to_full = time_to_full64 & 0xffffffff;
 
@@ -34,7 +35,7 @@ widget_battery_send_update (struct widget *widget, DBusGProxy *properties_proxy,
 	return 0;
 }
 
-void *
+void*
 widget_battery (struct widget *widget) {
 	DBusGConnection *conn;
 	DBusGProxy *proxy;
@@ -49,6 +50,7 @@ widget_battery (struct widget *widget) {
 	if (conn == NULL) {
 		wklog("dbus: failed to open connection to bus: %s\n", error->message);
 		g_error_free(error);
+
 		return;
 	}
 
@@ -57,21 +59,23 @@ widget_battery (struct widget *widget) {
 	                                       pathbuf,
 	                                       "org.freedesktop.UPower.Device.Properties")) == NULL) {
 		wklog("dbus: failed to create proxy object");
+
 		return;
 	}
-
 
 	if ((properties_proxy = dbus_g_proxy_new_from_proxy(proxy,
 	                                                    "org.freedesktop.DBus.Properties",
 	                                                    dbus_g_proxy_get_path(proxy))) == NULL) {
 		g_object_unref(proxy);
 		wklog("dbus: failed to create proxy object");
+
 		return;
 	}
 
 	unsigned int state;
-	if (! proxy_uint_value(&state, properties_proxy, pathbuf, "State")) {
+	if (!proxy_uint_value(&state, properties_proxy, pathbuf, "State")) {
 		wklog("dbus: invalid battery");
+
 		return;
 	}
 
@@ -82,9 +86,9 @@ widget_battery (struct widget *widget) {
 	}
 
 	if (proxy != NULL) {
-		g_object_unref (proxy);
+		g_object_unref(proxy);
 	}
 	if (properties_proxy != NULL) {
-		g_object_unref (properties_proxy);
+		g_object_unref(properties_proxy);
 	}
 }
