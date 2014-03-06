@@ -130,7 +130,6 @@ widget_desktops (struct widget *widget) {
 				else if (pne->atom == ewmh->_NET_CURRENT_DESKTOP) {
 					desktops_send_update(widget, ewmh, screen_nbr);
 				}
-
 			default:
 				break;
 			}

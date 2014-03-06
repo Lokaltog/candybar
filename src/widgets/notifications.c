@@ -40,23 +40,18 @@ widget_notifications_send_update (struct widget *widget, DBusConnection *connect
 		case 0:
 			to_fill = &appname;
 			break;
-
 		case 1:
 			to_fill = &nid;
 			break;
-
 		case 3:
 			to_fill = &summary;
 			break;
-
 		case 4:
 			to_fill = &body;
 			break;
-
 		case 7:
 			to_fill = &expires;
 			break;
-
 		default:
 			to_fill = NULL;
 			break;

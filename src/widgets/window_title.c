@@ -92,7 +92,6 @@ widget_window_title (struct widget *widget) {
 				else if ((pne->window != ewmh->screens[screen_nbr]->root) && ((pne->atom == ewmh->_NET_WM_NAME) || (pne->atom == XCB_ATOM_WM_NAME))) {
 					window_title_send_update(widget, ewmh, screen_nbr, &cur_win);
 				}
-
 			default:
 				break;
 			}
