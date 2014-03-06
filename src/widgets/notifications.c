@@ -1,12 +1,12 @@
 #include "widgets.h"
 #include "notifications.h"
 
-static char* server_info[] = {"wkline", "Lokaltog", "0.1", "1.2", NULL};
-static char* server_capabilities[] = {"body", NULL};
+static char *server_info[] = { "wkline", "Lokaltog", "0.1", "1.2", NULL };
+static char *server_capabilities[] = { "body", NULL };
 
 static void
-dbus_array_reply(DBusConnection *connection, DBusMessage* msg, char* array[]) {
-	DBusMessage* reply = dbus_message_new_method_return(msg);
+dbus_array_reply (DBusConnection *connection, DBusMessage *msg, char *array[]) {
+	DBusMessage *reply = dbus_message_new_method_return(msg);
 	DBusMessageIter args;
 
 	bool success = true;
@@ -32,7 +32,7 @@ widget_notifications_send_update (struct widget *widget, DBusConnection *connect
 	const char *body;
 	dbus_uint32_t nid = 0;
 	dbus_int32_t expires = -1;
-	void* to_fill = NULL;
+	void *to_fill = NULL;
 
 	dbus_message_iter_init(msg, &args);
 	for (i = 0; i < 8; i++) {
@@ -59,10 +59,10 @@ widget_notifications_send_update (struct widget *widget, DBusConnection *connect
 		if (to_fill) {
 			dbus_message_iter_get_basic(&args, to_fill);
 		}
-		dbus_message_iter_next( &args );
+		dbus_message_iter_next(&args);
 	}
 
-	// send reply
+	/* send reply */
 	reply = dbus_message_new_method_return(msg);
 	dbus_message_iter_init_append(reply, &args);
 	if (dbus_message_iter_append_basic(&args, DBUS_TYPE_UINT32, &nid)) {
@@ -87,12 +87,12 @@ widget_notifications_send_update (struct widget *widget, DBusConnection *connect
 	return 0;
 }
 
-void *
+void*
 widget_notifications (struct widget *widget) {
-	DBusConnection* connection;
+	DBusConnection *connection;
 	DBusError dbus_error;
-	DBusError* err = &dbus_error;
-	DBusMessage* msg;
+	DBusError *err = &dbus_error;
+	DBusMessage *msg;
 	int server_result;
 
 	dbus_error_init(err);
@@ -100,10 +100,12 @@ widget_notifications (struct widget *widget) {
 	if (dbus_error_is_set(err)) {
 		wklog("dbus connection error: %s", err->message);
 		dbus_error_free(err);
+
 		return;
 	}
-	if (! connection) {
+	if (!connection) {
 		wklog("dbus: no connection");
+
 		return;
 	}
 
@@ -111,10 +113,12 @@ widget_notifications (struct widget *widget) {
 	if (dbus_error_is_set(err)) {
 		wklog("dbus error: %s", err->message);
 		dbus_error_free(err);
+
 		return;
 	}
 	if (server_result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
 		wklog("dbus: a notification daemon is already running");
+
 		return;
 	}
 	dbus_error_free(err);

@@ -17,41 +17,41 @@ struct widget_call {
 	const char *name;
 };
 
-void *widget_battery();
-void *widget_desktops();
-void *widget_external_ip();
-void *widget_notifications();
-void *widget_now_playing_mpd();
-void *widget_volume();
-void *widget_weather();
-void *widget_window_title();
+void* widget_battery ();
+void* widget_desktops ();
+void* widget_external_ip ();
+void* widget_notifications ();
+void* widget_now_playing_mpd ();
+void* widget_volume ();
+void* widget_weather ();
+void* widget_window_title ();
 gboolean update_widget (struct widget *widget);
 void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data);
 
 static const struct widget_call wkline_widgets[] = {
 #ifndef DISABLE_WIDGET_BATTERY
-	{.func=widget_battery, .name="battery"},
+	{ .func = widget_battery, .name = "battery" },
 #endif
 #ifndef DISABLE_WIDGET_DESKTOPS
-	{.func=widget_desktops, .name="desktops"},
+	{ .func = widget_desktops, .name = "desktops" },
 #endif
 #ifndef DISABLE_WIDGET_EXTERNAL_IP
-	{.func=widget_external_ip, .name="external_ip"},
+	{ .func = widget_external_ip, .name = "external_ip" },
 #endif
 #ifndef DISABLE_WIDGET_NOTIFICATIONS
-	{.func=widget_notifications, .name="notifications"},
+	{ .func = widget_notifications, .name = "notifications" },
 #endif
 #ifndef DISABLE_WIDGET_NOW_PLAYING_MPD
-	{.func=widget_now_playing_mpd, .name="now_playing_mpd"},
+	{ .func = widget_now_playing_mpd, .name = "now_playing_mpd" },
 #endif
 #ifndef DISABLE_WIDGET_VOLUME
-	{.func=widget_volume, .name="volume"},
+	{ .func = widget_volume, .name = "volume" },
 #endif
 #ifndef DISABLE_WIDGET_WEATHER
-	{.func=widget_weather, .name="weather"},
+	{ .func = widget_weather, .name = "weather" },
 #endif
 #ifndef DISABLE_WIDGET_WINDOW_TITLE
-	{.func=widget_window_title, .name="window_title"},
+	{ .func = widget_window_title, .name = "window_title" },
 #endif
 };
 
