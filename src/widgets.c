@@ -1,4 +1,5 @@
 #include "widgets.h"
+#include "util/log.h"
 
 GThread *widget_threads[LENGTH(wkline_widgets)];
 

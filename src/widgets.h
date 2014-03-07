@@ -2,9 +2,7 @@
 #include <string.h>
 #include <webkit/webkit.h>
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "util/log.h"
 
 struct widget {
 	const char *name;

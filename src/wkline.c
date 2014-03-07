@@ -1,7 +1,7 @@
 #include "util/config.h"
-#include "wkline.h"
 #include "util/log.h"
-#include "widgets/widgets.h"
+#include "wkline.h"
+#include "widgets.h"
 
 static gboolean
 wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
@@ -41,7 +41,6 @@ main (int argc, char *argv[]) {
 	GtkLayout *layout;
 	GdkScreen *screen;
 	GdkRectangle dest;
-	gint monitor_num;
 	WebKitWebView *web_view;
 	const char *wkline_theme_uri;
 

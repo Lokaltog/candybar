@@ -21,6 +21,7 @@ Dependencies:
 * gtk+ 3
 * jansson
 * webkitgtk+
+* waf (required for building wkline)
 
 Optional dependencies:
 
@@ -36,19 +37,15 @@ Installation instructions::
   git clone https://github.com/Lokaltog/wkline.git
   cd wkline
 
-  autoreconf --install
-  ./configure
-  make
+  waf configure build
+  waf install
 
-  mkdir -p ~/.config/wkline
-  cp config.def.json ~/.config/wkline/config.json
-
-  ./wkline
+  wkline
 
 Configuration
 -------------
 
-Copy ``config.def.json`` to ``$XDG_CONFIG_HOME/wkline/config.json`` (usually at
+Copy ``config.json`` to ``$XDG_CONFIG_HOME/wkline/config.json`` (usually at
 ``~/.config/wkline/config.json``) and change the configuration. Please make sure that
 your config file is valid JSON, this can be checked with e.g. ``jsonlint``.
 
