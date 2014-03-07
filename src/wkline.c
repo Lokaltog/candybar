@@ -1,7 +1,7 @@
 #include "util/config.h"
-#include "wkline.h"
 #include "util/log.h"
-#include "widgets/widgets.h"
+#include "wkline.h"
+#include "widgets.h"
 
 static gboolean
 wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
