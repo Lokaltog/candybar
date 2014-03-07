@@ -4,6 +4,7 @@ PACKAGE = 'wkline'
 
 def options(opt):
 	opt.load('compiler_c')
+	opt.add_option('--confdir', dest='confdir', default='/etc/xdg/wkline', help='directory to store wkline global configuration files [default: %default]')
 
 def configure(ctx):
 	ctx.load('compiler_c')
@@ -15,6 +16,7 @@ def configure(ctx):
 
 	# defines
 	ctx.define('PACKAGE', PACKAGE)
+	ctx.define('CONFDIR', ctx.options.confdir)
 
 	# deps
 	ctx.check_cfg(package='gtk+-3.0', uselib_store='GTK', args=['--cflags', '--libs'])
@@ -76,3 +78,4 @@ def build(bld):
 		bld.define('DISABLE_WIDGET_WINDOW_TITLE', 1)
 
 	bld(features='c cprogram', source='src/wkline.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps + widgets_enabled)
+	bld.install_files(bld.options.confdir, ['config.json'])
