@@ -2,6 +2,8 @@
 #include <string.h>
 #include <webkit/webkit.h>
 
+#include "util/log.h"
+
 struct widget {
 	const char *name;
 	json_t *config;

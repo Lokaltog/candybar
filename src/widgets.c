@@ -1,5 +1,6 @@
 #include "widgets.h"
-#include "../wkline.h" /* required for struct wkline */
+#include "util/log.h"
+#include "wkline.h" /* required for struct wkline */
 
 GThread *widget_threads[LENGTH(wkline_widgets)];
 
