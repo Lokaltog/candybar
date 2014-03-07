@@ -1,8 +1,11 @@
 bin_PROGRAMS = wkline
+
+sysconf_DATA = config.json
+
 wkline_SOURCES = \
 	util/copy_prop.c \
 	util/log.c \
-	util/load_config.c \
+	util/config.c \
 	src/wkline.c \
 	src/widgets/widgets.c
 

@@ -1,4 +1,4 @@
-#include "util/load_config.h"
+#include "util/config.h"
 #include "wkline.h"
 #include "util/log.h"
 #include "widgets/widgets.h"
@@ -46,9 +46,14 @@ main (int argc, char *argv[]) {
 	const char *wkline_theme_uri;
 
 	gtk_init(&argc, &argv);
-	wkline = malloc(sizeof(struct wkline));
 
+	wkline = malloc(sizeof(struct wkline));
 	wkline->config = load_config_file();
+	if (!wkline->config){
+		wklog("Error config file not found.");
+		goto config_err;
+	}
+
 	wkline->position = json_string_value(wkline_get_config(wkline, "position"));
 
 	/* GtkScrolledWindow fails to lock small heights (<25px), so a GtkLayout
@@ -102,6 +107,7 @@ main (int argc, char *argv[]) {
 	gtk_main();
 
 	json_decref(wkline->config);
+config_err:
 	free(wkline);
 
 	return 0;
