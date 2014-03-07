@@ -4,10 +4,6 @@
 #include <string.h>
 #include <webkit/webkit.h>
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 struct wkline_dimensions {
 	int w;
 	int h;

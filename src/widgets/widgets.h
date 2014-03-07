@@ -2,10 +2,6 @@
 #include <string.h>
 #include <webkit/webkit.h>
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 struct widget {
 	const char *name;
 	json_t *config;
