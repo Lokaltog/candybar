@@ -1,8 +1,7 @@
 #include "copy_prop.h"
 
 void
-copy_prop (char *dest, char *src, int len, int idx, int num_itm)
-{
+copy_prop (char *dest, char *src, int len, int idx, int num_itm) {
 	if (num_itm <= 1) {
 		strncpy(dest, src, MIN(len, COPY_PROP_BUFSIZ));
 		dest[len] = '\0';

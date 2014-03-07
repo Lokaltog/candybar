@@ -1,8 +1,7 @@
 #include "dbus_helpers.h"
 
 static gboolean
-proxy_property_value (DBusGProxy *properties_proxy, char *path, char *property, GValue *get_value, GError **error)
-{
+proxy_property_value (DBusGProxy *properties_proxy, char *path, char *property, GValue *get_value, GError **error) {
 	return dbus_g_proxy_call(properties_proxy, "Get", error,
 	                         G_TYPE_STRING, path,
 	                         G_TYPE_STRING, property,
