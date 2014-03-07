@@ -15,6 +15,7 @@ load_config_file () {
 		if (err.line != -1) {
 			/* syntax error */
 			wklog("Error in config file: %s", err.text);
+			exit(EXIT_FAILURE);
 		}
 		else {
 			/* file not found
@@ -51,12 +52,16 @@ wkline_widget_get_config (struct widget *self, const char *config_name) {
 	json_t *object;
 	object = json_object_get(self->config, "widgets");
 	if (!object) {
-		wklog("Config error: widgets block not found");
+		wklog("Warning: widgets block not found in config file");
 	}
 	object = json_object_get(object, self->name);
 	if (!object) {
-		wklog("Config error: widget %s not found", self->name);
+		wklog("Warning: widget \"%s\" not found in config file", self->name);
 	}
-
-	return json_object_get(object, config_name);
+	object = json_object_get(object, config_name);
+	if (!object) {
+		wklog("Warning: configuration \"%s\" in widget \"%s\" not found in config file", config_name, self->name);
+	}
+	return object;
 }
+
