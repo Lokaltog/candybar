@@ -93,7 +93,7 @@ main (int argc, char *argv[]) {
 #ifndef DEBUG /* only disable context menu in prod build */
 	g_signal_connect(web_view, "context-menu", G_CALLBACK(wk_context_menu_cb), NULL);
 #endif
-	g_signal_connect(web_view, "window-object-cleared", G_CALLBACK(window_object_cleared_cb), wkline);
+	g_signal_connect(web_view, "window-object-cleared", G_CALLBACK(window_object_cleared_cb), wkline->config);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	g_signal_connect(window, "realize", G_CALLBACK(wk_realize_handler), wkline);
 

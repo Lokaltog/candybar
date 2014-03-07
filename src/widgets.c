@@ -1,6 +1,5 @@
 #include "widgets.h"
 #include "util/log.h"
-#include "wkline.h" /* required for struct wkline */
 
 GThread *widget_threads[LENGTH(wkline_widgets)];
 
@@ -33,7 +32,7 @@ update_widget (struct widget *widget) {
 
 void
 window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data) {
-	struct wkline *wkline = user_data;
+	struct json_t *config = user_data;
 	unsigned short i;
 
 	wklog("webkit: window object cleared");
@@ -43,7 +42,7 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 		if (!widget_threads[i]) {
 			struct widget *widget = malloc(sizeof(struct widget));
 
-			widget->config = wkline->config;
+			widget->config = config;
 			widget->web_view = web_view;
 
 			/* Dont forget to free this one */
