@@ -41,7 +41,6 @@ main (int argc, char *argv[]) {
 	GtkLayout *layout;
 	GdkScreen *screen;
 	GdkRectangle dest;
-	gint monitor_num;
 	WebKitWebView *web_view;
 	const char *wkline_theme_uri;
 

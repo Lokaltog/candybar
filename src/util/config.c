@@ -19,7 +19,7 @@ load_config_file () {
 		else {
 			/* file not found
 			   go through all the paths in system_config_dirs */
-			for (paths_array = g_get_system_config_dirs(); *paths_array; *paths_array++) {
+			for (paths_array = g_get_system_config_dirs(); *paths_array; paths_array++) {
 				g_free(config_filename);
 				config_filename = g_build_filename(*paths_array, PACKAGE, "config.json", NULL);
 				json_config = json_load_file(config_filename, 0, &err);

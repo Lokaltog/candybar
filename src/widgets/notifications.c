@@ -101,12 +101,12 @@ widget_notifications (struct widget *widget) {
 		wklog("dbus connection error: %s", err->message);
 		dbus_error_free(err);
 
-		return;
+		return 0;
 	}
 	if (!connection) {
 		wklog("dbus: no connection");
 
-		return;
+		return 0;
 	}
 
 	server_result = dbus_bus_request_name(connection, "org.freedesktop.Notifications", DBUS_NAME_FLAG_REPLACE_EXISTING, err);
@@ -114,19 +114,19 @@ widget_notifications (struct widget *widget) {
 		wklog("dbus error: %s", err->message);
 		dbus_error_free(err);
 
-		return;
+		return 0;
 	}
 	if (server_result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
 		wklog("dbus: a notification daemon is already running");
 
-		return;
+		return 0;
 	}
 	dbus_error_free(err);
 
 	for (;;) {
 		dbus_connection_read_write(connection, -1);
 
-		while (msg = dbus_connection_pop_message(connection)) {
+		while ((msg = dbus_connection_pop_message(connection)) != NULL) {
 			if (dbus_message_is_method_call(msg, "org.freedesktop.Notifications", "Notify")) {
 				if (widget_notifications_send_update(widget, connection, msg) != 0) {
 					wklog("dbus: error while handling notification");
