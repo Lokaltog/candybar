@@ -34,8 +34,8 @@ def build(bld):
 	basedeps = ['GTK', 'WEBKITGTK', 'JANSSON']
 	widgets_enabled = []
 
-	bld.stlib(source=bld.path.ant_glob('src/util/(log|config).c'), target='baseutils', use=basedeps)
-	bld.stlib(source='src/widgets.c', target='widgets', use=basedeps)
+	bld(features='c', source=bld.path.ant_glob('src/util/(log|config|copy_prop).c'), target='baseutils', use=basedeps)
+	bld(features='c', source='src/widgets.c', target='widgets', use=basedeps)
 
 	# widgets
 	if bld.is_defined('HAVE_ALSA'):
@@ -45,7 +45,8 @@ def build(bld):
 		bld.define('DISABLE_WIDGET_VOLUME', 1)
 
 	if bld.is_defined('HAVE_CURL'):
-		bld.stlib(source='src/util/curl.c', target='util_curl', use=basedeps + ['CURL'])
+		bld(features='c', source='src/util/curl.c', target='util_curl', use=basedeps + ['CURL'])
+
 		bld.stlib(source='src/widgets/external_ip.c', target='widget_external_ip', use=basedeps + ['CURL', 'util_curl'])
 		bld.stlib(source='src/widgets/weather.c', target='widget_weather', use=basedeps + ['CURL', 'util_curl'])
 		widgets_enabled += ['widget_external_ip', 'widget_weather']
@@ -54,7 +55,8 @@ def build(bld):
 		bld.define('DISABLE_WIDGET_WEATHER', 1)
 
 	if bld.is_defined('HAVE_DBUS'):
-		bld.stlib(source='src/util/dbus_helpers.c', target='util_dbus_helpers', use=basedeps + ['DBUS'])
+		bld(features='c', source='src/util/dbus_helpers.c', target='util_dbus_helpers', use=basedeps + ['DBUS'])
+
 		bld.stlib(source='src/widgets/battery.c', target='widget_battery', use=basedeps + ['DBUS', 'util_dbus_helpers'])
 		bld.stlib(source='src/widgets/notifications.c', target='widget_notifications', use=basedeps + ['DBUS', 'util_dbus_helpers'])
 		widgets_enabled += ['widget_battery', 'widget_notifications']
@@ -69,7 +71,6 @@ def build(bld):
 		bld.define('DISABLE_WIDGET_NOW_PLAYING_MPD', 1)
 
 	if bld.is_defined('HAVE_XCB'):
-		bld.stlib(source='src/util/copy_prop.c', target='util_copy_prop', use=basedeps)
 		bld.stlib(source='src/widgets/desktops.c', target='widget_desktops', use=basedeps + ['XCB'])
 		bld.stlib(source='src/widgets/window_title.c', target='widget_window_title', use=basedeps + ['util_copy_prop', 'XCB'])
 		widgets_enabled += ['widget_desktops', 'widget_window_title']
