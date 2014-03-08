@@ -42,6 +42,16 @@ Installation instructions::
 
   wkline
 
+Debug/development build instructions (with relative library search path)::
+
+  git clone https://github.com/Lokaltog/wkline.git
+  cd wkline
+
+  waf clean configure build --debug --prefix=/ \
+      --libdir=`pwd`/out/lib/wkline install --destdir=out
+
+  out/bin/wkline
+
 Configuration
 -------------
 
