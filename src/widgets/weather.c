@@ -152,8 +152,19 @@ widget_weather_send_update (struct widget *widget, struct location *location) {
 	return 0;
 }
 
+static void
+widget_cleanup (void *arg) {
+	wklog("widget cleanup: weather");
+	struct location *location = arg;
+
+	free(location->city);
+	free(location->region_code);
+	free(location->country_code);
+	free(location);
+}
+
 void*
-widget_weather (struct widget *widget) {
+widget_init (struct widget *widget) {
 	struct location *location = calloc(1, sizeof(location));
 
 	location->city = strdup(json_string_value(wkline_widget_get_config(widget, "location")));
@@ -167,16 +178,11 @@ widget_weather (struct widget *widget) {
 		return 0;
 	}
 
+	pthread_cleanup_push(widget_cleanup, location);
 	for (;;) {
 		widget_weather_send_update(widget, location);
 
 		sleep(600);
 	}
-
-	free(location->city);
-	free(location->region_code);
-	free(location->country_code);
-	free(location);
-
-	return 0;
+	pthread_cleanup_pop(1);
 }

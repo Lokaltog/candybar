@@ -87,8 +87,16 @@ widget_notifications_send_update (struct widget *widget, DBusConnection *connect
 	return 0;
 }
 
+static void
+widget_cleanup (void *arg) {
+	wklog("widget cleanup: notifications");
+
+	DBusConnection *connection = arg;
+	dbus_connection_unref(connection);
+}
+
 void*
-widget_notifications (struct widget *widget) {
+widget_init (struct widget *widget) {
 	DBusConnection *connection;
 	DBusError dbus_error;
 	DBusError *err = &dbus_error;
@@ -123,6 +131,7 @@ widget_notifications (struct widget *widget) {
 	}
 	dbus_error_free(err);
 
+	pthread_cleanup_push(widget_cleanup, connection);
 	for (;;) {
 		dbus_connection_read_write(connection, -1);
 
@@ -144,8 +153,5 @@ widget_notifications (struct widget *widget) {
 			dbus_connection_flush(connection);
 		}
 	}
-
-	dbus_connection_unref(connection);
-
-	return 0;
+	pthread_cleanup_pop(1);
 }

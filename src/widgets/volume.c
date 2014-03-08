@@ -24,8 +24,17 @@ widget_volume_send_update (struct widget *widget, snd_mixer_elem_t *elem) {
 	return 0;
 }
 
+static void
+widget_cleanup (void *arg) {
+	wklog("widget cleanup: volume");
+	struct widget_volume_res *res = arg;
+
+	free(res->pollfds);
+	snd_mixer_close(res->mixer);
+}
+
 void*
-widget_volume (struct widget *widget) {
+widget_init (struct widget *widget) {
 	snd_mixer_t *mixer;
 	snd_mixer_selem_id_t *sid;
 	struct pollfd *pollfds = NULL;
@@ -43,6 +52,8 @@ widget_volume (struct widget *widget) {
 	snd_mixer_selem_id_set_name(sid, json_string_value(wkline_widget_get_config(widget, "selem")));
 	snd_mixer_elem_t *elem = snd_mixer_find_selem(mixer, sid);
 
+	struct widget_volume_res res = { pollfds, mixer };
+	pthread_cleanup_push(widget_cleanup, &res);
 	widget_volume_send_update(widget, elem);
 
 	for (;;) {
@@ -94,9 +105,7 @@ widget_volume (struct widget *widget) {
 
 		widget_volume_send_update(widget, elem);
 	}
-
-	free(pollfds);
-	snd_mixer_close(mixer);
+	pthread_cleanup_pop(1);
 
 	return 0;
 }

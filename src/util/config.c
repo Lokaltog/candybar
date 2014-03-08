@@ -50,7 +50,7 @@ wkline_get_config (struct wkline *self, const char *config_name) {
 json_t*
 wkline_widget_get_config (struct widget *self, const char *config_name) {
 	json_t *object;
-	object = json_object_get(self->config, "widgets");
+	object = json_object_get(self->config, "widgets_config");
 	if (!object) {
 		wklog("Warning: widgets block not found in config file");
 	}

@@ -67,8 +67,16 @@ widget_now_playing_mpd_send_update (struct widget *widget, struct mpd_connection
 	return 0;
 }
 
+static void
+widget_cleanup (void *arg) {
+	wklog("widget cleanup: now_playing_mpd");
+
+	struct mpd_connection *connection = arg;
+	mpd_connection_free(connection);
+}
+
 void*
-widget_now_playing_mpd (struct widget *widget) {
+widget_init (struct widget *widget) {
 	struct mpd_connection *connection = mpd_connection_new(json_string_value(wkline_widget_get_config(widget, "host")),
 	                                                       json_integer_value(wkline_widget_get_config(widget, "port")),
 	                                                       json_integer_value(wkline_widget_get_config(widget, "timeout")));
@@ -86,6 +94,7 @@ widget_now_playing_mpd (struct widget *widget) {
 	fd_set fds;
 	int s, mpd_fd = mpd_connection_get_fd(connection);
 
+	pthread_cleanup_push(widget_cleanup, connection);
 	widget_now_playing_mpd_send_update(widget, connection);
 
 	for (;;) {
@@ -112,8 +121,7 @@ widget_now_playing_mpd (struct widget *widget) {
 			widget_now_playing_mpd_send_update(widget, connection);
 		}
 	}
-
-	mpd_connection_free(connection);
+	pthread_cleanup_pop(1);
 
 	return 0;
 }

@@ -85,8 +85,17 @@ desktops_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int sc
 	free(desktops);
 }
 
+static void
+widget_cleanup (void *arg) {
+	wklog("widget cleanup: desktops");
+
+	xcb_ewmh_connection_t *ewmh = arg;
+	xcb_ewmh_connection_wipe(ewmh);
+	xcb_disconnect(ewmh->connection);
+}
+
 void*
-widget_desktops (struct widget *widget) {
+widget_init (struct widget *widget) {
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	if (xcb_connection_has_error(conn)) {
 		wklog("Could not connect to display %s.", getenv("DISPLAY"));
@@ -113,6 +122,7 @@ widget_desktops (struct widget *widget) {
 		return 0;
 	}
 
+	pthread_cleanup_push(widget_cleanup, ewmh);
 	desktops_send_update(widget, ewmh, screen_nbr);
 
 	for (;;) {
@@ -137,7 +147,5 @@ widget_desktops (struct widget *widget) {
 		}
 	}
 
-	xcb_ewmh_connection_wipe(ewmh);
-
-	return 0;
+	pthread_cleanup_pop(1);
 }

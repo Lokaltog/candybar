@@ -1,25 +1,36 @@
 #!/usr/bin/env python
 
+from waflib import Utils
+
 PACKAGE = 'wkline'
+LIBDIR = '${PREFIX}/lib/wkline'
 
 def options(opt):
 	opt.load('compiler_c')
 	opt.add_option('--confdir', dest='confdir', default='/etc/xdg/wkline', help='directory to store wkline global configuration files [default: %default]')
+	opt.add_option('--libdir', dest='libdir', default=LIBDIR, help='shared library search path override (useful for development) [default: %default]')
+	opt.add_option('--debug', dest='debug', default=False, action='store_true', help='build debug version')
 
 def configure(ctx):
 	ctx.load('compiler_c')
 	ctx.check_cfg(atleast_pkgconfig_version='0.0.0')
 
 	# compiler options
-	ctx.env.append_unique('CFLAGS', ['-g', '-O3', '-Wall', '-Werror'])
+	if ctx.options.debug:
+		ctx.env.append_unique('CFLAGS', ['-g3', '-O0', '-Wall', '-Werror'])
+		ctx.define('DEBUG', 1)
+	else:
+		ctx.env.append_unique('CFLAGS', ['-O3', '-Wall', '-Werror'])
 	ctx.env.append_value('INCLUDES', ['./src'])
 
 	# defines
 	ctx.define('PACKAGE', PACKAGE)
 	ctx.define('CONFDIR', ctx.options.confdir)
+	ctx.define('LIBDIR', Utils.subst_vars(ctx.options.libdir, ctx.env))
 
 	# deps
 	ctx.check_cfg(package='gtk+-3.0', uselib_store='GTK', args=['--cflags', '--libs'])
+	ctx.check_cfg(package='glib-2.0 gmodule-2.0', uselib_store='GLIB', args=['--cflags', '--libs'])
 	ctx.check_cfg(package='webkitgtk-3.0', uselib_store='WEBKITGTK', args=['--cflags', '--libs'])
 	ctx.check_cfg(package='jansson', uselib_store='JANSSON', args=['--cflags', '--libs'])
 
@@ -31,52 +42,33 @@ def configure(ctx):
 	ctx.check_cfg(package='xcb-util xcb-ewmh xcb-icccm', uselib_store='XCB', args=['--cflags', '--libs'], mandatory=False)
 
 def build(bld):
-	basedeps = ['GTK', 'WEBKITGTK', 'JANSSON']
-	widgets_enabled = []
+	basedeps = ['GTK', 'GLIB', 'WEBKITGTK', 'JANSSON']
 
-	bld(features='c', source=bld.path.ant_glob('src/util/(log|config|copy_prop).c'), target='baseutils', use=basedeps)
-	bld(features='c', source='src/widgets.c', target='widgets', use=basedeps)
+	bld.objects(source=bld.path.ant_glob('src/util/(log|config|copy_prop).c'), target='baseutils', use=basedeps)
+	bld.objects(source='src/widgets.c', target='widgets', use=basedeps)
 
 	# widgets
 	if bld.is_defined('HAVE_ALSA'):
-		bld.stlib(source='src/widgets/volume.c', target='widget_volume', use=basedeps + ['ALSA'])
-		widgets_enabled += ['widget_volume']
-	else:
-		bld.define('DISABLE_WIDGET_VOLUME', 1)
+		bld.shlib(source='src/widgets/volume.c', target='widget_volume', use=basedeps + ['ALSA'], install_path=LIBDIR)
 
 	if bld.is_defined('HAVE_CURL'):
-		bld(features='c', source='src/util/curl.c', target='util_curl', use=basedeps + ['CURL'])
+		bld.objects(source='src/util/curl.c', target='util_curl', use=basedeps + ['CURL'], cflags=['-fPIC'])
 
-		bld.stlib(source='src/widgets/external_ip.c', target='widget_external_ip', use=basedeps + ['CURL', 'util_curl'])
-		bld.stlib(source='src/widgets/weather.c', target='widget_weather', use=basedeps + ['CURL', 'util_curl'])
-		widgets_enabled += ['widget_external_ip', 'widget_weather']
-	else:
-		bld.define('DISABLE_WIDGET_EXTERNAL_IP', 1)
-		bld.define('DISABLE_WIDGET_WEATHER', 1)
+		bld.shlib(source='src/widgets/external_ip.c', target='widget_external_ip', use=basedeps + ['CURL', 'util_curl'], install_path=LIBDIR)
+		bld.shlib(source='src/widgets/weather.c', target='widget_weather', use=basedeps + ['CURL', 'util_curl'], install_path=LIBDIR)
 
 	if bld.is_defined('HAVE_DBUS'):
-		bld(features='c', source='src/util/dbus_helpers.c', target='util_dbus_helpers', use=basedeps + ['DBUS'])
+		bld.objects(source='src/util/dbus_helpers.c', target='util_dbus_helpers', use=basedeps + ['DBUS'], cflags=['-fPIC'])
 
-		bld.stlib(source='src/widgets/battery.c', target='widget_battery', use=basedeps + ['DBUS', 'util_dbus_helpers'])
-		bld.stlib(source='src/widgets/notifications.c', target='widget_notifications', use=basedeps + ['DBUS', 'util_dbus_helpers'])
-		widgets_enabled += ['widget_battery', 'widget_notifications']
-	else:
-		bld.define('DISABLE_WIDGET_BATTERY', 1)
-		bld.define('DISABLE_WIDGET_NOTIFICATIONS', 1)
+		bld.shlib(source='src/widgets/battery.c', target='widget_battery', use=basedeps + ['DBUS', 'util_dbus_helpers'], install_path=LIBDIR)
+		bld.shlib(source='src/widgets/notifications.c', target='widget_notifications', use=basedeps + ['DBUS', 'util_dbus_helpers'], install_path=LIBDIR)
 
 	if bld.is_defined('HAVE_LIBMPDCLIENT'):
-		bld.stlib(source='src/widgets/now_playing_mpd.c', target='widget_now_playing_mpd', use=basedeps + ['LIBMPDCLIENT'])
-		widgets_enabled += ['widget_now_playing_mpd']
-	else:
-		bld.define('DISABLE_WIDGET_NOW_PLAYING_MPD', 1)
+		bld.shlib(source='src/widgets/now_playing_mpd.c', target='widget_now_playing_mpd', use=basedeps + ['LIBMPDCLIENT'], install_path=LIBDIR)
 
 	if bld.is_defined('HAVE_XCB'):
-		bld.stlib(source='src/widgets/desktops.c', target='widget_desktops', use=basedeps + ['XCB'])
-		bld.stlib(source='src/widgets/window_title.c', target='widget_window_title', use=basedeps + ['util_copy_prop', 'XCB'])
-		widgets_enabled += ['widget_desktops', 'widget_window_title']
-	else:
-		bld.define('DISABLE_WIDGET_DESKTOPS', 1)
-		bld.define('DISABLE_WIDGET_WINDOW_TITLE', 1)
+		bld.shlib(source='src/widgets/desktops.c', target='widget_desktops', use=basedeps + ['XCB'], install_path=LIBDIR)
+		bld.shlib(source='src/widgets/window_title.c', target='widget_window_title', use=basedeps + ['util_copy_prop', 'XCB'], install_path=LIBDIR)
 
-	bld(features='c cprogram', source='src/wkline.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps + widgets_enabled)
+	bld.program(source='src/wkline.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps)
 	bld.install_files(bld.options.confdir, ['config.json'])
