@@ -9,13 +9,18 @@ def options(opt):
 	opt.load('compiler_c')
 	opt.add_option('--confdir', dest='confdir', default='/etc/xdg/wkline', help='directory to store wkline global configuration files [default: %default]')
 	opt.add_option('--libdir', dest='libdir', default=LIBDIR, help='shared library search path override (useful for development) [default: %default]')
+	opt.add_option('--debug', dest='debug', default=False, action='store_true', help='build debug version')
 
 def configure(ctx):
 	ctx.load('compiler_c')
 	ctx.check_cfg(atleast_pkgconfig_version='0.0.0')
 
 	# compiler options
-	ctx.env.append_unique('CFLAGS', ['-g', '-O3', '-Wall', '-Werror'])
+	if ctx.options.debug:
+		ctx.env.append_unique('CFLAGS', ['-g3', '-O0', '-Wall', '-Werror'])
+		ctx.define('DEBUG', 1)
+	else:
+		ctx.env.append_unique('CFLAGS', ['-O3', '-Wall', '-Werror'])
 	ctx.env.append_value('INCLUDES', ['./src'])
 
 	# defines
