@@ -3,11 +3,14 @@
 #include "wkline.h"
 #include "widgets.h"
 
+#ifndef DEBUG /* only disable context menu in prod build */
 static gboolean
 wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
 	/* Disable context menu */
 	return TRUE;
 }
+
+#endif
 
 static void
 wk_realize_handler (GtkWidget *window, gpointer user_data) {
@@ -52,6 +55,10 @@ main (int argc, char *argv[]) {
 		wklog("Error config file not found.");
 		goto config_err;
 	}
+
+	signal(SIGTERM, handle_interrupt);
+	signal(SIGINT, handle_interrupt);
+	signal(SIGHUP, handle_interrupt);
 
 	wkline->position = json_string_value(wkline_get_config(wkline, "position"));
 
