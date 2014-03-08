@@ -40,6 +40,12 @@ spawn_widget (WebKitWebView *web_view, json_t *config, const char *name) {
 	GModule *lib = g_module_open(libpath, G_MODULE_BIND_LOCAL);
 	pthread_t return_thread;
 
+	if (lib == NULL) {
+		wklog("widget '%s' isn't available, you should remove it from config.json", name);
+
+		return 0;
+	}
+
 	if (!g_module_symbol(lib, "widget_init", (gpointer*)&widget_init)) {
 		wklog("loading of '%s' (%s) failed", libpath, name);
 
