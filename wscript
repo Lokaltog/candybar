@@ -20,6 +20,7 @@ def configure(ctx):
 
 	# deps
 	ctx.check_cfg(package='gtk+-3.0', uselib_store='GTK', args=['--cflags', '--libs'])
+	ctx.check_cfg(package='glib-2.0 gmodule-2.0', uselib_store='GLIB', args=['--cflags', '--libs'])
 	ctx.check_cfg(package='webkitgtk-3.0', uselib_store='WEBKITGTK', args=['--cflags', '--libs'])
 	ctx.check_cfg(package='jansson', uselib_store='JANSSON', args=['--cflags', '--libs'])
 
@@ -31,7 +32,7 @@ def configure(ctx):
 	ctx.check_cfg(package='xcb-util xcb-ewmh xcb-icccm', uselib_store='XCB', args=['--cflags', '--libs'], mandatory=False)
 
 def build(bld):
-	basedeps = ['GTK', 'WEBKITGTK', 'JANSSON']
+	basedeps = ['GTK', 'GLIB', 'WEBKITGTK', 'JANSSON']
 
 	bld(features='c', source=bld.path.ant_glob('src/util/(log|config|copy_prop).c'), target='baseutils', use=basedeps)
 	bld(features='c', source='src/widgets.c', target='widgets', use=basedeps)
