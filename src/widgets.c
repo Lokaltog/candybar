@@ -28,31 +28,32 @@ update_widget (struct widget *widget) {
 	return FALSE; /* only run once */
 }
 
-GThread*
+pthread_t
 spawn_widget (WebKitWebView *web_view, json_t *config, const char *name) {
 	widget_init_func widget_init;
 	char libname[64];
 	snprintf(libname, 64, "libwidget_%s", name);
 	gchar *libpath = g_module_build_path(LIBDIR, libname);
 	GModule *lib = g_module_open(libpath, G_MODULE_BIND_LOCAL);
+	pthread_t return_thread;
 
 	if (!g_module_symbol(lib, "widget_init", (gpointer*)&widget_init)) {
 		wklog("loading of '%s' (%s) failed", libpath, name);
 
-		return NULL;
+		return 0;
 	}
 
 	struct widget *widget = malloc(sizeof(struct widget));
 
 	widget->config = config;
 	widget->web_view = web_view;
-
-	/* Dont forget to free this one */
-	widget->name = strdup(name);
+	widget->name = strdup(name); /* don't forget to free this one */
 
 	wklog("creating thread for widget '%s'", name);
 
-	return g_thread_new(name, (GThreadFunc)widget_init, widget);
+	pthread_create(&return_thread, NULL, (void*)widget_init, widget);
+
+	return return_thread;
 }
 
 void
@@ -60,7 +61,7 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 	json_t *config = user_data;
 	json_t *widgets_arr = json_object_get(config, "widgets");
 	size_t widgets_len = json_array_size(widgets_arr);
-	GThread **widget_threads = malloc(widgets_len * sizeof(GThread));
+	pthread_t *widget_threads = malloc(widgets_len * sizeof(pthread_t));
 	unsigned short i;
 
 	wklog("webkit: window object cleared, loading widgets");
