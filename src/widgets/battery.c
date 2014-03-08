@@ -35,6 +35,19 @@ widget_battery_send_update (struct widget *widget, DBusGProxy *properties_proxy,
 	return 0;
 }
 
+static void
+widget_cleanup (void *arg) {
+	wklog("widget cleanup: battery");
+	DBusGProxy **proxy_ref = arg;
+
+	if (proxy_ref[0] != NULL) {
+		g_object_unref(proxy_ref[0]);
+	}
+	if (proxy_ref[1] != NULL) {
+		g_object_unref(proxy_ref[1]);
+	}
+}
+
 void*
 widget_init (struct widget *widget) {
 	DBusGConnection *conn;
@@ -79,16 +92,12 @@ widget_init (struct widget *widget) {
 		return 0;
 	}
 
+	DBusGProxy *proxy_ptr[2] = { proxy, properties_proxy };
+	pthread_cleanup_push(widget_cleanup, proxy_ptr);
 	for (;;) {
 		widget_battery_send_update(widget, properties_proxy, pathbuf);
 
 		sleep(20);
 	}
-
-	if (proxy != NULL) {
-		g_object_unref(proxy);
-	}
-	if (properties_proxy != NULL) {
-		g_object_unref(properties_proxy);
-	}
+	pthread_cleanup_pop(1);
 }

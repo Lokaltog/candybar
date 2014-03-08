@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <stdbool.h>
 #include <xcb/xcb_event.h>
 #include <xcb/xcb_ewmh.h>

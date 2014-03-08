@@ -50,6 +50,15 @@ window_title_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, in
 	json_decref(json_data_object);
 }
 
+static void
+widget_cleanup (void *arg) {
+	wklog("widget cleanup: window_title");
+
+	xcb_ewmh_connection_t *ewmh = arg;
+	xcb_ewmh_connection_wipe(ewmh);
+	xcb_disconnect(ewmh->connection);
+}
+
 void*
 widget_init (struct widget *widget) {
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
@@ -79,6 +88,7 @@ widget_init (struct widget *widget) {
 		return 0;
 	}
 
+	pthread_cleanup_push(widget_cleanup, ewmh);
 	window_title_send_update(widget, ewmh, screen_nbr, &cur_win);
 
 	for (;;) {
@@ -100,7 +110,5 @@ widget_init (struct widget *widget) {
 		}
 	}
 
-	xcb_ewmh_connection_wipe(ewmh);
-
-	return 0;
+	pthread_cleanup_pop(1);
 }

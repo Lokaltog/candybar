@@ -29,6 +29,4 @@ widget_init (struct widget *widget) {
 
 		sleep(600);
 	}
-
-	return 0;
 }
