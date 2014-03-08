@@ -88,7 +88,7 @@ widget_notifications_send_update (struct widget *widget, DBusConnection *connect
 }
 
 void*
-widget_notifications (struct widget *widget) {
+widget_init (struct widget *widget) {
 	DBusConnection *connection;
 	DBusError dbus_error;
 	DBusError *err = &dbus_error;

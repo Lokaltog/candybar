@@ -36,7 +36,7 @@ widget_battery_send_update (struct widget *widget, DBusGProxy *properties_proxy,
 }
 
 void*
-widget_battery (struct widget *widget) {
+widget_init (struct widget *widget) {
 	DBusGConnection *conn;
 	DBusGProxy *proxy;
 	DBusGProxy *properties_proxy;

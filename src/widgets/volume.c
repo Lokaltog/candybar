@@ -25,7 +25,7 @@ widget_volume_send_update (struct widget *widget, snd_mixer_elem_t *elem) {
 }
 
 void*
-widget_volume (struct widget *widget) {
+widget_init (struct widget *widget) {
 	snd_mixer_t *mixer;
 	snd_mixer_selem_id_t *sid;
 	struct pollfd *pollfds = NULL;

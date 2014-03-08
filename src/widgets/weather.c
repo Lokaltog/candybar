@@ -153,7 +153,7 @@ widget_weather_send_update (struct widget *widget, struct location *location) {
 }
 
 void*
-widget_weather (struct widget *widget) {
+widget_init (struct widget *widget) {
 	struct location *location = calloc(1, sizeof(location));
 
 	location->city = strdup(json_string_value(wkline_widget_get_config(widget, "location")));

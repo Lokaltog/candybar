@@ -51,7 +51,7 @@ window_title_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, in
 }
 
 void*
-widget_window_title (struct widget *widget) {
+widget_init (struct widget *widget) {
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	if (xcb_connection_has_error(conn)) {
 		wklog("Could not connect to display %s.", getenv("DISPLAY"));
