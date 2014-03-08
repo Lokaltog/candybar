@@ -32,51 +32,32 @@ def configure(ctx):
 
 def build(bld):
 	basedeps = ['GTK', 'WEBKITGTK', 'JANSSON']
-	widgets_enabled = []
 
 	bld(features='c', source=bld.path.ant_glob('src/util/(log|config|copy_prop).c'), target='baseutils', use=basedeps)
 	bld(features='c', source='src/widgets.c', target='widgets', use=basedeps)
 
 	# widgets
 	if bld.is_defined('HAVE_ALSA'):
-		bld.stlib(source='src/widgets/volume.c', target='widget_volume', use=basedeps + ['ALSA'])
-		widgets_enabled += ['widget_volume']
-	else:
-		bld.define('DISABLE_WIDGET_VOLUME', 1)
+		bld.shlib(source='src/widgets/volume.c', target='widget_volume', use=basedeps + ['ALSA'])
 
 	if bld.is_defined('HAVE_CURL'):
-		bld(features='c', source='src/util/curl.c', target='util_curl', use=basedeps + ['CURL'])
+		bld.shlib(source='src/util/curl.c', target='util_curl', use=basedeps + ['CURL'])
 
-		bld.stlib(source='src/widgets/external_ip.c', target='widget_external_ip', use=basedeps + ['CURL', 'util_curl'])
-		bld.stlib(source='src/widgets/weather.c', target='widget_weather', use=basedeps + ['CURL', 'util_curl'])
-		widgets_enabled += ['widget_external_ip', 'widget_weather']
-	else:
-		bld.define('DISABLE_WIDGET_EXTERNAL_IP', 1)
-		bld.define('DISABLE_WIDGET_WEATHER', 1)
+		bld.shlib(source='src/widgets/external_ip.c', target='widget_external_ip', use=basedeps + ['CURL', 'util_curl'])
+		bld.shlib(source='src/widgets/weather.c', target='widget_weather', use=basedeps + ['CURL', 'util_curl'])
 
 	if bld.is_defined('HAVE_DBUS'):
-		bld(features='c', source='src/util/dbus_helpers.c', target='util_dbus_helpers', use=basedeps + ['DBUS'])
+		bld.shlib(source='src/util/dbus_helpers.c', target='util_dbus_helpers', use=basedeps + ['DBUS'])
 
-		bld.stlib(source='src/widgets/battery.c', target='widget_battery', use=basedeps + ['DBUS', 'util_dbus_helpers'])
-		bld.stlib(source='src/widgets/notifications.c', target='widget_notifications', use=basedeps + ['DBUS', 'util_dbus_helpers'])
-		widgets_enabled += ['widget_battery', 'widget_notifications']
-	else:
-		bld.define('DISABLE_WIDGET_BATTERY', 1)
-		bld.define('DISABLE_WIDGET_NOTIFICATIONS', 1)
+		bld.shlib(source='src/widgets/battery.c', target='widget_battery', use=basedeps + ['DBUS', 'util_dbus_helpers'])
+		bld.shlib(source='src/widgets/notifications.c', target='widget_notifications', use=basedeps + ['DBUS', 'util_dbus_helpers'])
 
 	if bld.is_defined('HAVE_LIBMPDCLIENT'):
-		bld.stlib(source='src/widgets/now_playing_mpd.c', target='widget_now_playing_mpd', use=basedeps + ['LIBMPDCLIENT'])
-		widgets_enabled += ['widget_now_playing_mpd']
-	else:
-		bld.define('DISABLE_WIDGET_NOW_PLAYING_MPD', 1)
+		bld.shlib(source='src/widgets/now_playing_mpd.c', target='widget_now_playing_mpd', use=basedeps + ['LIBMPDCLIENT'])
 
 	if bld.is_defined('HAVE_XCB'):
-		bld.stlib(source='src/widgets/desktops.c', target='widget_desktops', use=basedeps + ['XCB'])
-		bld.stlib(source='src/widgets/window_title.c', target='widget_window_title', use=basedeps + ['util_copy_prop', 'XCB'])
-		widgets_enabled += ['widget_desktops', 'widget_window_title']
-	else:
-		bld.define('DISABLE_WIDGET_DESKTOPS', 1)
-		bld.define('DISABLE_WIDGET_WINDOW_TITLE', 1)
+		bld.shlib(source='src/widgets/desktops.c', target='widget_desktops', use=basedeps + ['XCB'])
+		bld.shlib(source='src/widgets/window_title.c', target='widget_window_title', use=basedeps + ['util_copy_prop', 'XCB'])
 
-	bld(features='c cprogram', source='src/wkline.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps + widgets_enabled)
+	bld(features='c cprogram', source='src/wkline.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps)
 	bld.install_files(bld.options.confdir, ['config.json'])
