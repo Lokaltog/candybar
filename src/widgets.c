@@ -73,7 +73,9 @@ handle_interrupt (int signal) {
 		if (widget_threads && (widgets_len > 0)) {
 			wklog("handle_interrupt: stopping widget threads");
 			for (i = 0; i < widgets_len; i++) {
-				pthread_cancel(widget_threads[i]);
+				if (widget_threads[i]) {
+					pthread_cancel(widget_threads[i]);
+				}
 			}
 		}
 		gtk_main_quit();
@@ -94,7 +96,9 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 			/* this call may fail if the thread newer enters the
 			   main thread loop, e.g. if it fails to connect to a
 			   server */
-			pthread_cancel(widget_threads[i]);
+			if (widget_threads[i]) {
+				pthread_cancel(widget_threads[i]);
+			}
 		}
 	}
 
