@@ -93,7 +93,7 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 	if (widget_threads && (widgets_len > 0)) {
 		wklog("webkit: stopping running widget threads");
 		for (i = 0; i < widgets_len; i++) {
-			/* this call may fail if the thread newer enters the
+			/* this call may fail if the thread never enters the
 			   main thread loop, e.g. if it fails to connect to a
 			   server */
 			if (widget_threads[i]) {
