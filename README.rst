@@ -21,13 +21,14 @@ Dependencies:
 * gtk+ 3
 * jansson
 * webkitgtk+
-* xcb
-* xcb-wm
+* waf (required for building wkline)
 
 Optional dependencies:
 
+* xcb (desktops/window title widgets)
+* xcb-wm (desktops/window title widgets)
 * alsa (volume widget)
-* libcurl (weather widget)
+* libcurl (weather/remote IP widgets)
 * libdbus (notification daemon widget)
 * libmpdclient (now playing/mpd widget)
 
@@ -35,15 +36,28 @@ Installation instructions::
 
   git clone https://github.com/Lokaltog/wkline.git
   cd wkline
-  autoreconf --install
-  ./configure
-  make
-  ./wkline
+
+  waf configure build
+  waf install
+
+  wkline
+
+Debug/development build instructions (with relative library search path)::
+
+  git clone https://github.com/Lokaltog/wkline.git
+  cd wkline
+
+  waf clean configure build --debug --prefix=/ \
+      --libdir=`pwd`/out/lib/wkline install --destdir=out
+
+  out/bin/wkline
 
 Configuration
 -------------
 
-Edit ``src/config.h`` and recompile.
+Copy ``config.json`` to ``$XDG_CONFIG_HOME/wkline/config.json`` (usually at
+``~/.config/wkline/config.json``) and change the configuration. Please make sure that
+your config file is valid JSON, this can be checked with e.g. ``jsonlint``.
 
 Screenshots
 -----------
@@ -65,7 +79,3 @@ Screenshots
 
 .. image:: http://i.imgur.com/gpEKgyS.png
    :alt: Concept screenshot
-
-*Please note that some of these screenshots may showcase features that were part of
-the Python concept, and may not have been ported to C yet. Every feature that was
-part of the concept (see commit 4b59f4) is being ported to C.*

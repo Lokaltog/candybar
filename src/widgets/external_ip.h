@@ -1,2 +1,4 @@
+#include <pthread.h>
+
 #include "util/curl.h"
-#include "src/config.h"
+#include "util/config.h"

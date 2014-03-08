@@ -1,5 +1,5 @@
-#include <stdbool.h>
 #include <dbus/dbus.h>
-#include "src/config.h"
+#include <pthread.h>
+#include <stdbool.h>
 
-static void dbus_array_reply(DBusConnection *connection, DBusMessage* msg, char* array[]);
+static void dbus_array_reply (DBusConnection *connection, DBusMessage *msg, char *array[]);

@@ -2,12 +2,8 @@
 #include "battery.h"
 #include "util/dbus_helpers.h"
 
-DBusGConnection *conn;
-DBusGProxy *proxy;
-DBusGProxy *properties_proxy;
-
 static int
-widget_battery_send_update (char *pathbuf) {
+widget_battery_send_update (struct widget *widget, DBusGProxy *properties_proxy, char *pathbuf) {
 	gdouble percentage;
 	guint state;
 	gint64 time_to_empty64, time_to_full64;
@@ -17,7 +13,8 @@ widget_battery_send_update (char *pathbuf) {
 	proxy_int64_value(&time_to_empty64, properties_proxy, pathbuf, "TimeToEmpty");
 	proxy_int64_value(&time_to_full64, properties_proxy, pathbuf, "TimeToFull");
 
-	// jansson fails with 64-bit integers, but the time left on the battery should fit in a 32-bit integer
+	/* jansson fails with 64-bit integers, but the time left on the battery
+	   should fit in a 32-bit integer */
 	unsigned int time_to_empty = time_to_empty64 & 0xffffffff;
 	unsigned int time_to_full = time_to_full64 & 0xffffffff;
 
@@ -31,25 +28,43 @@ widget_battery_send_update (char *pathbuf) {
 
 	json_payload = json_dumps(json_data_object, 0);
 
-	widget_data_t *widget_data = malloc(sizeof(widget_data_t) + 4096);
-	widget_data->widget = "battery";
-	widget_data->data = json_payload;
-	g_idle_add((GSourceFunc)update_widget, widget_data);
+	widget->data = strdup(json_payload);
+	g_idle_add((GSourceFunc)update_widget, widget);
+	json_decref(json_data_object);
 
 	return 0;
 }
 
-void
-*widget_battery () {
+static void
+widget_cleanup (void *arg) {
+	wklog("widget cleanup: battery");
+	DBusGProxy **proxy_ref = arg;
+
+	if (proxy_ref[0] != NULL) {
+		g_object_unref(proxy_ref[0]);
+	}
+	if (proxy_ref[1] != NULL) {
+		g_object_unref(proxy_ref[1]);
+	}
+}
+
+void*
+widget_init (struct widget *widget) {
+	DBusGConnection *conn;
+	DBusGProxy *proxy;
+	DBusGProxy *properties_proxy;
 	char pathbuf[128];
 	GError *error = NULL;
+
 	conn = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
-	sprintf(pathbuf, "/org/freedesktop/UPower/devices/battery_%s", wkline_widget_battery_name);
+	sprintf(pathbuf, "/org/freedesktop/UPower/devices/battery_%s",
+	        json_string_value(wkline_widget_get_config(widget, "name")));
 
 	if (conn == NULL) {
 		wklog("dbus: failed to open connection to bus: %s\n", error->message);
 		g_error_free(error);
-		return;
+
+		return 0;
 	}
 
 	if ((proxy = dbus_g_proxy_new_for_name(conn,
@@ -57,34 +72,32 @@ void
 	                                       pathbuf,
 	                                       "org.freedesktop.UPower.Device.Properties")) == NULL) {
 		wklog("dbus: failed to create proxy object");
-		return;
-	}
 
+		return 0;
+	}
 
 	if ((properties_proxy = dbus_g_proxy_new_from_proxy(proxy,
 	                                                    "org.freedesktop.DBus.Properties",
 	                                                    dbus_g_proxy_get_path(proxy))) == NULL) {
 		g_object_unref(proxy);
 		wklog("dbus: failed to create proxy object");
-		return;
+
+		return 0;
 	}
 
 	unsigned int state;
-	if (! proxy_uint_value(&state, properties_proxy, pathbuf, "State")) {
+	if (!proxy_uint_value(&state, properties_proxy, pathbuf, "State")) {
 		wklog("dbus: invalid battery");
-		return;
+
+		return 0;
 	}
 
+	DBusGProxy *proxy_ptr[2] = { proxy, properties_proxy };
+	pthread_cleanup_push(widget_cleanup, proxy_ptr);
 	for (;;) {
-		widget_battery_send_update(pathbuf);
+		widget_battery_send_update(widget, properties_proxy, pathbuf);
 
 		sleep(20);
 	}
-
-	if (proxy != NULL) {
-		g_object_unref (proxy);
-	}
-	if (properties_proxy != NULL) {
-		g_object_unref (properties_proxy);
-	}
+	pthread_cleanup_pop(1);
 }
