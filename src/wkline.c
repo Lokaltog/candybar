@@ -52,7 +52,7 @@ main (int argc, char *argv[]) {
 	wkline = malloc(sizeof(struct wkline));
 	wkline->config = load_config_file();
 	if (!wkline->config) {
-		wklog("Error config file not found.");
+		LOG_ERR("config file not found.");
 		goto config_err;
 	}
 
@@ -105,7 +105,7 @@ main (int argc, char *argv[]) {
 	g_signal_connect(window, "realize", G_CALLBACK(wk_realize_handler), wkline);
 
 	wkline_theme_uri = json_string_value(wkline_get_config(wkline, "theme_uri"));
-	wklog("Opening URI '%s'", wkline_theme_uri);
+	LOG_INFO("loading theme '%s'", wkline_theme_uri);
 	webkit_web_view_load_uri(web_view, wkline_theme_uri);
 
 	gtk_widget_show_all(GTK_WIDGET(window));

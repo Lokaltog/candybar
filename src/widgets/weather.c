@@ -10,7 +10,7 @@ get_geoip_location (struct location *location) {
 	location_data = json_loads(geoip_raw_json, 0, &error);
 
 	if (!location_data) {
-		wklog("error while fetching GeoIP data");
+		LOG_WARN("error while fetching GeoIP data");
 
 		return NULL;
 	}
@@ -19,19 +19,19 @@ get_geoip_location (struct location *location) {
 
 	geoip_city = json_object_get(location_data, "city");
 	if (!json_is_string(geoip_city)) {
-		wklog("received GeoIP city is not a string");
+		LOG_ERR("received GeoIP city is not a string");
 
 		return NULL;
 	}
 	geoip_region_code = json_object_get(location_data, "region_code");
 	if (!json_is_string(geoip_region_code)) {
-		wklog("received GeoIP region code is not a string");
+		LOG_ERR("received GeoIP region code is not a string");
 
 		return NULL;
 	}
 	geoip_country_code = json_object_get(location_data, "country_code");
 	if (!json_is_string(geoip_country_code)) {
-		wklog("received GeoIP country code is not a string");
+		LOG_ERR("received GeoIP country code is not a string");
 
 		return NULL;
 	}
@@ -112,7 +112,7 @@ get_weather_information (struct location *location) {
 	if (!json_is_string(weather_code) || !json_is_string(weather_temp)) {
 		json_decref(weather_data);
 		free(weather);
-		wklog("weather: invalid weather query result (weather code or temp missing)");
+		LOG_ERR("weather: invalid weather query result (weather code or temp missing)");
 
 		return NULL;
 	}
@@ -133,7 +133,7 @@ widget_weather_send_update (struct widget *widget, struct location *location) {
 
 	weather = get_weather_information(location);
 	if (!weather) {
-		wklog("error while fetching weather data");
+		LOG_ERR("error while fetching weather data");
 
 		return -1;
 	}
@@ -154,7 +154,7 @@ widget_weather_send_update (struct widget *widget, struct location *location) {
 
 static void
 widget_cleanup (void *arg) {
-	wklog("widget cleanup: weather");
+	LOG_INFO("widget cleanup: weather");
 	struct location *location = arg;
 
 	free(location->city);
@@ -172,7 +172,7 @@ widget_init (struct widget *widget) {
 		location = get_geoip_location(location);
 	}
 	if (!location) {
-		wklog("could not get GeoIP location, consider setting the location manually in config.h");
+		LOG_WARN("could not get GeoIP location, consider setting the location manually in config.h");
 		free(location);
 
 		return 0;

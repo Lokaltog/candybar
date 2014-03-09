@@ -32,7 +32,7 @@ window_title_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, in
 		}
 		xcb_generic_error_t *err = xcb_request_check(ewmh->connection, xcb_change_window_attributes_checked(ewmh->connection, win, XCB_CW_EVENT_MASK, values));
 		if (err != NULL) {
-			wklog("could not capture property change events on window 0x%X", win);
+			LOG_INFO("could not capture property change events on window 0x%X", win);
 		}
 	}
 	else {
@@ -52,7 +52,7 @@ window_title_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, in
 
 static void
 widget_cleanup (void *arg) {
-	wklog("widget cleanup: window_title");
+	LOG_INFO("widget cleanup: window_title");
 
 	xcb_ewmh_connection_t *ewmh = arg;
 	xcb_ewmh_connection_wipe(ewmh);
@@ -63,7 +63,7 @@ void*
 widget_init (struct widget *widget) {
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	if (xcb_connection_has_error(conn)) {
-		wklog("Could not connect to display %s.", getenv("DISPLAY"));
+		LOG_INFO("Could not connect to display %s.", getenv("DISPLAY"));
 
 		return 0;
 	}
@@ -83,7 +83,7 @@ widget_init (struct widget *widget) {
 	                                                                                  values));
 
 	if (err != NULL) {
-		wklog("desktops: could not request EWMH property change notifications");
+		LOG_INFO("desktops: could not request EWMH property change notifications");
 
 		return 0;
 	}

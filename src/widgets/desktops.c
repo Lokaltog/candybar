@@ -11,14 +11,14 @@ desktops_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int sc
 
 	/* get current desktop */
 	if (!xcb_ewmh_get_current_desktop_reply(ewmh, xcb_ewmh_get_current_desktop_unchecked(ewmh, screen_nbr), &desktop_curr, NULL)) {
-		wklog("ewmh: could not get current desktop");
+		LOG_INFO("ewmh: could not get current desktop");
 
 		return;
 	}
 
 	/* get desktop count */
 	if (!xcb_ewmh_get_number_of_desktops_reply(ewmh, xcb_ewmh_get_number_of_desktops_unchecked(ewmh, screen_nbr), &desktop_len, NULL)) {
-		wklog("ewmh: could not get desktop count");
+		LOG_INFO("ewmh: could not get desktop count");
 
 		return;
 	}
@@ -32,7 +32,7 @@ desktops_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int sc
 
 	/* get clients */
 	if (!xcb_ewmh_get_client_list_reply(ewmh, xcb_ewmh_get_client_list_unchecked(ewmh, screen_nbr), &clients, NULL)) {
-		wklog("ewmh: could not get client list");
+		LOG_INFO("ewmh: could not get client list");
 
 		return;
 	}
@@ -46,7 +46,7 @@ desktops_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int sc
 
 		/* check icccm urgency hint on client */
 		if (!xcb_icccm_get_wm_hints_reply(ewmh->connection, xcb_icccm_get_wm_hints_unchecked(ewmh->connection, clients.windows[i]), &window_hints, NULL)) {
-			wklog("icccm: could not get window hints");
+			LOG_INFO("icccm: could not get window hints");
 		}
 		if (window_hints.flags & XCB_ICCCM_WM_HINT_X_URGENCY) {
 			desktops[client_desktop].is_urgent = true;
@@ -87,7 +87,7 @@ desktops_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int sc
 
 static void
 widget_cleanup (void *arg) {
-	wklog("widget cleanup: desktops");
+	LOG_INFO("widget cleanup: desktops");
 
 	xcb_ewmh_connection_t *ewmh = arg;
 	xcb_ewmh_connection_wipe(ewmh);
@@ -98,7 +98,7 @@ void*
 widget_init (struct widget *widget) {
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	if (xcb_connection_has_error(conn)) {
-		wklog("Could not connect to display %s.", getenv("DISPLAY"));
+		LOG_ERR("could not connect to display %s.", getenv("DISPLAY"));
 
 		return 0;
 	}
@@ -117,7 +117,7 @@ widget_init (struct widget *widget) {
 	                                                                                  values));
 
 	if (err != NULL) {
-		wklog("desktops: could not request EWMH property change notifications");
+		LOG_ERR("desktops: could not request EWMH property change notifications");
 
 		return 0;
 	}

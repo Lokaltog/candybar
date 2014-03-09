@@ -16,7 +16,7 @@ proxy_double_value (gdouble *value, DBusGProxy *properties_proxy, char *path, ch
 	GValue get_value = { 0, };
 
 	if (!proxy_property_value(properties_proxy, path, property, &get_value, &error)) {
-		wklog("dbus error: %s", error->message);
+		LOG_ERR("dbus error: %s", error->message);
 		g_error_free(error);
 
 		return FALSE;
@@ -34,7 +34,7 @@ proxy_uint64_value (guint64 *value, DBusGProxy *properties_proxy, char *path, ch
 	GValue get_value = { 0, };
 
 	if (!proxy_property_value(properties_proxy, path, property, &get_value, &error)) {
-		wklog("dbus error: %s", error->message);
+		LOG_ERR("dbus error: %s", error->message);
 		g_error_free(error);
 
 		return FALSE;
@@ -52,7 +52,7 @@ proxy_uint_value (guint *value, DBusGProxy *properties_proxy, char *path, char *
 	GValue get_value = { 0, };
 
 	if (!proxy_property_value(properties_proxy, path, property, &get_value, &error)) {
-		wklog("dbus error: %s", error->message);
+		LOG_ERR("dbus error: %s", error->message);
 		g_error_free(error);
 
 		return FALSE;
@@ -70,7 +70,7 @@ proxy_int64_value (gint64 *value, DBusGProxy *properties_proxy, char *path, char
 	GValue get_value = { 0, };
 
 	if (!proxy_property_value(properties_proxy, path, property, &get_value, &error)) {
-		wklog("dbus error: %s", error->message);
+		LOG_ERR("dbus error: %s", error->message);
 		g_error_free(error);
 
 		return FALSE;
@@ -88,7 +88,7 @@ proxy_int_value (gint *value, DBusGProxy *properties_proxy, char *path, char *pr
 	GValue get_value = { 0, };
 
 	if (!proxy_property_value(properties_proxy, path, property, &get_value, &error)) {
-		wklog("dbus error: %s", error->message);
+		LOG_ERR("dbus error: %s", error->message);
 		g_error_free(error);
 
 		return FALSE;

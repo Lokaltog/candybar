@@ -21,7 +21,7 @@ update_widget (struct widget *widget) {
 	script = malloc(script_length + 1);
 
 #ifdef DEBUG_JSON
-	wklog("Updating widget %s: %s", widget->name, widget->data);
+	LOG_INFO("Updating widget %s: %s", widget->name, widget->data);
 #endif
 	sprintf(script, script_template, widget->name, widget->data);
 
@@ -41,13 +41,13 @@ spawn_widget (WebKitWebView *web_view, json_t *config, const char *name) {
 	pthread_t return_thread;
 
 	if (lib == NULL) {
-		wklog("loading of '%s' (%s) failed", libpath, name);
+		LOG_WARN("loading of '%s' (%s) failed", libpath, name);
 
 		return 0;
 	}
 
 	if (!g_module_symbol(lib, "widget_init", (gpointer*)&widget_init)) {
-		wklog("loading of '%s' (%s) failed: unable to load module symbol", libpath, name);
+		LOG_WARN("loading of '%s' (%s) failed: unable to load module symbol", libpath, name);
 
 		return 0;
 	}
@@ -58,7 +58,7 @@ spawn_widget (WebKitWebView *web_view, json_t *config, const char *name) {
 	widget->web_view = web_view;
 	widget->name = strdup(name); /* don't forget to free this one */
 
-	wklog("spawning widget '%s'", name);
+	LOG_INFO("spawning widget '%s'", name);
 
 	pthread_create(&return_thread, NULL, (void*)widget_init, widget);
 	pthread_setname_np(return_thread, name);
@@ -71,7 +71,7 @@ handle_interrupt (int signal) {
 	unsigned short i;
 	if ((signal == SIGTERM) || (signal == SIGINT) || (signal == SIGHUP)) {
 		if (widget_threads && (widgets_len > 0)) {
-			wklog("handle_interrupt: stopping widget threads");
+			LOG_INFO("handle_interrupt: stopping widget threads");
 			for (i = 0; i < widgets_len; i++) {
 				if (widget_threads[i]) {
 					pthread_cancel(widget_threads[i]);
@@ -88,10 +88,10 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 	json_t *widgets_arr = json_object_get(config, "widgets");
 	unsigned short i;
 
-	wklog("webkit: window object cleared");
+	LOG_INFO("webkit: window object cleared");
 
 	if (widget_threads && (widgets_len > 0)) {
-		wklog("webkit: stopping running widget threads");
+		LOG_INFO("webkit: stopping running widget threads");
 		for (i = 0; i < widgets_len; i++) {
 			/* this call may fail if the thread never enters the
 			   main thread loop, e.g. if it fails to connect to a
@@ -105,7 +105,7 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 	widgets_len = json_array_size(widgets_arr);
 	widget_threads = malloc(widgets_len * sizeof(pthread_t));
 
-	wklog("webkit: spawning new widget threads");
+	LOG_INFO("webkit: spawning new widget threads");
 
 	for (i = 0; i < widgets_len; i++) {
 		widget_threads[i] = spawn_widget(web_view, config, json_string_value(json_array_get(widgets_arr, i)));
