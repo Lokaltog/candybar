@@ -1,4 +1,5 @@
 #include "widgets.h"
+#include "util/config.h"
 #include "util/log.h"
 
 static pthread_t *widget_threads;
@@ -20,9 +21,9 @@ update_widget (struct widget *widget) {
 	/* Add 1 for \0 */
 	script = malloc(script_length + 1);
 
-#ifdef DEBUG_JSON
-	wklog("Updating widget %s: %s", widget->name, widget->data);
-#endif
+	if (wkline_widget_get_config_silent(widget, "debug") == json_true())
+		wklog("Updating widget %s: %s", widget->name, widget->data);
+	
 	sprintf(script, script_template, widget->name, widget->data);
 
 	webkit_web_view_execute_script(widget->web_view, script);
