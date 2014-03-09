@@ -14,14 +14,13 @@ blurred background without a desktop compositor running.
 Installation
 ------------
 
-wkline is available for Arch Linux users as ``wkline-git`` on the AUR.
+wkline is available for Arch Linux users as `wkline-git`_ on the AUR.
 
 Dependencies:
 
 * gtk+ 3
 * jansson
 * webkitgtk+
-* waf (required for building wkline)
 
 Optional dependencies:
 
@@ -37,8 +36,8 @@ Installation instructions::
   git clone https://github.com/Lokaltog/wkline.git
   cd wkline
 
-  waf configure build
-  waf install
+  ./waf configure build
+  ./waf install
 
   wkline
 
@@ -47,10 +46,12 @@ Debug/development build instructions (with relative library search path)::
   git clone https://github.com/Lokaltog/wkline.git
   cd wkline
 
-  waf clean configure build --debug --prefix=/ \
+  ./waf clean configure build --debug --prefix=/ \
       --libdir=`pwd`/out/lib/wkline install --destdir=out
 
   out/bin/wkline
+
+.. _wkline-git: https://aur.archlinux.org/packages/wkline-git/
 
 Configuration
 -------------
