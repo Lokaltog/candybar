@@ -49,6 +49,9 @@ main (int argc, char *argv[]) {
 
 	gtk_init(&argc, &argv);
 
+	wklog("%s", VERSION);
+	wklog("built on %s", BUILD_DATE);
+
 	wkline = malloc(sizeof(struct wkline));
 	wkline->config = load_config_file();
 	if (!wkline->config) {

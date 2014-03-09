@@ -1,9 +1,23 @@
 #!/usr/bin/env python
 
 from waflib import Utils
+import os, time
 
 PACKAGE = 'wkline'
 LIBDIR = '${PREFIX}/lib/wkline'
+VERSION = '0.01'
+
+def get_git_version():
+	""" try grab the current version number from git"""
+	version = None
+	if os.path.exists(".git"):
+		version = "-git-"+os.popen("git rev-list --count HEAD").read().strip()
+		version += "."+os.popen("git rev-parse --short HEAD").read().strip()
+	return version
+
+def pre_build(ctx):
+	ctx.define('VERSION', VERSION+get_git_version())
+	ctx.define('BUILD_DATE', time.strftime("%c"))
 
 def options(opt):
 	opt.load('compiler_c')
@@ -43,6 +57,8 @@ def configure(ctx):
 
 def build(bld):
 	basedeps = ['GTK', 'GLIB', 'WEBKITGTK', 'JANSSON']
+
+	bld.add_pre_fun(pre_build)
 
 	bld.objects(source=bld.path.ant_glob('src/util/(log|config|copy_prop).c'), target='baseutils', use=basedeps)
 	bld.objects(source='src/widgets.c', target='widgets', use=basedeps)
