@@ -1,6 +1,7 @@
-#include "config.h"
+#include "wkconfig.h"
 #include "widgets.h"
 #include "wkline.h"
+#include "config.h"
 
 json_t*
 load_config_file () {
@@ -16,6 +17,7 @@ load_config_file () {
 			/* syntax error */
 			wklog("Error in config file: %s", err.text);
 			exit(EXIT_FAILURE);
+			
 		}
 		else {
 			/* file not found
@@ -44,24 +46,20 @@ load_config_file () {
 
 json_t*
 wkline_get_config (struct wkline *self, const char *config_name) {
-	return json_object_get(self->config, config_name);
+	json_t *object;
+	object = json_object_get(self->config, config_name);
+	if (!object) {
+		wklog("Warning: configuration \"%s\" not found in config file", config_name);
+	}
+	return object;
 }
 
 json_t*
 wkline_widget_get_config (struct widget *self, const char *config_name) {
 	json_t *object;
-	object = json_object_get(self->config, "widgets_config");
-	if (!object) {
-		wklog("Warning: widgets block not found in config file");
-	}
-	object = json_object_get(object, self->name);
-	if (!object) {
-		wklog("Warning: widget \"%s\" not found in config file", self->name);
-	}
-	object = json_object_get(object, config_name);
+	object = json_object_get(self->config, config_name);
 	if (!object) {
 		wklog("Warning: configuration \"%s\" in widget \"%s\" not found in config file", config_name, self->name);
 	}
-
 	return object;
 }

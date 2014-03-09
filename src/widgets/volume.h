@@ -2,7 +2,7 @@
 #include <pthread.h>
 #include <webkit/webkit.h>
 
-#include "util/config.h"
+#include "util/wkconfig.h"
 
 struct widget_volume_res {
 	struct pollfd *pollfds;

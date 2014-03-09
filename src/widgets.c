@@ -1,8 +1,9 @@
 #include "widgets.h"
 #include "util/log.h"
+#include "config.h"
 
-static pthread_t *widget_threads;
-static size_t widgets_len;
+static pthread_t *widget_threads = NULL;
+static size_t widgets_len = 0;
 
 gboolean
 update_widget (struct widget *widget) {
@@ -85,7 +86,8 @@ handle_interrupt (int signal) {
 void
 window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data) {
 	json_t *config = user_data;
-	json_t *widgets_arr = json_object_get(config, "widgets");
+	json_t *value, *widgets = json_object_get(config, "widgets");
+	const char *name;
 	unsigned short i;
 
 	wklog("webkit: window object cleared");
@@ -102,12 +104,13 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 		}
 	}
 
-	widgets_len = json_array_size(widgets_arr);
+	widgets_len = json_object_size(widgets);
 	widget_threads = malloc(widgets_len * sizeof(pthread_t));
 
 	wklog("webkit: spawning new widget threads");
 
-	for (i = 0; i < widgets_len; i++) {
-		widget_threads[i] = spawn_widget(web_view, config, json_string_value(json_array_get(widgets_arr, i)));
+	i = 0;
+	json_object_foreach(widgets,name,value){
+		widget_threads[i++] = spawn_widget(web_view, value, name);
 	}
 }
