@@ -1,6 +1,7 @@
-#include "config.h"
+#include "wkconfig.h"
 #include "widgets.h"
 #include "wkline.h"
+#include "config.h"
 
 json_t*
 load_config_file () {
@@ -16,6 +17,7 @@ load_config_file () {
 			/* syntax error */
 			wklog("Error in config file: %s", err.text);
 			exit(EXIT_FAILURE);
+			
 		}
 		else {
 			/* file not found

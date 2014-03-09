@@ -2,4 +2,4 @@
 #include <pthread.h>
 #include <mpd/client.h>
 
-#include "util/config.h"
+#include "util/wkconfig.h"

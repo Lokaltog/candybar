@@ -18,6 +18,7 @@ def get_git_version():
 def pre_build(ctx):
 	ctx.define('VERSION', VERSION+get_git_version())
 	ctx.define('BUILD_DATE', time.strftime("%c"))
+	ctx.write_config_header('src/config.h')
 
 def options(opt):
 	opt.load('compiler_c')
@@ -60,7 +61,7 @@ def build(bld):
 
 	bld.add_pre_fun(pre_build)
 
-	bld.objects(source=bld.path.ant_glob('src/util/(log|config|copy_prop).c'), target='baseutils', use=basedeps)
+	bld.objects(source=bld.path.ant_glob('src/util/(log|wkconfig|copy_prop).c'), target='baseutils', use=basedeps)
 	bld.objects(source='src/widgets.c', target='widgets', use=basedeps)
 
 	# widgets

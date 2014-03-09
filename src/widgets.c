@@ -1,5 +1,6 @@
 #include "widgets.h"
 #include "util/log.h"
+#include "config.h"
 
 static pthread_t *widget_threads = NULL;
 static size_t widgets_len = 0;

@@ -1,7 +1,8 @@
-#include "util/config.h"
+#include "util/wkconfig.h"
 #include "util/log.h"
 #include "wkline.h"
 #include "widgets.h"
+#include "config.h"
 
 #ifndef DEBUG /* only disable context menu in prod build */
 static gboolean
@@ -9,7 +10,6 @@ wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
 	/* Disable context menu */
 	return TRUE;
 }
-
 #endif
 
 static void
