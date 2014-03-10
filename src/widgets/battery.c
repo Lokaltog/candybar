@@ -55,12 +55,10 @@ widget_init (struct widget *widget) {
 	DBusGProxy *properties_proxy;
 	char pathbuf[128];
 	GError *error = NULL;
-	char config_name[CONFIG_VALUE_SIZE];
-
-	widget_get_config(widget, "name", &config_name);
 
 	conn = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
-	sprintf(pathbuf, "/org/freedesktop/UPower/devices/battery_%s", config_name);
+	sprintf(pathbuf, "/org/freedesktop/UPower/devices/battery_%s",
+	        json_string_value(wkline_widget_get_config(widget, "name")));
 
 	if (conn == NULL) {
 		LOG_ERR("dbus: failed to open connection to bus: %s\n", error->message);

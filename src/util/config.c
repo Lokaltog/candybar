@@ -42,66 +42,26 @@ load_config_file () {
 	return json_config;
 }
 
-void
-assign_json_value (json_t *object, void *value) {
-	switch (json_typeof(object)) {
-	case JSON_OBJECT:
-	case JSON_ARRAY:
-		value = object;
-		break;
-	case JSON_STRING:
-		strncpy(value, json_string_value(object), CONFIG_VALUE_SIZE);
-		break;
-	case JSON_INTEGER:
-		*(int*)value = json_integer_value(object);
-		break;
-	case JSON_REAL:
-		*(double*)value = json_integer_value(object);
-		break;
-	case JSON_TRUE:
-		*(bool*)value = true;
-		break;
-	case JSON_FALSE:
-		*(bool*)value = false;
-		break;
-	case JSON_NULL:
-		value = NULL;
-		break;
-	}
+json_t*
+wkline_get_config (struct wkline *self, const char *config_name) {
+	return json_object_get(self->config, config_name);
 }
 
-int
-wkline_get_config (struct wkline *self, const char *config_key, void *value) {
+json_t*
+wkline_widget_get_config (struct widget *self, const char *config_name) {
 	json_t *object;
-
-	object = json_object_get(self->config, config_key);
-	if (!object) {
-		return CONFIG_ERROR_INVALID_KEY;
-	}
-
-	assign_json_value(object, value);
-
-	return CONFIG_ERROR_OK;
-}
-
-int
-widget_get_config (struct widget *self, const char *config_key, void *value) {
-	json_t *object;
-
 	object = json_object_get(self->config, "widgets_config");
 	if (!object) {
-		return CONFIG_ERROR_NO_WIDGETS;
+		LOG_WARN("widgets block not found in config file");
 	}
 	object = json_object_get(object, self->name);
 	if (!object) {
-		return CONFIG_ERROR_INVALID_WIDGET;
+		LOG_WARN("widget '%s' not found in config file", self->name);
 	}
-	object = json_object_get(object, config_key);
+	object = json_object_get(object, config_name);
 	if (!object) {
-		return CONFIG_ERROR_INVALID_KEY;
+		LOG_WARN("configuration '%s' in widget '%s' not found in config file", config_name, self->name);
 	}
 
-	assign_json_value(object, value);
-
-	return CONFIG_ERROR_OK;
+	return object;
 }
