@@ -11,13 +11,10 @@ update_widget (struct widget *widget) {
 	int script_length = 0;
 	char *script;
 
-	bool debug_json = false;
-	widget_get_config(widget, "debug", &debug_json);
-
 	script_length = snprintf(NULL, 0, script_template, widget->name, widget->data);
 	script = malloc(script_length + 1);
 
-	if (debug_json) {
+	if (json_is_true(wkline_widget_get_config_silent(widget, "debug"))) {
 		LOG_INFO("updating widget %s: %s", widget->name, widget->data);
 	}
 

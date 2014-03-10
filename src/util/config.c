@@ -65,3 +65,13 @@ wkline_widget_get_config (struct widget *self, const char *config_name) {
 
 	return object;
 }
+
+json_t*
+wkline_widget_get_config_silent (struct widget *self, const char *config_name) {
+	json_t *object;
+	object = json_object_get(self->config, "widgets_config");
+	object = json_object_get(object, self->name);
+	object = json_object_get(object, config_name);
+
+	return object;
+}
