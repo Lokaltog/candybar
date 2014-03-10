@@ -16,11 +16,11 @@ wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
 static void
 wk_realize_handler (GtkWidget *window, gpointer user_data) {
 	struct wkline *wkline = user_data;
-	GdkAtom atom;
-	GdkWindow *gdkw;
+	GdkAtom net_wm_strut_atom = gdk_atom_intern("_NET_WM_STRUT", FALSE);
+	GdkWindow *gdkw = gtk_widget_get_window(GTK_WIDGET(window));
 	long vals[4];
-	bool supports_net_wm_strut_partial = g_list_find(gdk_get_net_supported(),
-	                                                 gdk_atom_intern("_NET_WM_STRUT_PARTIAL", FALSE)) != NULL;
+	bool supports_net_wm_strut = g_list_find(gdk_get_net_supported(),
+	                                         net_wm_strut_atom) != NULL;
 
 	vals[0] = 0;
 	vals[1] = 0;
@@ -33,15 +33,13 @@ wk_realize_handler (GtkWidget *window, gpointer user_data) {
 		vals[3] = wkline->dim.h;
 	}
 
-	atom = gdk_atom_intern("_NET_WM_STRUT", FALSE);
-
-	gdkw = gtk_widget_get_window(GTK_WIDGET(window));
-	gdk_property_change(gdkw, atom, gdk_atom_intern("CARDINAL", FALSE),
-	                    32, GDK_PROP_MODE_REPLACE, (guchar*)vals, LENGTH(vals));
-
-	if (!supports_net_wm_strut_partial) {
+	if (supports_net_wm_strut) {
+		gdk_property_change(gdkw, net_wm_strut_atom, gdk_atom_intern("CARDINAL", FALSE),
+		                    32, GDK_PROP_MODE_REPLACE, (guchar*)vals, LENGTH(vals));
+	}
+	else {
 		/* only set override redirect if we're unable to reserve space
-		   with _NET_WM_STRUT_PARTIAL */
+		   with _NET_WM_STRUT */
 		gdk_window_set_override_redirect(gdkw, TRUE);
 	}
 }
