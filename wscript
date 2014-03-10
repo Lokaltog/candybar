@@ -1,9 +1,22 @@
 #!/usr/bin/env python
 
+import subprocess
+import os
+import time
+
 from waflib import Utils
 
 PACKAGE = 'wkline'
 LIBDIR = '${PREFIX}/lib/wkline'
+
+def get_version():
+	'''Attempt to fetch the current version number from git.'''
+	version = 'beta'
+	if not os.path.exists('.git'):
+		return version + '-unknown'
+	version += '-git-' + subprocess.Popen('git rev-list --count HEAD', shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8').strip()
+	version += '.' + subprocess.Popen('git rev-parse --short HEAD', shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8').strip()
+	return version
 
 def options(opt):
 	opt.load('compiler_c')
@@ -14,6 +27,10 @@ def options(opt):
 def configure(ctx):
 	ctx.load('compiler_c')
 	ctx.check_cfg(atleast_pkgconfig_version='0.0.0')
+
+	# add configure version/time defines
+	ctx.define('VERSION', get_version())
+	ctx.define('BUILD_TIME', time.strftime('%c'))
 
 	# compiler options
 	if ctx.options.debug:
