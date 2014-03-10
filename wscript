@@ -28,9 +28,6 @@ def configure(ctx):
 	ctx.load('compiler_c')
 	ctx.check_cfg(atleast_pkgconfig_version='0.0.0')
 
-	# add configure version/time defines
-	ctx.define('VERSION', get_version())
-	ctx.define('BUILD_TIME', time.strftime('%c'))
 
 	# compiler options
 	if ctx.options.debug:
@@ -61,6 +58,12 @@ def configure(ctx):
 def build(bld):
 	basedeps = ['GTK', 'GLIB', 'WEBKITGTK', 'JANSSON']
 
+	# add build version/time defines
+	wkline_defines = [
+		'VERSION="{0}"'.format(get_version()),
+		'BUILD_TIME="{0}"'.format(time.strftime('%c')),
+	]
+
 	bld.objects(source=bld.path.ant_glob('src/util/(log|config|copy_prop).c'), target='baseutils', use=basedeps)
 	bld.objects(source='src/widgets.c', target='widgets', use=basedeps)
 
@@ -87,5 +90,5 @@ def build(bld):
 		bld.shlib(source='src/widgets/desktops.c', target='widget_desktops', use=basedeps + ['XCB'], install_path=LIBDIR)
 		bld.shlib(source='src/widgets/window_title.c', target='widget_window_title', use=basedeps + ['util_copy_prop', 'XCB'], install_path=LIBDIR)
 
-	bld.program(source='src/wkline.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps)
+	bld.program(source='src/wkline.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps, defines=wkline_defines)
 	bld.install_files(bld.options.confdir, ['config.json'])
