@@ -35,6 +35,7 @@ wk_realize_handler (GtkWidget *window, gpointer user_data) {
 	gdkw = gtk_widget_get_window(GTK_WIDGET(window));
 	gdk_property_change(gdkw, atom, gdk_atom_intern("CARDINAL", FALSE),
 	                    32, GDK_PROP_MODE_REPLACE, (guchar*)vals, LENGTH(vals));
+	gdk_window_set_override_redirect(gdkw, TRUE);
 }
 
 int
