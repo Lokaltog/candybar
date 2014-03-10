@@ -130,6 +130,7 @@ widget_weather_send_update (struct widget *widget, struct location *location) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
 	struct weather *weather;
+	char config_unit[CONFIG_VALUE_SIZE];
 
 	weather = get_weather_information(location);
 	if (!weather) {
@@ -138,9 +139,11 @@ widget_weather_send_update (struct widget *widget, struct location *location) {
 		return -1;
 	}
 
+	widget_get_config(widget, "unit", &config_unit);
+
 	json_object_set_new(json_data_object, "icon", json_integer(weather->code));
 	json_object_set_new(json_data_object, "temp", json_real(weather->temp));
-	json_object_set_new(json_data_object, "unit", json_string(json_string_value(wkline_widget_get_config(widget, "unit"))));
+	json_object_set_new(json_data_object, "unit", json_string(config_unit));
 
 	json_payload = json_dumps(json_data_object, 0);
 
@@ -166,8 +169,11 @@ widget_cleanup (void *arg) {
 void*
 widget_init (struct widget *widget) {
 	struct location *location = calloc(1, sizeof(location));
+	char config_location[CONFIG_VALUE_SIZE];
+	widget_get_config(widget, "location", &config_location);
 
-	location->city = strdup(json_string_value(wkline_widget_get_config(widget, "location")));
+	location->city = strdup(config_location);
+
 	if (location->city[0] == '\0') {
 		location = get_geoip_location(location);
 	}

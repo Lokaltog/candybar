@@ -45,14 +45,18 @@ main (int argc, char *argv[]) {
 	GdkScreen *screen;
 	GdkRectangle dest;
 	WebKitWebView *web_view;
-	const char *wkline_theme_uri;
+
+	char config_position[CONFIG_VALUE_SIZE];
+	char config_theme_uri[CONFIG_VALUE_SIZE];
+	int config_monitor;
+	int config_height;
 
 	gtk_init(&argc, &argv);
 
 	wkline = malloc(sizeof(struct wkline));
 	wkline->config = load_config_file();
 	if (!wkline->config) {
-		LOG_ERR("config file not found.");
+		LOG_ERR("config file not found");
 		goto config_err;
 	}
 
@@ -60,7 +64,12 @@ main (int argc, char *argv[]) {
 	signal(SIGINT, handle_interrupt);
 	signal(SIGHUP, handle_interrupt);
 
-	wkline->position = json_string_value(wkline_get_config(wkline, "position"));
+	wkline_get_config(wkline, "position", &config_position);
+	wkline_get_config(wkline, "theme_uri", &config_theme_uri);
+	wkline_get_config(wkline, "monitor", &config_monitor);
+	wkline_get_config(wkline, "height", &config_height);
+
+	wkline->position = config_position;
 
 	/* GtkScrolledWindow fails to lock small heights (<25px), so a GtkLayout
 	   is used instead */
@@ -70,11 +79,9 @@ main (int argc, char *argv[]) {
 
 	/* get window size */
 	screen = gtk_window_get_screen(window);
-	gdk_screen_get_monitor_geometry(screen,
-	                                json_integer_value(wkline_get_config(wkline, "monitor")),
-	                                &dest);
+	gdk_screen_get_monitor_geometry(screen, config_monitor, &dest);
 	wkline->dim.w = dest.width;
-	wkline->dim.h = json_integer_value(wkline_get_config(wkline, "height"));
+	wkline->dim.h = config_height;
 
 	/* set window dock properties */
 	if (!strcmp(wkline->position, "top")) {
@@ -104,9 +111,8 @@ main (int argc, char *argv[]) {
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	g_signal_connect(window, "realize", G_CALLBACK(wk_realize_handler), wkline);
 
-	wkline_theme_uri = json_string_value(wkline_get_config(wkline, "theme_uri"));
-	LOG_INFO("loading theme '%s'", wkline_theme_uri);
-	webkit_web_view_load_uri(web_view, wkline_theme_uri);
+	LOG_INFO("loading theme '%s'", config_theme_uri);
+	webkit_web_view_load_uri(web_view, config_theme_uri);
 
 	gtk_widget_show_all(GTK_WIDGET(window));
 
