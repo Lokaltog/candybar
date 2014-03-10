@@ -1,4 +1,5 @@
 #include "util/config.h"
+#include "util/gdk_helpers.h"
 #include "util/log.h"
 #include "wkline.h"
 #include "widgets.h"
@@ -18,6 +19,8 @@ wk_realize_handler (GtkWidget *window, gpointer user_data) {
 	GdkAtom atom;
 	GdkWindow *gdkw;
 	long vals[4];
+	bool supports_net_wm_strut_partial = g_list_find(gdk_get_net_supported(),
+	                                                 gdk_atom_intern("_NET_WM_STRUT_PARTIAL", FALSE)) != NULL;
 
 	vals[0] = 0;
 	vals[1] = 0;
@@ -35,7 +38,12 @@ wk_realize_handler (GtkWidget *window, gpointer user_data) {
 	gdkw = gtk_widget_get_window(GTK_WIDGET(window));
 	gdk_property_change(gdkw, atom, gdk_atom_intern("CARDINAL", FALSE),
 	                    32, GDK_PROP_MODE_REPLACE, (guchar*)vals, LENGTH(vals));
-	gdk_window_set_override_redirect(gdkw, TRUE);
+
+	if (!supports_net_wm_strut_partial) {
+		/* only set override redirect if we're unable to reserve space
+		   with _NET_WM_STRUT_PARTIAL */
+		gdk_window_set_override_redirect(gdkw, TRUE);
+	}
 }
 
 int
