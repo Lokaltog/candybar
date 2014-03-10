@@ -2,8 +2,8 @@
 #include "util/config.h"
 #include "util/log.h"
 
-static pthread_t *widget_threads;
-static size_t widgets_len;
+static pthread_t *widget_threads = NULL;
+static size_t widgets_enabled_len = 0;
 
 gboolean
 update_widget (struct widget *widget) {
@@ -65,9 +65,9 @@ void
 handle_interrupt (int signal) {
 	unsigned short i;
 	if ((signal == SIGTERM) || (signal == SIGINT) || (signal == SIGHUP)) {
-		if (widget_threads && (widgets_len > 0)) {
+		if (widget_threads && (widgets_enabled_len > 0)) {
 			LOG_INFO("handle_interrupt: stopping widget threads");
-			for (i = 0; i < widgets_len; i++) {
+			for (i = 0; i < widgets_enabled_len; i++) {
 				if (widget_threads[i]) {
 					pthread_cancel(widget_threads[i]);
 				}
@@ -80,14 +80,15 @@ handle_interrupt (int signal) {
 void
 window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data) {
 	json_t *config = user_data;
-	json_t *widgets_arr = json_object_get(config, "widgets");
+	json_t *widget_config, *widgets = json_object_get(config, "widgets");
+	const char *name;
 	unsigned short i;
 
 	LOG_INFO("webkit: window object cleared");
 
-	if (widget_threads && (widgets_len > 0)) {
+	if (widget_threads && (widgets_enabled_len > 0)) {
 		LOG_INFO("webkit: stopping running widget threads");
-		for (i = 0; i < widgets_len; i++) {
+		for (i = 0; i < widgets_enabled_len; i++) {
 			/* this call may fail if the thread never enters the
 			   main thread loop, e.g. if it fails to connect to a
 			   server */
@@ -97,12 +98,20 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 		}
 	}
 
-	widgets_len = json_array_size(widgets_arr);
-	widget_threads = malloc(widgets_len * sizeof(pthread_t));
+	json_object_foreach(widgets, name, widget_config) {
+		if (!json_is_false(json_object_get(widget_config, "enabled"))) {
+			widgets_enabled_len++;
+		}
+	}
 
-	LOG_INFO("webkit: spawning new widget threads");
+	widget_threads = malloc(widgets_enabled_len * sizeof(pthread_t));
 
-	for (i = 0; i < widgets_len; i++) {
-		widget_threads[i] = spawn_widget(web_view, config, json_string_value(json_array_get(widgets_arr, i)));
+	LOG_INFO("spawning %i widget threads", widgets_enabled_len);
+
+	i = 0;
+	json_object_foreach(widgets, name, widget_config) {
+		if (!json_is_false(json_object_get(widget_config, "enabled"))) {
+			widget_threads[i++] = spawn_widget(web_view, widget_config, name);
+		}
 	}
 }
