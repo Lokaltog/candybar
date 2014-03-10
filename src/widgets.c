@@ -1,4 +1,5 @@
 #include "widgets.h"
+#include "util/config.h"
 #include "util/log.h"
 
 static pthread_t *widget_threads;
@@ -10,19 +11,16 @@ update_widget (struct widget *widget) {
 	int script_length = 0;
 	char *script;
 
-	/* Get the length of the script payload. */
-	script_length = snprintf(NULL,
-	                         0,
-	                         script_template,
-	                         widget->name,
-	                         widget->data);
+	bool debug_json = false;
+	widget_get_config(widget, "debug", &debug_json);
 
-	/* Add 1 for \0 */
+	script_length = snprintf(NULL, 0, script_template, widget->name, widget->data);
 	script = malloc(script_length + 1);
 
-#ifdef DEBUG_JSON
-	LOG_INFO("Updating widget %s: %s", widget->name, widget->data);
-#endif
+	if (debug_json) {
+		LOG_INFO("updating widget %s: %s", widget->name, widget->data);
+	}
+
 	sprintf(script, script_template, widget->name, widget->data);
 
 	webkit_web_view_execute_script(widget->web_view, script);
