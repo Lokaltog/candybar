@@ -3,7 +3,7 @@
 #include "util/log.h"
 
 static pthread_t *widget_threads = NULL;
-static size_t widgets_enabled_len = 0;
+static size_t widgets_len = 0;
 
 gboolean
 update_widget (struct widget *widget) {
@@ -65,9 +65,9 @@ void
 handle_interrupt (int signal) {
 	unsigned short i;
 	if ((signal == SIGTERM) || (signal == SIGINT) || (signal == SIGHUP)) {
-		if (widget_threads && (widgets_enabled_len > 0)) {
+		if (widget_threads && (widgets_len > 0)) {
 			LOG_INFO("handle_interrupt: stopping widget threads");
-			for (i = 0; i < widgets_enabled_len; i++) {
+			for (i = 0; i < widgets_len; i++) {
 				if (widget_threads[i]) {
 					pthread_cancel(widget_threads[i]);
 				}
@@ -86,9 +86,9 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 
 	LOG_INFO("webkit: window object cleared");
 
-	if (widget_threads && (widgets_enabled_len > 0)) {
+	if (widget_threads && (widgets_len > 0)) {
 		LOG_INFO("webkit: stopping running widget threads");
-		for (i = 0; i < widgets_enabled_len; i++) {
+		for (i = 0; i < widgets_len; i++) {
 			/* this call may fail if the thread never enters the
 			   main thread loop, e.g. if it fails to connect to a
 			   server */
@@ -98,20 +98,13 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 		}
 	}
 
-	json_object_foreach(widgets, name, widget_config) {
-		if (!json_is_false(json_object_get(widget_config, "enabled"))) {
-			widgets_enabled_len++;
-		}
-	}
+	widgets_len = json_object_size(widgets);
+	widget_threads = malloc(widgets_len * sizeof(pthread_t));
 
-	widget_threads = malloc(widgets_enabled_len * sizeof(pthread_t));
-
-	LOG_INFO("spawning %i widget threads", widgets_enabled_len);
+	LOG_INFO("spawning %i widget threads", widgets_len);
 
 	i = 0;
 	json_object_foreach(widgets, name, widget_config) {
-		if (!json_is_false(json_object_get(widget_config, "enabled"))) {
-			widget_threads[i++] = spawn_widget(web_view, widget_config, name);
-		}
+		widget_threads[i++] = spawn_widget(web_view, widget_config, name);
 	}
 }
