@@ -16,3 +16,11 @@ struct weather {
 	double temp;
 	char *unit;
 };
+
+static struct widget_config {
+	const char *location;
+	const char *unit;
+} widget_config_defaults = {
+	.location = "",
+	.unit = "c",
+};

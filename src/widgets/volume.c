@@ -35,6 +35,10 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
+	struct widget_config config = widget_config_defaults;
+	widget_init_config_string(widget, "card", config.card);
+	widget_init_config_string(widget, "selem", config.selem);
+
 	snd_mixer_t *mixer;
 	snd_mixer_selem_id_t *sid;
 	struct pollfd *pollfds = NULL;
@@ -43,13 +47,13 @@ widget_init (struct widget *widget) {
 
 	/* open mixer */
 	snd_mixer_open(&mixer, 0);
-	snd_mixer_attach(mixer, widget_get_config_string(widget, "card"));
+	snd_mixer_attach(mixer, config.card);
 	snd_mixer_selem_register(mixer, NULL, NULL);
 	snd_mixer_load(mixer);
 
 	snd_mixer_selem_id_alloca(&sid);
 	snd_mixer_selem_id_set_index(sid, 0);
-	snd_mixer_selem_id_set_name(sid, widget_get_config_string(widget, "selem"));
+	snd_mixer_selem_id_set_name(sid, config.selem);
 	snd_mixer_elem_t *elem = snd_mixer_find_selem(mixer, sid);
 
 	struct widget_volume_res res = { pollfds, mixer };

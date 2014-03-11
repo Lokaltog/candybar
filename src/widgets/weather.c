@@ -126,7 +126,7 @@ get_weather_information (struct location *location) {
 }
 
 static int
-widget_weather_send_update (struct widget *widget, struct location *location) {
+widget_weather_send_update (struct widget *widget, struct location *location, struct widget_config config) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
 	struct weather *weather;
@@ -140,7 +140,7 @@ widget_weather_send_update (struct widget *widget, struct location *location) {
 
 	json_object_set_new(json_data_object, "icon", json_integer(weather->code));
 	json_object_set_new(json_data_object, "temp", json_real(weather->temp));
-	json_object_set_new(json_data_object, "unit", json_string(widget_get_config_string(widget, "unit")));
+	json_object_set_new(json_data_object, "unit", json_string(config.unit));
 
 	json_payload = json_dumps(json_data_object, 0);
 
@@ -165,14 +165,18 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
+	struct widget_config config = widget_config_defaults;
+	widget_init_config_string(widget, "location", config.location);
+	widget_init_config_string(widget, "unit", config.unit);
+
 	struct location *location = calloc(1, sizeof(location));
 
-	location->city = strdup(widget_get_config_string(widget, "location"));
+	location->city = strdup(config.location);
 	if (location->city[0] == '\0') {
 		location = get_geoip_location(location);
 	}
 	if (!location) {
-		LOG_WARN("could not get GeoIP location, consider setting the location manually in config.h");
+		LOG_WARN("could not get GeoIP location, consider setting the location manually in config.json");
 		free(location);
 
 		return 0;
@@ -180,7 +184,7 @@ widget_init (struct widget *widget) {
 
 	pthread_cleanup_push(widget_cleanup, location);
 	for (;;) {
-		widget_weather_send_update(widget, location);
+		widget_weather_send_update(widget, location, config);
 
 		sleep(600);
 	}

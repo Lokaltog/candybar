@@ -50,6 +50,9 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
+	struct widget_config config = widget_config_defaults;
+	widget_init_config_string(widget, "name", config.name);
+
 	DBusGConnection *conn;
 	DBusGProxy *proxy;
 	DBusGProxy *properties_proxy;
@@ -57,8 +60,7 @@ widget_init (struct widget *widget) {
 	GError *error = NULL;
 
 	conn = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
-	sprintf(pathbuf, "/org/freedesktop/UPower/devices/battery_%s",
-	        widget_get_config_string(widget, "name"));
+	sprintf(pathbuf, "/org/freedesktop/UPower/devices/battery_%s", config.name);
 
 	if (conn == NULL) {
 		LOG_ERR("dbus: failed to open connection to bus: %s\n", error->message);
