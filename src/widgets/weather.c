@@ -57,7 +57,7 @@ get_weather_information (struct location *location) {
 	curl = curl_easy_init();
 	sprintf(query,
 	        "use \"http://github.com/yql/yql-tables/raw/master/weather/weather.bylocation.xml\" as we;"
-	        "select * from we where location=\"%s, %s, %s\" and unit=\"c\"",
+	        "select * from we where location=\"%s %s %s\" and unit=\"c\"",
 	        location->city,
 	        location->region_code,
 	        location->country_code);
@@ -171,8 +171,12 @@ widget_init (struct widget *widget) {
 
 	struct location *location = calloc(1, sizeof(location));
 
-	location->city = strdup(config.location);
-	if (location->city[0] == '\0') {
+	if (strlen(config.location) > 0) {
+		location->city = strdup(config.location);
+		location->region_code = strdup("");
+		location->country_code = strdup("");
+	}
+	else {
 		location = get_geoip_location(location);
 	}
 	if (!location) {
