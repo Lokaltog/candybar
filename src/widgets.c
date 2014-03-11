@@ -18,7 +18,7 @@ update_widget (struct widget *widget) {
 		LOG_INFO("updating widget %s: %s", widget->name, widget->data);
 	}
 
-	sprintf(script, script_template, widget->name, widget->data);
+	snprintf(script, script_length + 1, script_template, widget->name, widget->data);
 
 	webkit_web_view_execute_script(widget->web_view, script);
 	free(script);

@@ -55,13 +55,17 @@ get_weather_information (struct location *location) {
 	CURL *curl;
 
 	curl = curl_easy_init();
-	sprintf(query,
-	        "use \"http://github.com/yql/yql-tables/raw/master/weather/weather.bylocation.xml\" as we;"
-	        "select * from we where location=\"%s %s %s\" and unit=\"c\"",
-	        location->city,
-	        location->region_code,
-	        location->country_code);
-	sprintf(request_uri, "http://query.yahooapis.com/v1/public/yql?q=%s&format=json", curl_easy_escape(curl, query, 0));
+	snprintf(query,
+	         WEATHER_BUF_SIZE,
+	         "use \"http://github.com/yql/yql-tables/raw/master/weather/weather.bylocation.xml\" as we;"
+	         "select * from we where location=\"%s %s %s\" and unit=\"c\"",
+	         location->city,
+	         location->region_code,
+	         location->country_code);
+	snprintf(request_uri,
+	         WEATHER_BUF_SIZE,
+	         "http://query.yahooapis.com/v1/public/yql?q=%s&format=json",
+	         curl_easy_escape(curl, query, 0));
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
 
