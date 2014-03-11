@@ -2,7 +2,7 @@
 #include "now_playing_mpd.h"
 
 static int
-widget_now_playing_mpd_send_update (struct widget *widget, struct mpd_connection *connection) {
+widget_send_update (struct widget *widget, struct mpd_connection *connection) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
 
@@ -77,14 +77,16 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
-	struct mpd_connection *connection = mpd_connection_new(json_string_value(wkline_widget_get_config(widget, "host")),
-	                                                       json_integer_value(wkline_widget_get_config(widget, "port")),
-	                                                       json_integer_value(wkline_widget_get_config(widget, "timeout")));
+	struct widget_config config = widget_config_defaults;
+	widget_init_config_string(widget, "host", config.host);
+	widget_init_config_integer(widget, "port", config.port);
+	widget_init_config_integer(widget, "timeout", config.timeout);
+
+	struct mpd_connection *connection = mpd_connection_new(config.host, config.port, config.timeout);
 
 	if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
 		LOG_ERR("mpd: failed to connect to mpd server at %s:%i: %s",
-		        json_string_value(wkline_widget_get_config(widget, "host")),
-		        json_integer_value(wkline_widget_get_config(widget, "port")),
+		        config.host, config.port,
 		        mpd_connection_get_error_message(connection));
 		mpd_connection_free(connection);
 
@@ -95,7 +97,7 @@ widget_init (struct widget *widget) {
 	int s, mpd_fd = mpd_connection_get_fd(connection);
 
 	pthread_cleanup_push(widget_cleanup, connection);
-	widget_now_playing_mpd_send_update(widget, connection);
+	widget_send_update(widget, connection);
 
 	for (;;) {
 		FD_ZERO(&fds);
@@ -117,7 +119,7 @@ widget_init (struct widget *widget) {
 				LOG_ERR("mpd: recv error: %s", mpd_connection_get_error_message(connection));
 				break;
 			}
-			widget_now_playing_mpd_send_update(widget, connection);
+			widget_send_update(widget, connection);
 		}
 	}
 	pthread_cleanup_pop(1);

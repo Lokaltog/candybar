@@ -2,7 +2,7 @@
 #include "volume.h"
 
 static int
-widget_volume_send_update (struct widget *widget, snd_mixer_elem_t *elem) {
+widget_send_update (struct widget *widget, snd_mixer_elem_t *elem) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
 	long volume_min, volume_max, volume;
@@ -35,6 +35,10 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
+	struct widget_config config = widget_config_defaults;
+	widget_init_config_string(widget, "card", config.card);
+	widget_init_config_string(widget, "selem", config.selem);
+
 	snd_mixer_t *mixer;
 	snd_mixer_selem_id_t *sid;
 	struct pollfd *pollfds = NULL;
@@ -43,18 +47,18 @@ widget_init (struct widget *widget) {
 
 	/* open mixer */
 	snd_mixer_open(&mixer, 0);
-	snd_mixer_attach(mixer, json_string_value(wkline_widget_get_config(widget, "card")));
+	snd_mixer_attach(mixer, config.card);
 	snd_mixer_selem_register(mixer, NULL, NULL);
 	snd_mixer_load(mixer);
 
 	snd_mixer_selem_id_alloca(&sid);
 	snd_mixer_selem_id_set_index(sid, 0);
-	snd_mixer_selem_id_set_name(sid, json_string_value(wkline_widget_get_config(widget, "selem")));
+	snd_mixer_selem_id_set_name(sid, config.selem);
 	snd_mixer_elem_t *elem = snd_mixer_find_selem(mixer, sid);
 
 	struct widget_volume_res res = { pollfds, mixer };
 	pthread_cleanup_push(widget_cleanup, &res);
-	widget_volume_send_update(widget, elem);
+	widget_send_update(widget, elem);
 
 	for (;;) {
 		/* Code mostly from the alsamixer main loop */
@@ -103,7 +107,7 @@ widget_init (struct widget *widget) {
 			}
 		}
 
-		widget_volume_send_update(widget, elem);
+		widget_send_update(widget, elem);
 	}
 	pthread_cleanup_pop(1);
 

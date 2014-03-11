@@ -3,15 +3,15 @@
 #include "util/dbus_helpers.h"
 
 static int
-widget_battery_send_update (struct widget *widget, DBusGProxy *properties_proxy, char *pathbuf) {
+widget_send_update (struct widget *widget, DBusGProxy *properties_proxy, char *dbus_path) {
 	gdouble percentage;
 	guint state;
 	gint64 time_to_empty64, time_to_full64;
 
-	proxy_double_value(&percentage, properties_proxy, pathbuf, "Percentage");
-	proxy_uint_value(&state, properties_proxy, pathbuf, "State");
-	proxy_int64_value(&time_to_empty64, properties_proxy, pathbuf, "TimeToEmpty");
-	proxy_int64_value(&time_to_full64, properties_proxy, pathbuf, "TimeToFull");
+	proxy_double_value(&percentage, properties_proxy, dbus_path, "Percentage");
+	proxy_uint_value(&state, properties_proxy, dbus_path, "State");
+	proxy_int64_value(&time_to_empty64, properties_proxy, dbus_path, "TimeToEmpty");
+	proxy_int64_value(&time_to_full64, properties_proxy, dbus_path, "TimeToFull");
 
 	/* jansson fails with 64-bit integers, but the time left on the battery
 	   should fit in a 32-bit integer */
@@ -38,27 +38,35 @@ widget_battery_send_update (struct widget *widget, DBusGProxy *properties_proxy,
 static void
 widget_cleanup (void *arg) {
 	LOG_INFO("widget cleanup: battery");
-	DBusGProxy **proxy_ref = arg;
 
-	if (proxy_ref[0] != NULL) {
-		g_object_unref(proxy_ref[0]);
+	void **cleanup_data = arg;
+
+	if (cleanup_data[0] != NULL) {
+		g_object_unref(cleanup_data[0]);
 	}
-	if (proxy_ref[1] != NULL) {
-		g_object_unref(proxy_ref[1]);
+	if (cleanup_data[1] != NULL) {
+		g_object_unref(cleanup_data[1]);
 	}
+	free(cleanup_data[2]);
 }
 
 void*
 widget_init (struct widget *widget) {
+	struct widget_config config = widget_config_defaults;
+	widget_init_config_string(widget, "name", config.name);
+
 	DBusGConnection *conn;
 	DBusGProxy *proxy;
 	DBusGProxy *properties_proxy;
-	char pathbuf[128];
+	char *dbus_path, *dbus_path_template = "/org/freedesktop/UPower/devices/battery_%s";
+	int dbus_path_length = 0;
 	GError *error = NULL;
 
 	conn = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
-	sprintf(pathbuf, "/org/freedesktop/UPower/devices/battery_%s",
-	        json_string_value(wkline_widget_get_config(widget, "name")));
+
+	dbus_path_length = snprintf(NULL, 0, dbus_path_template, config.name);
+	dbus_path = malloc(dbus_path_length + 1);
+	snprintf(dbus_path, dbus_path_length + 1, dbus_path_template, config.name);
 
 	if (conn == NULL) {
 		LOG_ERR("dbus: failed to open connection to bus: %s\n", error->message);
@@ -69,7 +77,7 @@ widget_init (struct widget *widget) {
 
 	if ((proxy = dbus_g_proxy_new_for_name(conn,
 	                                       "org.freedesktop.UPower",
-	                                       pathbuf,
+	                                       dbus_path,
 	                                       "org.freedesktop.UPower.Device.Properties")) == NULL) {
 		LOG_ERR("dbus: failed to create proxy object");
 
@@ -86,16 +94,20 @@ widget_init (struct widget *widget) {
 	}
 
 	unsigned int state;
-	if (!proxy_uint_value(&state, properties_proxy, pathbuf, "State")) {
+	if (!proxy_uint_value(&state, properties_proxy, dbus_path, "State")) {
 		LOG_ERR("dbus: invalid battery");
 
 		return 0;
 	}
 
-	DBusGProxy *proxy_ptr[2] = { proxy, properties_proxy };
-	pthread_cleanup_push(widget_cleanup, proxy_ptr);
+	void **cleanup_data = malloc(sizeof(void*) * 3);
+	cleanup_data[0] = proxy;
+	cleanup_data[1] = properties_proxy;
+	cleanup_data[2] = dbus_path;
+
+	pthread_cleanup_push(widget_cleanup, cleanup_data);
 	for (;;) {
-		widget_battery_send_update(widget, properties_proxy, pathbuf);
+		widget_send_update(widget, properties_proxy, dbus_path);
 
 		sleep(20);
 	}

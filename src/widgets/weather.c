@@ -55,13 +55,17 @@ get_weather_information (struct location *location) {
 	CURL *curl;
 
 	curl = curl_easy_init();
-	sprintf(query,
-	        "use \"http://github.com/yql/yql-tables/raw/master/weather/weather.bylocation.xml\" as we;"
-	        "select * from we where location=\"%s, %s, %s\" and unit=\"c\"",
-	        location->city,
-	        location->region_code,
-	        location->country_code);
-	sprintf(request_uri, "http://query.yahooapis.com/v1/public/yql?q=%s&format=json", curl_easy_escape(curl, query, 0));
+	snprintf(query,
+	         WEATHER_BUF_SIZE,
+	         "use \"http://github.com/yql/yql-tables/raw/master/weather/weather.bylocation.xml\" as we;"
+	         "select * from we where location=\"%s %s %s\" and unit=\"c\"",
+	         location->city,
+	         location->region_code,
+	         location->country_code);
+	snprintf(request_uri,
+	         WEATHER_BUF_SIZE,
+	         "http://query.yahooapis.com/v1/public/yql?q=%s&format=json",
+	         curl_easy_escape(curl, query, 0));
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
 
@@ -126,7 +130,7 @@ get_weather_information (struct location *location) {
 }
 
 static int
-widget_weather_send_update (struct widget *widget, struct location *location) {
+widget_send_update (struct widget *widget, struct location *location, struct widget_config config) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
 	struct weather *weather;
@@ -140,7 +144,7 @@ widget_weather_send_update (struct widget *widget, struct location *location) {
 
 	json_object_set_new(json_data_object, "icon", json_integer(weather->code));
 	json_object_set_new(json_data_object, "temp", json_real(weather->temp));
-	json_object_set_new(json_data_object, "unit", json_string(json_string_value(wkline_widget_get_config(widget, "unit"))));
+	json_object_set_new(json_data_object, "unit", json_string(config.unit));
 
 	json_payload = json_dumps(json_data_object, 0);
 
@@ -165,14 +169,22 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
+	struct widget_config config = widget_config_defaults;
+	widget_init_config_string(widget, "location", config.location);
+	widget_init_config_string(widget, "unit", config.unit);
+
 	struct location *location = calloc(1, sizeof(location));
 
-	location->city = strdup(json_string_value(wkline_widget_get_config(widget, "location")));
-	if (location->city[0] == '\0') {
+	if (strlen(config.location) > 0) {
+		location->city = strdup(config.location);
+		location->region_code = strdup("");
+		location->country_code = strdup("");
+	}
+	else {
 		location = get_geoip_location(location);
 	}
 	if (!location) {
-		LOG_WARN("could not get GeoIP location, consider setting the location manually in config.h");
+		LOG_WARN("could not get GeoIP location, consider setting the location manually in config.json");
 		free(location);
 
 		return 0;
@@ -180,7 +192,7 @@ widget_init (struct widget *widget) {
 
 	pthread_cleanup_push(widget_cleanup, location);
 	for (;;) {
-		widget_weather_send_update(widget, location);
+		widget_send_update(widget, location, config);
 
 		sleep(600);
 	}
