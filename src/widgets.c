@@ -27,7 +27,7 @@ update_widget (struct widget *widget) {
 }
 
 pthread_t
-spawn_widget (WebKitWebView *web_view, json_t *config, const char *name) {
+spawn_widget (WebKitWebView *web_view, json_t *json_config, const char *name) {
 	widget_init_func widget_init;
 	char libname[64];
 	snprintf(libname, 64, "libwidget_%s", name);
@@ -49,7 +49,7 @@ spawn_widget (WebKitWebView *web_view, json_t *config, const char *name) {
 
 	struct widget *widget = malloc(sizeof(struct widget));
 
-	widget->config = config;
+	widget->json_config = json_config;
 	widget->web_view = web_view;
 	widget->name = strdup(name); /* don't forget to free this one */
 

@@ -56,7 +56,7 @@ wkline_get_config (struct wkline *wkline, const char *config_key) {
 json_t*
 widget_get_config (struct widget *widget, const char *config_key, bool silent) {
 	json_t *object;
-	object = json_object_get(widget->config, config_key);
+	object = json_object_get(widget->json_config, config_key);
 	if (!object && !silent) {
 		LOG_WARN("widget config key '%s' in widget '%s' not found in config file", config_key, widget->name);
 	}

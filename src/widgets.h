@@ -9,7 +9,7 @@
 
 struct widget {
 	const char *name;
-	json_t *config;
+	json_t *json_config;
 	WebKitWebView *web_view;
 	char *data;
 };
