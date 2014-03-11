@@ -76,6 +76,7 @@ def build(bld):
 	if bld.is_defined('HAVE_CURL'):
 		bld.objects(source='src/util/curl.c', target='util_curl', use=basedeps + ['CURL'], cflags=['-fPIC'])
 
+		bld.shlib(source='src/widgets/email_imap.c', target='widget_email_imap', use=basedeps + ['CURL', 'util_curl'], install_path=LIBDIR)
 		bld.shlib(source='src/widgets/external_ip.c', target='widget_external_ip', use=basedeps + ['CURL', 'util_curl'], install_path=LIBDIR)
 		bld.shlib(source='src/widgets/weather.c', target='widget_weather', use=basedeps + ['CURL', 'util_curl'], install_path=LIBDIR)
 
