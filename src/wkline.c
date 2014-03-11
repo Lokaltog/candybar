@@ -38,6 +38,43 @@ wk_realize_handler (GtkWidget *window, gpointer user_data) {
 	gdk_window_set_override_redirect(gdkw, TRUE);
 }
 
+static WebKitWebView*
+web_view_init () {
+	WebKitWebView *web_view;
+	WebKitWebSettings *web_view_settings;
+	WebKitWebPluginDatabase *database;
+	GSList *plugin_list, *p;
+	WebKitWebPlugin *plugin;
+
+	/* disable all plugins */
+	database = webkit_get_web_plugin_database();
+	plugin_list = webkit_web_plugin_database_get_plugins(database);
+	for (p = plugin_list; p; p = p->next) {
+		plugin = (WebKitWebPlugin*)p->data;
+		webkit_web_plugin_set_enabled(plugin, FALSE);
+	}
+	webkit_web_plugin_database_refresh(database);
+	webkit_web_plugin_database_plugins_list_free(plugin_list);
+
+	/* set webview settings */
+	web_view_settings = webkit_web_settings_new();
+	g_object_set(G_OBJECT(web_view_settings),
+	             "enable-accelerated-compositing", TRUE,
+	             "enable-css-shaders", TRUE,
+	             "enable-dns-prefetching", FALSE,
+	             "enable-java-applet", FALSE,
+	             "enable-plugins", FALSE,
+	             "enable-universal-access-from-file-uris", TRUE,
+	             "enable-webgl", TRUE,
+	             "enable-xss-auditor", FALSE,
+	             NULL);
+
+	web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
+	webkit_web_view_set_settings(web_view, web_view_settings);
+
+	return web_view;
+}
+
 int
 main (int argc, char *argv[]) {
 	struct wkline *wkline;
@@ -69,7 +106,7 @@ main (int argc, char *argv[]) {
 	   is used instead */
 	window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 	layout = GTK_LAYOUT(gtk_layout_new(NULL, NULL));
-	web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
+	web_view = web_view_init();
 
 	/* get window size */
 	screen = gtk_window_get_screen(window);
