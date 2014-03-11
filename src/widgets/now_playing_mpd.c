@@ -74,6 +74,7 @@ widget_cleanup (void *arg) {
 	void **cleanup_data = arg;
 
 	mpd_connection_free(cleanup_data[0]);
+	free(arg);
 }
 
 void*

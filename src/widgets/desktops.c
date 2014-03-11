@@ -94,6 +94,7 @@ widget_cleanup (void *arg) {
 	xcb_ewmh_connection_t *ewmh = cleanup_data[0];
 	xcb_disconnect(ewmh->connection);
 	xcb_ewmh_connection_wipe(ewmh);
+	free(arg);
 }
 
 void*

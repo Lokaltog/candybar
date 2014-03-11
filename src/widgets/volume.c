@@ -32,6 +32,7 @@ widget_cleanup (void *arg) {
 
 	free(cleanup_data[0]);
 	snd_mixer_close(cleanup_data[1]);
+	free(arg);
 }
 
 void*

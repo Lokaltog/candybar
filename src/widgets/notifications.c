@@ -94,6 +94,7 @@ widget_cleanup (void *arg) {
 	void **cleanup_data = arg;
 
 	dbus_connection_unref(cleanup_data[0]);
+	free(arg);
 }
 
 void*

@@ -48,6 +48,7 @@ widget_cleanup (void *arg) {
 		g_object_unref(cleanup_data[1]);
 	}
 	free(cleanup_data[2]);
+	free(arg);
 }
 
 void*

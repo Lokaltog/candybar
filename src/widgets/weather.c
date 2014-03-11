@@ -167,6 +167,7 @@ widget_cleanup (void *arg) {
 	free(location->region_code);
 	free(location->country_code);
 	free(location);
+	free(arg);
 }
 
 void*
