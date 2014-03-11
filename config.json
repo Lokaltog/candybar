@@ -5,34 +5,13 @@
 	"background": "#111",
 	"monitor": 0,
 	"widgets": {
-		"desktops": {
-			"names": ["I", "II", "III", "IV", "V"]
-		},
+		"desktops": {},
 		"window_title": {},
-		"now_playing_mpd": {
-			"update_interval": 1000,
-			"host": "localhost",
-			"port": 6600,
-			"timeout": 5000
-		},
-		"volume": {
-			"card": "default",
-			"selem": "Master"
-		},
-		"weather": {
-			"location": "",
-			"unit": "c"
-		},
-		"external_ip": {
-			"address": "http://ipv4.icanhazip.com/"
-		},
-		"battery": {
-			"name": "BAT0"
-		},
-		"datetime": {
-			"update_interval": 1000,
-			"date_format": "DDDD-MM-YY",
-			"time_format": "HH:mm:ss"
-		}
+		"now_playing_mpd": {},
+		"volume": {},
+		"weather": {},
+		"external_ip": {},
+		"battery": {},
+		"datetime": {}
 	}
 }
