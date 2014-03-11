@@ -159,7 +159,9 @@ widget_send_update (struct widget *widget, struct location *location, struct wid
 static void
 widget_cleanup (void *arg) {
 	LOG_INFO("widget cleanup: weather");
-	struct location *location = arg;
+
+	void **cleanup_data = arg;
+	struct location *location = cleanup_data[0];
 
 	free(location->city);
 	free(location->region_code);
@@ -190,7 +192,10 @@ widget_init (struct widget *widget) {
 		return 0;
 	}
 
-	pthread_cleanup_push(widget_cleanup, location);
+	void **cleanup_data = malloc(sizeof(void*) * 1);
+	cleanup_data[0] = location;
+
+	pthread_cleanup_push(widget_cleanup, cleanup_data);
 	for (;;) {
 		widget_send_update(widget, location, config);
 

@@ -89,9 +89,11 @@ static void
 widget_cleanup (void *arg) {
 	LOG_INFO("widget cleanup: desktops");
 
-	xcb_ewmh_connection_t *ewmh = arg;
-	xcb_ewmh_connection_wipe(ewmh);
+	void **cleanup_data = arg;
+
+	xcb_ewmh_connection_t *ewmh = cleanup_data[0];
 	xcb_disconnect(ewmh->connection);
+	xcb_ewmh_connection_wipe(ewmh);
 }
 
 void*
@@ -122,9 +124,11 @@ widget_init (struct widget *widget) {
 		return 0;
 	}
 
-	pthread_cleanup_push(widget_cleanup, ewmh);
-	widget_send_update(widget, ewmh, screen_nbr);
+	void **cleanup_data = malloc(sizeof(void*) * 1);
+	cleanup_data[0] = ewmh;
 
+	pthread_cleanup_push(widget_cleanup, cleanup_data);
+	widget_send_update(widget, ewmh, screen_nbr);
 	for (;;) {
 		while ((evt = xcb_wait_for_event(ewmh->connection)) != NULL) {
 			xcb_property_notify_event_t *pne;

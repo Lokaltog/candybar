@@ -91,8 +91,9 @@ static void
 widget_cleanup (void *arg) {
 	LOG_INFO("widget cleanup: notifications");
 
-	DBusConnection *connection = arg;
-	dbus_connection_unref(connection);
+	void **cleanup_data = arg;
+
+	dbus_connection_unref(cleanup_data[0]);
 }
 
 void*
@@ -131,7 +132,10 @@ widget_init (struct widget *widget) {
 	}
 	dbus_error_free(err);
 
-	pthread_cleanup_push(widget_cleanup, connection);
+	void **cleanup_data = malloc(sizeof(void*) * 1);
+	cleanup_data[0] = connection;
+
+	pthread_cleanup_push(widget_cleanup, cleanup_data);
 	for (;;) {
 		dbus_connection_read_write(connection, -1);
 

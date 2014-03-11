@@ -71,8 +71,9 @@ static void
 widget_cleanup (void *arg) {
 	LOG_INFO("widget cleanup: now_playing_mpd");
 
-	struct mpd_connection *connection = arg;
-	mpd_connection_free(connection);
+	void **cleanup_data = arg;
+
+	mpd_connection_free(cleanup_data[0]);
 }
 
 void*
@@ -96,9 +97,11 @@ widget_init (struct widget *widget) {
 	fd_set fds;
 	int s, mpd_fd = mpd_connection_get_fd(connection);
 
-	pthread_cleanup_push(widget_cleanup, connection);
-	widget_send_update(widget, connection);
+	void **cleanup_data = malloc(sizeof(void*) * 1);
+	cleanup_data[0] = connection;
 
+	pthread_cleanup_push(widget_cleanup, cleanup_data);
+	widget_send_update(widget, connection);
 	for (;;) {
 		FD_ZERO(&fds);
 		FD_SET(mpd_fd, &fds);
