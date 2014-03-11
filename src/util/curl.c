@@ -40,14 +40,14 @@ wkline_curl_request (const char *url) {
 
 	status = curl_easy_perform(curl);
 	if (status != 0) {
-		LOG_INFO("curl: unable to request data from %s:\n%s", url, curl_easy_strerror(status));
+		LOG_ERR("curl: unable to request data from %s:\n%s", url, curl_easy_strerror(status));
 
 		return NULL;
 	}
 
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
 	if (code != 200) {
-		LOG_INFO("curl: server responded with code %ld", code);
+		LOG_ERR("curl: server responded with code %ld", code);
 
 		return NULL;
 	}
