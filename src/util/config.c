@@ -43,31 +43,23 @@ load_config_file () {
 }
 
 json_t*
-wkline_get_config (struct wkline *self, const char *config_name) {
+wkline_get_config (struct wkline *wkline, const char *config_key) {
 	json_t *object;
-	object = json_object_get(self->config, config_name);
+	object = json_object_get(wkline->config, config_key);
 	if (!object) {
-		LOG_WARN("config option '%s' not found in config file", config_name);
+		LOG_WARN("wkline config key '%s' not found in config file", config_key);
 	}
 
 	return object;
 }
 
 json_t*
-wkline_widget_get_config (struct widget *self, const char *config_name) {
+widget_get_config (struct widget *widget, const char *config_key, bool silent) {
 	json_t *object;
-	object = json_object_get(self->config, config_name);
-	if (!object) {
-		LOG_WARN("configuration '%s' in widget '%s' not found in config file", config_name, self->name);
+	object = json_object_get(widget->config, config_key);
+	if (!object && !silent) {
+		LOG_WARN("widget config key '%s' in widget '%s' not found in config file", config_key, widget->name);
 	}
-
-	return object;
-}
-
-json_t*
-wkline_widget_get_config_silent (struct widget *self, const char *config_name) {
-	json_t *object;
-	object = json_object_get(self->config, config_name);
 
 	return object;
 }

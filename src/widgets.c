@@ -14,7 +14,7 @@ update_widget (struct widget *widget) {
 	script_length = snprintf(NULL, 0, script_template, widget->name, widget->data);
 	script = malloc(script_length + 1);
 
-	if (json_is_true(wkline_widget_get_config_silent(widget, "debug"))) {
+	if (widget_get_config_boolean_silent(widget, "debug")) {
 		LOG_INFO("updating widget %s: %s", widget->name, widget->data);
 	}
 

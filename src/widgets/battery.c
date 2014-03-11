@@ -58,7 +58,7 @@ widget_init (struct widget *widget) {
 
 	conn = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
 	sprintf(pathbuf, "/org/freedesktop/UPower/devices/battery_%s",
-	        json_string_value(wkline_widget_get_config(widget, "name")));
+	        widget_get_config_string(widget, "name"));
 
 	if (conn == NULL) {
 		LOG_ERR("dbus: failed to open connection to bus: %s\n", error->message);

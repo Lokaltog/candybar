@@ -77,14 +77,14 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
-	struct mpd_connection *connection = mpd_connection_new(json_string_value(wkline_widget_get_config(widget, "host")),
-	                                                       json_integer_value(wkline_widget_get_config(widget, "port")),
-	                                                       json_integer_value(wkline_widget_get_config(widget, "timeout")));
+	struct mpd_connection *connection = mpd_connection_new(widget_get_config_string(widget, "host"),
+	                                                       widget_get_config_integer(widget, "port"),
+	                                                       widget_get_config_integer(widget, "timeout"));
 
 	if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
 		LOG_ERR("mpd: failed to connect to mpd server at %s:%i: %s",
-		        json_string_value(wkline_widget_get_config(widget, "host")),
-		        json_integer_value(wkline_widget_get_config(widget, "port")),
+		        widget_get_config_string(widget, "host"),
+		        widget_get_config_integer(widget, "port"),
 		        mpd_connection_get_error_message(connection));
 		mpd_connection_free(connection);
 

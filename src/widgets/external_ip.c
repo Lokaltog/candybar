@@ -7,7 +7,7 @@ widget_external_ip_send_update (struct widget *widget) {
 	char *external_ip;
 	json_t *json_data_object;
 
-	external_ip = wkline_curl_request(json_string_value(wkline_widget_get_config(widget, "address")));
+	external_ip = wkline_curl_request(widget_get_config_string(widget, "address"));
 	json_data_object = json_object();
 	json_object_set_new(json_data_object, "ip", json_string(external_ip));
 
