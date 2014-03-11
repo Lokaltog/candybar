@@ -2,7 +2,7 @@
 #include "now_playing_mpd.h"
 
 static int
-widget_now_playing_mpd_send_update (struct widget *widget, struct mpd_connection *connection) {
+widget_send_update (struct widget *widget, struct mpd_connection *connection) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
 
@@ -97,7 +97,7 @@ widget_init (struct widget *widget) {
 	int s, mpd_fd = mpd_connection_get_fd(connection);
 
 	pthread_cleanup_push(widget_cleanup, connection);
-	widget_now_playing_mpd_send_update(widget, connection);
+	widget_send_update(widget, connection);
 
 	for (;;) {
 		FD_ZERO(&fds);
@@ -119,7 +119,7 @@ widget_init (struct widget *widget) {
 				LOG_ERR("mpd: recv error: %s", mpd_connection_get_error_message(connection));
 				break;
 			}
-			widget_now_playing_mpd_send_update(widget, connection);
+			widget_send_update(widget, connection);
 		}
 	}
 	pthread_cleanup_pop(1);

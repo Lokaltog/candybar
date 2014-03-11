@@ -126,7 +126,7 @@ get_weather_information (struct location *location) {
 }
 
 static int
-widget_weather_send_update (struct widget *widget, struct location *location, struct widget_config config) {
+widget_send_update (struct widget *widget, struct location *location, struct widget_config config) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
 	struct weather *weather;
@@ -184,7 +184,7 @@ widget_init (struct widget *widget) {
 
 	pthread_cleanup_push(widget_cleanup, location);
 	for (;;) {
-		widget_weather_send_update(widget, location, config);
+		widget_send_update(widget, location, config);
 
 		sleep(600);
 	}

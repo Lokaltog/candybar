@@ -3,7 +3,7 @@
 #include "util/dbus_helpers.h"
 
 static int
-widget_battery_send_update (struct widget *widget, DBusGProxy *properties_proxy, char *pathbuf) {
+widget_send_update (struct widget *widget, DBusGProxy *properties_proxy, char *pathbuf) {
 	gdouble percentage;
 	guint state;
 	gint64 time_to_empty64, time_to_full64;
@@ -97,7 +97,7 @@ widget_init (struct widget *widget) {
 	DBusGProxy *proxy_ptr[2] = { proxy, properties_proxy };
 	pthread_cleanup_push(widget_cleanup, proxy_ptr);
 	for (;;) {
-		widget_battery_send_update(widget, properties_proxy, pathbuf);
+		widget_send_update(widget, properties_proxy, pathbuf);
 
 		sleep(20);
 	}

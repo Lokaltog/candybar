@@ -2,7 +2,7 @@
 #include "volume.h"
 
 static int
-widget_volume_send_update (struct widget *widget, snd_mixer_elem_t *elem) {
+widget_send_update (struct widget *widget, snd_mixer_elem_t *elem) {
 	json_t *json_data_object = json_object();
 	char *json_payload;
 	long volume_min, volume_max, volume;
@@ -58,7 +58,7 @@ widget_init (struct widget *widget) {
 
 	struct widget_volume_res res = { pollfds, mixer };
 	pthread_cleanup_push(widget_cleanup, &res);
-	widget_volume_send_update(widget, elem);
+	widget_send_update(widget, elem);
 
 	for (;;) {
 		/* Code mostly from the alsamixer main loop */
@@ -107,7 +107,7 @@ widget_init (struct widget *widget) {
 			}
 		}
 
-		widget_volume_send_update(widget, elem);
+		widget_send_update(widget, elem);
 	}
 	pthread_cleanup_pop(1);
 
