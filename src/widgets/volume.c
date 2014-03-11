@@ -27,10 +27,11 @@ widget_send_update (struct widget *widget, snd_mixer_elem_t *elem) {
 static void
 widget_cleanup (void *arg) {
 	LOG_INFO("widget cleanup: volume");
-	struct widget_volume_res *res = arg;
 
-	free(res->pollfds);
-	snd_mixer_close(res->mixer);
+	void **cleanup_data = arg;
+
+	free(cleanup_data[0]);
+	snd_mixer_close(cleanup_data[1]);
 }
 
 void*
@@ -56,10 +57,12 @@ widget_init (struct widget *widget) {
 	snd_mixer_selem_id_set_name(sid, config.selem);
 	snd_mixer_elem_t *elem = snd_mixer_find_selem(mixer, sid);
 
-	struct widget_volume_res res = { pollfds, mixer };
-	pthread_cleanup_push(widget_cleanup, &res);
-	widget_send_update(widget, elem);
+	void **cleanup_data = malloc(sizeof(void*) * 2);
+	cleanup_data[0] = pollfds;
+	cleanup_data[1] = mixer;
 
+	pthread_cleanup_push(widget_cleanup, cleanup_data);
+	widget_send_update(widget, elem);
 	for (;;) {
 		/* Code mostly from the alsamixer main loop */
 		n = 1 + snd_mixer_poll_descriptors_count(mixer);
