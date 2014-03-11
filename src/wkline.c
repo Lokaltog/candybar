@@ -30,12 +30,12 @@ wk_realize_handler (GtkWidget *window, gpointer user_data) {
 	if (!strcmp(wkline->position, "top")) {
 		strut[2] = wkline->dim.h;
 		strut_partial[2] = wkline->dim.h;
-		strut_partial[10] = wkline->dim.w;
+		strut_partial[9] = wkline->dim.w;
 	}
 	else if (!strcmp(wkline->position, "bottom")) {
 		strut[3] = wkline->dim.h;
 		strut_partial[3] = wkline->dim.h;
-		strut_partial[12] = wkline->dim.w;
+		strut_partial[11] = wkline->dim.w;
 	}
 
 	if (supports_net_wm_strut) {
