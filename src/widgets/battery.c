@@ -55,6 +55,7 @@ void*
 widget_init (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget, "name", config.name);
+	widget_init_config_integer(widget, "refresh_interval", config.refresh_interval);
 
 	DBusGConnection *conn;
 	DBusGProxy *proxy;
@@ -110,7 +111,7 @@ widget_init (struct widget *widget) {
 	for (;;) {
 		widget_send_update(widget, properties_proxy, dbus_path);
 
-		sleep(20);
+		sleep(config.refresh_interval);
 	}
 	pthread_cleanup_pop(1);
 }

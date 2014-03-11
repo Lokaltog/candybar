@@ -20,7 +20,9 @@ struct weather {
 static struct widget_config {
 	const char *location;
 	const char *unit;
+	int refresh_interval;
 } widget_config_defaults = {
 	.location = "",
 	.unit = "c",
+	.refresh_interval = 1800,
 };

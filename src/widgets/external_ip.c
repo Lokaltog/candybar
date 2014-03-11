@@ -27,10 +27,11 @@ void*
 widget_init (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget, "address", config.address);
+	widget_init_config_integer(widget, "refresh_interval", config.refresh_interval);
 
 	for (;;) {
 		widget_send_update(widget, config);
 
-		sleep(600);
+		sleep(config.refresh_interval);
 	}
 }

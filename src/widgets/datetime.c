@@ -39,10 +39,11 @@ widget_init (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget, "date_format", config.date_format);
 	widget_init_config_string(widget, "time_format", config.time_format);
+	widget_init_config_integer(widget, "refresh_interval", config.refresh_interval);
 
 	for (;;) {
 		widget_send_update(widget, config);
 
-		sleep(1);
+		sleep(config.refresh_interval);
 	}
 }

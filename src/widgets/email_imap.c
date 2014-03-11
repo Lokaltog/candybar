@@ -94,6 +94,7 @@ widget_init (struct widget *widget) {
 	widget_init_config_string(widget, "username", config.username);
 	widget_init_config_string(widget, "password", config.password);
 	widget_init_config_boolean(widget, "ssl_verify", config.ssl_verify);
+	widget_init_config_integer(widget, "refresh_interval", config.refresh_interval);
 
 	if (!config.username) {
 		LOG_INFO("email_imap: username not set, disabling widget");
@@ -104,6 +105,6 @@ widget_init (struct widget *widget) {
 	for (;;) {
 		send_update(widget, config);
 
-		sleep(60);
+		sleep(config.refresh_interval);
 	}
 }
