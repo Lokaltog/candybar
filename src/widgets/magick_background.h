@@ -15,9 +15,9 @@ static struct widget_config {
 } widget_config_defaults = {
 	.image = "",
 	.css_gradient_overlay_start = "transparent",
-	.css_gradient_overlay_end = "rgba(0, 0, 0, .5)",
+	.css_gradient_overlay_end = "rgba(0, 0, 0, .4)",
 	.blur_radius = 0,
-	.brightness = 0,
+	.brightness = 100,
 	.height = 40,
 	.saturation = 100,
 };
