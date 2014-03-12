@@ -21,7 +21,7 @@ void LOG (const char *prefix, const char *color, const char *func, const char *f
 #define LOG_WARN(format, ...) LOG("WARNING", ANSI_ESC_YELLOW, __func__, __FILE__, format, ## __VA_ARGS__)
 
 #ifdef DEBUG
-#define LOG_DEBUG(format, ...) LOG("DEBUG", ANSI_ESC_BLUE, __func__, __FILE__, format, ## __VA_ARGS__)
+#define LOG_DEBUG(format, ...) LOG("DEBUG", ANSI_ESC_WHITE, __func__, __FILE__, format, ## __VA_ARGS__)
 #else
 #define LOG_DEBUG(format, ...)
 #endif
