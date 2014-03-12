@@ -1,4 +1,5 @@
 #include "util/config.h"
+#include "util/gdk_helpers.h"
 #include "util/log.h"
 #include "wkline.h"
 #include "widgets.h"
@@ -15,27 +16,41 @@ wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
 static void
 wk_realize_handler (GtkWidget *window, gpointer user_data) {
 	struct wkline *wkline = user_data;
-	GdkAtom atom;
-	GdkWindow *gdkw;
-	long vals[4];
+	GdkAtom net_wm_strut_atom = gdk_atom_intern("_NET_WM_STRUT", FALSE);
+	GdkAtom net_wm_strut_partial_atom = gdk_atom_intern("_NET_WM_STRUT_PARTIAL", FALSE);
+	GdkWindow *gdkw = gtk_widget_get_window(GTK_WIDGET(window));
+	int strut[4] = { 0 };
+	int strut_partial[12] = { 0 };
 
-	vals[0] = 0;
-	vals[1] = 0;
+	bool supports_net_wm_strut = g_list_find(gdk_get_net_supported(),
+	                                         net_wm_strut_atom) != NULL;
+	bool supports_net_wm_strut_partial = g_list_find(gdk_get_net_supported(),
+	                                                 net_wm_strut_partial_atom) != NULL;
+
 	if (!strcmp(wkline->position, "top")) {
-		vals[2] = wkline->dim.h;
-		vals[3] = 0;
+		strut[2] = wkline->dim.h;
+		strut_partial[2] = wkline->dim.h;
+		strut_partial[9] = wkline->dim.w;
 	}
 	else if (!strcmp(wkline->position, "bottom")) {
-		vals[2] = 0;
-		vals[3] = wkline->dim.h;
+		strut[3] = wkline->dim.h;
+		strut_partial[3] = wkline->dim.h;
+		strut_partial[11] = wkline->dim.w;
 	}
 
-	atom = gdk_atom_intern("_NET_WM_STRUT", FALSE);
-
-	gdkw = gtk_widget_get_window(GTK_WIDGET(window));
-	gdk_property_change(gdkw, atom, gdk_atom_intern("CARDINAL", FALSE),
-	                    32, GDK_PROP_MODE_REPLACE, (guchar*)vals, LENGTH(vals));
-	gdk_window_set_override_redirect(gdkw, TRUE);
+	if (supports_net_wm_strut) {
+		gdk_property_change(gdkw, net_wm_strut_atom, gdk_atom_intern("CARDINAL", FALSE),
+		                    32, GDK_PROP_MODE_REPLACE, (guchar*)strut, LENGTH(strut));
+	}
+	else if (supports_net_wm_strut_partial) {
+		gdk_property_change(gdkw, net_wm_strut_partial_atom, gdk_atom_intern("CARDINAL", FALSE),
+		                    32, GDK_PROP_MODE_REPLACE, (guchar*)strut_partial, LENGTH(strut_partial));
+	}
+	else {
+		/* only set override redirect if we're unable to reserve space
+		   with _NET_WM_STRUT */
+		gdk_window_set_override_redirect(gdkw, TRUE);
+	}
 }
 
 static WebKitWebView*

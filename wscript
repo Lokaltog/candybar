@@ -64,7 +64,7 @@ def build(bld):
 		'BUILD_TIME="{0}"'.format(time.strftime('%c')),
 	]
 
-	bld.objects(source=bld.path.ant_glob('src/util/(log|config|copy_prop).c'), target='baseutils', use=basedeps)
+	bld.objects(source=bld.path.ant_glob('src/util/(log|config|copy_prop|gdk_helpers).c'), target='baseutils', use=basedeps)
 	bld.objects(source='src/widgets.c', target='widgets', use=basedeps)
 
 	# widgets
