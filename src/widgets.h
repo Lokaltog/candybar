@@ -16,7 +16,7 @@ struct widget {
 
 typedef void (*widget_init_func)(struct widget *widget);
 
-gboolean update_widget (struct widget *widget);
+gboolean web_view_update_widget (struct widget *widget);
 pthread_t spawn_widget (WebKitWebView *web_view, json_t *config, const char *name);
 void handle_interrupt (int signal);
 void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data);
@@ -39,5 +39,5 @@ void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpoin
 
 #define widget_send_update(DATA_OBJECT, WIDGET) \
 	WIDGET->data = strdup(json_dumps(DATA_OBJECT, 0)); \
-	g_idle_add((GSourceFunc)update_widget, WIDGET); \
+	g_idle_add((GSourceFunc)web_view_update_widget, WIDGET); \
 	json_decref(DATA_OBJECT);

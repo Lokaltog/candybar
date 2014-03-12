@@ -21,8 +21,10 @@ cancel_threads () {
 }
 
 gboolean
-update_widget (struct widget *widget) {
-	char *script_template = "if(typeof widgets!=='undefined'){try{widgets.update('%s',%s)}catch(e){console.log('Could not update widget: '+e)}}";
+web_view_update_widget (struct widget *widget) {
+	char *script_template = "if(typeof widgets!=='undefined'){"
+	                        "try{widgets.update('%s',%s)}"
+	                        "catch(e){console.log('Could not update widget: '+e)}}";
 	int script_length = 0;
 	char *script;
 
