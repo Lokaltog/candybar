@@ -38,10 +38,15 @@ widget_init (struct widget *widget) {
 
 	/* modify image */
 	MagickCropImage(m_wand, width, height, 0, 0);
-	if (config.blur_radius) {
+	if (config.blur_radius != 0) {
 		MagickGaussianBlurImage(m_wand, 0, config.blur_radius);
 	}
-	MagickModulateImage(m_wand, config.brightness, config.saturation, config.contrast);
+	if ((config.brightness != 0) || (config.contrast != 0)) {
+		MagickBrightnessContrastImage(m_wand, config.brightness, config.contrast);
+	}
+	if (config.saturation != 100) {
+		MagickModulateImage(m_wand, 100, config.saturation, 100);
+	}
 
 	/* get image jpg data and encode it to base64 */
 	MagickSetImageCompressionQuality(m_wand, 95);
