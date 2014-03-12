@@ -25,17 +25,17 @@ void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpoin
 #define LENGTH(X) (sizeof X / sizeof X[0])
 
 #define widget_init_config_string(WIDGET, KEY, TARGET) \
-	{ const char *CONF = widget_get_config_string_silent(WIDGET, KEY); \
-	  if (CONF) { TARGET = CONF; } }
+	{ json_t *CONF = widget_get_config(WIDGET, KEY, true); \
+	  if (CONF != NULL) { TARGET = json_string_value(CONF); } }
 #define widget_init_config_integer(WIDGET, KEY, TARGET) \
-	{ int CONF = widget_get_config_integer_silent(WIDGET, KEY); \
-	  if (CONF) { TARGET = CONF; } }
+	{ json_t *CONF = widget_get_config(WIDGET, KEY, true); \
+	  if (CONF != NULL) { TARGET = json_integer_value(CONF); } }
 #define widget_init_config_real(WIDGET, KEY, TARGET) \
-	{ double CONF = widget_get_config_real_silent(WIDGET, KEY); \
-	  if (CONF) { TARGET = CONF; } }
+	{ json_t *CONF = widget_get_config(WIDGET, KEY, true); \
+	  if (CONF != NULL) { TARGET = json_real_value(CONF); } }
 #define widget_init_config_boolean(WIDGET, KEY, TARGET) \
-	{ bool CONF = widget_get_config_boolean_silent(WIDGET, KEY); \
-	  if (CONF) { TARGET = CONF; } }
+	{ json_t *CONF = widget_get_config(WIDGET, KEY, true); \
+	  if (CONF != NULL) { TARGET = json_is_true(CONF); } }
 
 #define widget_send_update(DATA_OBJECT, WIDGET) \
 	WIDGET->data = strdup(json_dumps(DATA_OBJECT, 0)); \
