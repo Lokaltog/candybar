@@ -10,7 +10,6 @@ static struct widget_config {
 	const char *css_gradient_overlay_end;
 	int blur_radius;
 	int brightness;
-	int contrast;
 	int height;
 	int saturation;
 } widget_config_defaults = {
@@ -19,7 +18,6 @@ static struct widget_config {
 	.css_gradient_overlay_end = "rgba(0, 0, 0, .5)",
 	.blur_radius = 0,
 	.brightness = 0,
-	.contrast = 0,
 	.height = 40,
 	.saturation = 100,
 };

@@ -11,7 +11,6 @@ widget_init (struct widget *widget) {
 	widget_init_config_string(widget, "css_gradient_overlay_end", config.css_gradient_overlay_end);
 	widget_init_config_integer(widget, "blur_radius", config.blur_radius);
 	widget_init_config_integer(widget, "brightness", config.brightness);
-	widget_init_config_integer(widget, "contrast", config.contrast);
 	widget_init_config_integer(widget, "height", config.height);
 	widget_init_config_integer(widget, "saturation", config.saturation);
 
@@ -22,12 +21,15 @@ widget_init (struct widget *widget) {
 	}
 
 	MagickWand *m_wand = NULL;
+	MagickPassFail status = MagickPass;
 	int width, height;
 
-	MagickWandGenesis();
+	InitializeMagick(NULL);
 	m_wand = NewMagickWand();
 
-	if (!MagickReadImage(m_wand, config.image)) {
+	status = MagickReadImage(m_wand, config.image);
+
+	if (status != MagickPass) {
 		LOG_ERR("could not read image %s", config.image);
 
 		return 0;
@@ -39,21 +41,18 @@ widget_init (struct widget *widget) {
 	/* modify image */
 	MagickCropImage(m_wand, width, height, 0, 0);
 	if (config.blur_radius != 0) {
-		MagickGaussianBlurImage(m_wand, 0, config.blur_radius);
+		MagickBlurImage(m_wand, 0, config.blur_radius);
 	}
-	if ((config.brightness != 0) || (config.contrast != 0)) {
-		MagickBrightnessContrastImage(m_wand, config.brightness, config.contrast);
-	}
-	if (config.saturation != 100) {
-		MagickModulateImage(m_wand, 100, config.saturation, 100);
+	if ((config.brightness != 100) || (config.saturation != 100)) {
+		MagickModulateImage(m_wand, config.brightness, config.saturation, 100);
 	}
 
 	/* get image jpg data and encode it to base64 */
-	MagickSetImageCompressionQuality(m_wand, 95);
-	MagickSetImageFormat(m_wand, "jpg");
+	MagickSetCompressionQuality(m_wand, 95);
+	MagickSetFormat(m_wand, "jpg");
 
 	size_t img_len;
-	unsigned char *img_data = MagickGetImageBlob(m_wand, &img_len);
+	unsigned char *img_data = MagickWriteImageBlob(m_wand, &img_len);
 	char *img_base64 = g_base64_encode(img_data, img_len);
 
 	json_t *json_data_object = json_object();
@@ -64,14 +63,8 @@ widget_init (struct widget *widget) {
 	widget_send_update(json_data_object, widget);
 
 	g_free(img_base64);
-	if (img_data) {
-		img_data = MagickRelinquishMemory(img_data);
-	}
-	if (m_wand) {
-		m_wand = DestroyMagickWand(m_wand);
-	}
-
-	MagickWandTerminus();
+	DestroyMagickWand(m_wand);
+	DestroyMagick();
 
 	return 0;
 }
