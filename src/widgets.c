@@ -5,6 +5,21 @@
 static pthread_t *widget_threads = NULL;
 static size_t widgets_len = 0;
 
+static void
+cancel_threads () {
+	unsigned short i;
+	if (widget_threads && (widgets_len > 0)) {
+		LOG_INFO("stopping widget threads");
+		for (i = 0; i < widgets_len; i++) {
+			if (widget_threads[i]) {
+				/* this call may fail if the thread never
+				   entered the main thread loop */
+				pthread_cancel(widget_threads[i]);
+			}
+		}
+	}
+}
+
 gboolean
 update_widget (struct widget *widget) {
 	char *script_template = "if(typeof widgets!=='undefined'){try{widgets.update('%s',%s)}catch(e){console.log('Could not update widget: '+e)}}";
@@ -63,16 +78,8 @@ spawn_widget (WebKitWebView *web_view, json_t *json_config, const char *name) {
 
 void
 handle_interrupt (int signal) {
-	unsigned short i;
 	if ((signal == SIGTERM) || (signal == SIGINT) || (signal == SIGHUP)) {
-		if (widget_threads && (widgets_len > 0)) {
-			LOG_INFO("handle_interrupt: stopping widget threads");
-			for (i = 0; i < widgets_len; i++) {
-				if (widget_threads[i]) {
-					pthread_cancel(widget_threads[i]);
-				}
-			}
-		}
+		cancel_threads();
 		gtk_main_quit();
 	}
 }
@@ -82,21 +89,10 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 	json_t *config = user_data;
 	json_t *widget_config, *widgets = json_object_get(config, "widgets");
 	const char *name;
-	unsigned short i;
 
 	LOG_INFO("webkit: window object cleared");
 
-	if (widget_threads && (widgets_len > 0)) {
-		LOG_INFO("webkit: stopping running widget threads");
-		for (i = 0; i < widgets_len; i++) {
-			/* this call may fail if the thread never enters the
-			   main thread loop, e.g. if it fails to connect to a
-			   server */
-			if (widget_threads[i]) {
-				pthread_cancel(widget_threads[i]);
-			}
-		}
-	}
+	cancel_threads();
 
 	widgets_len = json_object_size(widgets);
 	widget_threads = malloc(widgets_len * sizeof(pthread_t));
