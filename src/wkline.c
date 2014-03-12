@@ -25,7 +25,7 @@ wk_realize_handler (GtkWidget *window, gpointer user_data) {
 	bool supports_net_wm_strut = g_list_find(gdk_get_net_supported(),
 	                                         net_wm_strut_atom) != NULL;
 	bool supports_net_wm_strut_partial = g_list_find(gdk_get_net_supported(),
-	                                                 net_wm_strut_atom) != NULL;
+	                                                 net_wm_strut_partial_atom) != NULL;
 
 	if (!strcmp(wkline->position, "top")) {
 		strut[2] = wkline->dim.h;
