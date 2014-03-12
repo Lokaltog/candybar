@@ -131,8 +131,6 @@ get_weather_information (struct location *location) {
 
 static int
 widget_update (struct widget *widget, struct location *location, struct widget_config config) {
-	json_t *json_data_object = json_object();
-	char *json_payload;
 	struct weather *weather;
 
 	weather = get_weather_information(location);
@@ -142,15 +140,13 @@ widget_update (struct widget *widget, struct location *location, struct widget_c
 		return -1;
 	}
 
+	json_t *json_data_object = json_object();
 	json_object_set_new(json_data_object, "icon", json_integer(weather->code));
 	json_object_set_new(json_data_object, "temp", json_real(weather->temp));
 	json_object_set_new(json_data_object, "unit", json_string(config.unit));
 
-	json_payload = json_dumps(json_data_object, 0);
+	widget_send_update(json_data_object, widget);
 
-	widget->data = strdup(json_payload);
-	g_idle_add((GSourceFunc)update_widget, widget);
-	json_decref(json_data_object);
 	free(weather);
 
 	return 0;

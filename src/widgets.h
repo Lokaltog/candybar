@@ -36,3 +36,8 @@ void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpoin
 #define widget_init_config_boolean(WIDGET, KEY, TARGET) \
 	{ bool CONF = widget_get_config_boolean_silent(WIDGET, KEY); \
 	  if (CONF) { TARGET = CONF; } }
+
+#define widget_send_update(DATA_OBJECT, WIDGET) \
+	WIDGET->data = strdup(json_dumps(DATA_OBJECT, 0)); \
+	g_idle_add((GSourceFunc)update_widget, WIDGET); \
+	json_decref(DATA_OBJECT);

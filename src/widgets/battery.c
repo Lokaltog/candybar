@@ -19,18 +19,12 @@ widget_update (struct widget *widget, DBusGProxy *properties_proxy, char *dbus_p
 	unsigned int time_to_full = time_to_full64 & 0xffffffff;
 
 	json_t *json_data_object = json_object();
-	char *json_payload;
-
 	json_object_set_new(json_data_object, "percentage", json_real(percentage));
 	json_object_set_new(json_data_object, "state", json_integer(state));
 	json_object_set_new(json_data_object, "time_to_empty", json_integer(time_to_empty));
 	json_object_set_new(json_data_object, "time_to_full", json_integer(time_to_full));
 
-	json_payload = json_dumps(json_data_object, 0);
-
-	widget->data = strdup(json_payload);
-	g_idle_add((GSourceFunc)update_widget, widget);
-	json_decref(json_data_object);
+	widget_send_update(json_data_object, widget);
 
 	return 0;
 }

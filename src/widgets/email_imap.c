@@ -71,18 +71,11 @@ widget_update (struct widget *widget, struct widget_config config) {
 	free(data);
 
 	/* send json data */
-	char *json_payload;
-	json_t *json_data_object;
-
-	json_data_object = json_object();
+	json_t *json_data_object = json_object();
 	json_object_set_new(json_data_object, "username", json_string(config.username));
 	json_object_set_new(json_data_object, "unread", json_integer(unread));
 
-	json_payload = json_dumps(json_data_object, 0);
-
-	widget->data = strdup(json_payload);
-	g_idle_add((GSourceFunc)update_widget, widget);
-	json_decref(json_data_object);
+	widget_send_update(json_data_object, widget);
 
 	return 0;
 }

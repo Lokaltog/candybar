@@ -71,18 +71,12 @@ widget_update (struct widget *widget, DBusConnection *connection, DBusMessage *m
 	dbus_message_unref(reply);
 
 	json_t *json_data_object = json_object();
-	char *json_payload;
-
 	json_object_set_new(json_data_object, "appname", json_string(appname));
 	json_object_set_new(json_data_object, "summary", json_string(summary));
 	json_object_set_new(json_data_object, "body", json_string(body));
 	json_object_set_new(json_data_object, "expires", json_integer(expires));
 
-	json_payload = json_dumps(json_data_object, 0);
-
-	widget->data = strdup(json_payload);
-	g_idle_add((GSourceFunc)update_widget, widget);
-	json_decref(json_data_object);
+	widget_send_update(json_data_object, widget);
 
 	return 0;
 }

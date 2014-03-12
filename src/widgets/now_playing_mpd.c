@@ -4,7 +4,6 @@
 static int
 widget_update (struct widget *widget, struct mpd_connection *connection) {
 	json_t *json_data_object = json_object();
-	char *json_payload;
 
 	struct mpd_song *song;
 	struct mpd_status *status;
@@ -58,11 +57,7 @@ widget_update (struct widget *widget, struct mpd_connection *connection) {
 	mpd_status_free(status);
 	mpd_send_idle_mask(connection, MPD_IDLE_PLAYER);
 
-	json_payload = json_dumps(json_data_object, 0);
-
-	widget->data = strdup(json_payload);
-	g_idle_add((GSourceFunc)update_widget, widget);
-	json_decref(json_data_object);
+	widget_send_update(json_data_object, widget);
 
 	return 0;
 }

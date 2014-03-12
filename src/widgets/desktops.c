@@ -1,7 +1,7 @@
 #include "widgets.h"
 #include "desktops.h"
 
-static void
+static int
 widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nbr) {
 	unsigned short i;
 	uint32_t desktop_curr, desktop_len, client_desktop;
@@ -13,14 +13,14 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 	if (!xcb_ewmh_get_current_desktop_reply(ewmh, xcb_ewmh_get_current_desktop_unchecked(ewmh, screen_nbr), &desktop_curr, NULL)) {
 		LOG_INFO("ewmh: could not get current desktop");
 
-		return;
+		return 1;
 	}
 
 	/* get desktop count */
 	if (!xcb_ewmh_get_number_of_desktops_reply(ewmh, xcb_ewmh_get_number_of_desktops_unchecked(ewmh, screen_nbr), &desktop_len, NULL)) {
 		LOG_INFO("ewmh: could not get desktop count");
 
-		return;
+		return 2;
 	}
 
 	for (i = 0; i < desktop_len; i++) {
@@ -34,7 +34,7 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 	if (!xcb_ewmh_get_client_list_reply(ewmh, xcb_ewmh_get_client_list_unchecked(ewmh, screen_nbr), &clients, NULL)) {
 		LOG_INFO("ewmh: could not get client list");
 
-		return;
+		return 3;
 	}
 
 	for (i = 0; i < clients.windows_len; i++) {
@@ -57,7 +57,7 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 
 	json_t *json_data_object = json_object();
 	json_t *json_desktops_array = json_array();
-	char *json_payload;
+	json_object_set_new(json_data_object, "desktops", json_desktops_array);
 
 	for (i = 0; i < DESKTOP_MAX_LEN; i++) {
 		if (!desktops[i].is_valid) {
@@ -74,15 +74,11 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 		}
 	}
 
-	json_object_set_new(json_data_object, "desktops", json_desktops_array);
-
-	json_payload = json_dumps(json_data_object, 0);
-
-	widget->data = strdup(json_payload);
-	g_idle_add((GSourceFunc)update_widget, widget);
-	json_decref(json_data_object);
+	widget_send_update(json_data_object, widget);
 
 	free(desktops);
+
+	return 0;
 }
 
 static void

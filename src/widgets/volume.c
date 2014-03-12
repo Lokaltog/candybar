@@ -3,8 +3,6 @@
 
 static int
 widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
-	json_t *json_data_object = json_object();
-	char *json_payload;
 	long volume_min, volume_max, volume;
 	int muted;
 
@@ -13,13 +11,10 @@ widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
 	snd_mixer_selem_get_playback_switch(elem, SND_MIXER_SCHN_FRONT_LEFT, &muted);
 	volume *= muted; /* if muted set volume to 0 */
 
+	json_t *json_data_object = json_object();
 	json_object_set_new(json_data_object, "percent", json_real(100 * (volume - volume_min) / (volume_max - volume_min)));
 
-	json_payload = json_dumps(json_data_object, 0);
-
-	widget->data = strdup(json_payload);
-	g_idle_add((GSourceFunc)update_widget, widget);
-	json_decref(json_data_object);
+	widget_send_update(json_data_object, widget);
 
 	return 0;
 }

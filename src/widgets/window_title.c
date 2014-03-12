@@ -2,7 +2,7 @@
 #include "window_title.h"
 #include "util/copy_prop.h"
 
-static void
+static int
 widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nbr, xcb_window_t *cur_win) {
 	xcb_window_t win;
 	xcb_ewmh_get_utf8_strings_reply_t ewmh_txt_prop;
@@ -39,15 +39,12 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 		strcpy(window_title, MISSING_VALUE);
 	}
 
-	char *json_payload;
 	json_t *json_data_object = json_object();
 	json_object_set_new(json_data_object, "window_title", json_string(window_title));
 
-	json_payload = json_dumps(json_data_object, 0);
+	widget_send_update(json_data_object, widget);
 
-	widget->data = strdup(json_payload);
-	g_idle_add((GSourceFunc)update_widget, widget);
-	json_decref(json_data_object);
+	return 0;
 }
 
 static void

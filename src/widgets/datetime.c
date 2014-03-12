@@ -3,12 +3,10 @@
 
 static int
 widget_update (struct widget *widget, struct widget_config config) {
-	char *json_payload;
 	time_t t;
 	struct tm *tmp;
 	char timestr[200];
 	char datestr[200];
-	json_t *json_data_object;
 
 	t = time(NULL);
 	tmp = localtime(&t);
@@ -21,15 +19,11 @@ widget_update (struct widget *widget, struct widget_config config) {
 	strftime(datestr, sizeof(datestr), config.date_format, tmp);
 	strftime(timestr, sizeof(timestr), config.time_format, tmp);
 
-	json_data_object = json_object();
+	json_t *json_data_object = json_object();
 	json_object_set_new(json_data_object, "date", json_string(datestr));
 	json_object_set_new(json_data_object, "time", json_string(timestr));
 
-	json_payload = json_dumps(json_data_object, 0);
-
-	widget->data = strdup(json_payload);
-	g_idle_add((GSourceFunc)update_widget, widget);
-	json_decref(json_data_object);
+	widget_send_update(json_data_object, widget);
 
 	return 0;
 }
