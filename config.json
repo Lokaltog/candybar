@@ -2,7 +2,6 @@
 	"height": 24,
 	"position": "top",
 	"theme_uri": "http://lokaltog.github.io/wkline-theme-default/",
-	"background": "#111",
 	"monitor": 0,
 	"widgets": [
 		{

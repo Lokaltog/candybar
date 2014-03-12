@@ -52,6 +52,7 @@ def configure(ctx):
 	ctx.check_cfg(package='alsa', uselib_store='ALSA', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='libcurl', uselib_store='CURL', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='dbus-1 dbus-glib-1', uselib_store='DBUS', args=['--cflags', '--libs'], mandatory=False)
+	ctx.check_cfg(package='MagickWand', uselib_store='IMAGEMAGICK', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='libmpdclient', uselib_store='LIBMPDCLIENT', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='xcb-util xcb-ewmh xcb-icccm', uselib_store='XCB', args=['--cflags', '--libs'], mandatory=False)
 
@@ -85,6 +86,8 @@ def build(bld):
 		bld.shlib(source='src/widgets/battery.c', target='widget_battery', use=basedeps + ['DBUS', 'util_dbus_helpers'], install_path=LIBDIR)
 		bld.shlib(source='src/widgets/notifications.c', target='widget_notifications', use=basedeps + ['DBUS', 'util_dbus_helpers'], install_path=LIBDIR)
 
+	if bld.is_defined('HAVE_IMAGEMAGICK'):
+		bld.shlib(source='src/widgets/magick_background.c', target='widget_magick_background', use=basedeps + ['IMAGEMAGICK'], install_path=LIBDIR)
 	if bld.is_defined('HAVE_LIBMPDCLIENT'):
 		bld.shlib(source='src/widgets/now_playing_mpd.c', target='widget_now_playing_mpd', use=basedeps + ['LIBMPDCLIENT'], install_path=LIBDIR)
 
