@@ -61,7 +61,6 @@ def build(bld):
 	# add build version/time defines
 	wkline_defines = [
 		'VERSION="{0}"'.format(get_version()),
-		'BUILD_TIME="{0}"'.format(time.strftime('%c')),
 	]
 
 	bld.objects(source=bld.path.ant_glob('src/util/(log|config|copy_prop|gdk_helpers).c'), target='baseutils', use=basedeps)

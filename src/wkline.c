@@ -102,7 +102,7 @@ main (int argc, char *argv[]) {
 
 	gtk_init(&argc, &argv);
 
-	LOG_INFO("%s%s%s %s (%s)", ANSI_ESC_CYAN, ANSI_ESC_BOLD, PACKAGE, VERSION, BUILD_TIME);
+	LOG_INFO("%s%s%s %s (%s %s)", ANSI_ESC_CYAN, ANSI_ESC_BOLD, PACKAGE, VERSION, __DATE__, __TIME__);
 
 	wkline = malloc(sizeof(struct wkline));
 	wkline->config = load_config_file();
