@@ -87,20 +87,22 @@ handle_interrupt (int signal) {
 void
 window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data) {
 	json_t *config = user_data;
-	json_t *widget_config, *widgets = json_object_get(config, "widgets");
-	const char *name;
+	json_t *widget;
+	json_t *widgets = json_object_get(config, "widgets");
+	size_t index;
 
 	LOG_INFO("webkit: window object cleared");
 
 	cancel_threads();
 
-	widgets_len = json_object_size(widgets);
+	widgets_len = json_array_size(widgets);
 	widget_threads = malloc(widgets_len * sizeof(pthread_t));
 
 	LOG_INFO("spawning %i widget threads", widgets_len);
 
-	i = 0;
-	json_object_foreach(widgets, name, widget_config) {
-		widget_threads[i++] = spawn_widget(web_view, widget_config, name);
+	json_array_foreach(widgets, index, widget) {
+		widget_threads[index] = spawn_widget(web_view,
+		                                     json_object_get(widget, "config"),
+		                                     json_string_value(json_object_get(widget, "module")));
 	}
 }

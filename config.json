@@ -4,14 +4,38 @@
 	"theme_uri": "http://lokaltog.github.io/wkline-theme-default/",
 	"background": "#111",
 	"monitor": 0,
-	"widgets": {
-		"desktops": {},
-		"window_title": {},
-		"now_playing_mpd": {},
-		"volume": {},
-		"weather": {},
-		"external_ip": {},
-		"battery": {},
-		"datetime": {}
-	}
+	"widgets": [
+		{
+			"module": "desktops",
+			"config": {}
+		},
+		{
+			"module": "window_title",
+			"config": {}
+		},
+		{
+			"module": "now_playing_mpd",
+			"config": {}
+		},
+		{
+			"module": "volume",
+			"config": {}
+		},
+		{
+			"module": "weather",
+			"config": {}
+		},
+		{
+			"module": "external_ip",
+			"config": {}
+		},
+		{
+			"module": "battery",
+			"config": {}
+		},
+		{
+			"module": "datetime",
+			"config": {}
+		}
+	]
 }
