@@ -71,12 +71,12 @@ widget_init (struct widget *widget) {
 		}
 		err = snd_mixer_poll_descriptors(mixer, &pollfds[1], nfds - 1);
 		if (err < 0) {
-			LOG_ERR("alsa: can't get poll descriptors: %i", err);
+			W_LOG_ERR("alsa: can't get poll descriptors: %i", err);
 			break;
 		}
 		wait_err = snd_mixer_wait(mixer, -1);
 		if (wait_err < 0) {
-			LOG_ERR("alsa: wait error");
+			W_LOG_ERR("alsa: wait error");
 		}
 		n = poll(pollfds, nfds, -1);
 		if (n < 0) {
@@ -84,7 +84,7 @@ widget_init (struct widget *widget) {
 				pollfds[0].revents = 0;
 			}
 			else {
-				LOG_ERR("alsa: poll error");
+				W_LOG_ERR("alsa: poll error");
 				break;
 			}
 		}
@@ -94,11 +94,11 @@ widget_init (struct widget *widget) {
 		if (n > 0) {
 			err = snd_mixer_poll_descriptors_revents(mixer, &pollfds[1], nfds - 1, &revents);
 			if (err < 0) {
-				LOG_ERR("alsa: fatal error: %i", err);
+				W_LOG_ERR("alsa: fatal error: %i", err);
 				break;
 			}
 			if (revents & (POLLERR | POLLNVAL)) {
-				LOG_INFO("alsa: closing mixer");
+				W_LOG_INFO("alsa: closing mixer");
 				break;
 			}
 			else if (revents & POLLIN) {
