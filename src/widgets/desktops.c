@@ -11,14 +11,14 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 
 	/* get current desktop */
 	if (!xcb_ewmh_get_current_desktop_reply(ewmh, xcb_ewmh_get_current_desktop_unchecked(ewmh, screen_nbr), &desktop_curr, NULL)) {
-		W_LOG_INFO("ewmh: could not get current desktop");
+		LOG_INFO("ewmh: could not get current desktop");
 
 		return 1;
 	}
 
 	/* get desktop count */
 	if (!xcb_ewmh_get_number_of_desktops_reply(ewmh, xcb_ewmh_get_number_of_desktops_unchecked(ewmh, screen_nbr), &desktop_len, NULL)) {
-		W_LOG_INFO("ewmh: could not get desktop count");
+		LOG_INFO("ewmh: could not get desktop count");
 
 		return 2;
 	}
@@ -32,7 +32,7 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 
 	/* get clients */
 	if (!xcb_ewmh_get_client_list_reply(ewmh, xcb_ewmh_get_client_list_unchecked(ewmh, screen_nbr), &clients, NULL)) {
-		W_LOG_INFO("ewmh: could not get client list");
+		LOG_INFO("ewmh: could not get client list");
 
 		return 3;
 	}
@@ -46,7 +46,7 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 
 		/* check icccm urgency hint on client */
 		if (!xcb_icccm_get_wm_hints_reply(ewmh->connection, xcb_icccm_get_wm_hints_unchecked(ewmh->connection, clients.windows[i]), &window_hints, NULL)) {
-			W_LOG_INFO("icccm: could not get window hints");
+			LOG_INFO("icccm: could not get window hints");
 		}
 		if (window_hints.flags & XCB_ICCCM_WM_HINT_X_URGENCY) {
 			desktops[client_desktop].is_urgent = true;
@@ -97,7 +97,7 @@ void*
 widget_init (struct widget *widget) {
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	if (xcb_connection_has_error(conn)) {
-		W_LOG_ERR("could not connect to display %s.", getenv("DISPLAY"));
+		LOG_ERR("could not connect to display %s.", getenv("DISPLAY"));
 
 		return 0;
 	}
@@ -116,7 +116,7 @@ widget_init (struct widget *widget) {
 	                                                                                  values));
 
 	if (err != NULL) {
-		W_LOG_ERR("could not request EWMH property change notifications");
+		LOG_ERR("desktops: could not request EWMH property change notifications");
 
 		return 0;
 	}

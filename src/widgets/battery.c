@@ -65,7 +65,7 @@ widget_init (struct widget *widget) {
 	snprintf(dbus_path, dbus_path_length + 1, dbus_path_template, config.name);
 
 	if (conn == NULL) {
-		W_LOG_ERR("dbus: failed to open connection to bus: %s\n", error->message);
+		LOG_ERR("dbus: failed to open connection to bus: %s\n", error->message);
 		g_error_free(error);
 
 		return 0;
@@ -75,7 +75,7 @@ widget_init (struct widget *widget) {
 	                                       "org.freedesktop.UPower",
 	                                       dbus_path,
 	                                       "org.freedesktop.UPower.Device.Properties")) == NULL) {
-		W_LOG_ERR("dbus: failed to create proxy object");
+		LOG_ERR("dbus: failed to create proxy object");
 
 		return 0;
 	}
@@ -84,14 +84,14 @@ widget_init (struct widget *widget) {
 	                                                    "org.freedesktop.DBus.Properties",
 	                                                    dbus_g_proxy_get_path(proxy))) == NULL) {
 		g_object_unref(proxy);
-		W_LOG_ERR("dbus: failed to create proxy object");
+		LOG_ERR("dbus: failed to create proxy object");
 
 		return 0;
 	}
 
 	unsigned int state;
 	if (!proxy_uint_value(&state, properties_proxy, dbus_path, "State")) {
-		W_LOG_ERR("dbus: invalid battery");
+		LOG_ERR("dbus: invalid battery");
 
 		return 0;
 	}

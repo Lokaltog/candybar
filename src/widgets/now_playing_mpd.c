@@ -13,13 +13,13 @@ widget_update (struct widget *widget, struct mpd_connection *connection) {
 	mpd_send_status(connection);
 	status = mpd_recv_status(connection);
 	if (status == NULL) {
-		W_LOG_ERR("status error: %s", mpd_connection_get_error_message(connection));
+		LOG_ERR("mpd: status error: %s", mpd_connection_get_error_message(connection));
 
 		return -1;
 	}
 	state = mpd_status_get_state(status);
 	if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
-		W_LOG_ERR("state error: %s", mpd_connection_get_error_message(connection));
+		LOG_ERR("mpd: state error: %s", mpd_connection_get_error_message(connection));
 
 		return -1;
 	}
@@ -39,7 +39,7 @@ widget_update (struct widget *widget, struct mpd_connection *connection) {
 			mpd_song_free(song);
 
 			if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
-				W_LOG_ERR("song error: %s", mpd_connection_get_error_message(connection));
+				LOG_ERR("mpd: song error: %s", mpd_connection_get_error_message(connection));
 
 				return -1;
 			}
@@ -82,9 +82,9 @@ widget_init (struct widget *widget) {
 	struct mpd_connection *connection = mpd_connection_new(config.host, config.port, config.timeout);
 
 	if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
-		W_LOG_ERR("failed to connect to mpd server at %s:%i: %s",
-		          config.host, config.port,
-		          mpd_connection_get_error_message(connection));
+		LOG_ERR("mpd: failed to connect to mpd server at %s:%i: %s",
+		        config.host, config.port,
+		        mpd_connection_get_error_message(connection));
 		mpd_connection_free(connection);
 
 		return 0;
@@ -104,7 +104,7 @@ widget_init (struct widget *widget) {
 
 		s = select(FD_SETSIZE, &fds, NULL, NULL, NULL);
 		if (s < 0) {
-			W_LOG_ERR("select error");
+			LOG_ERR("mpd: select error");
 			break;
 		}
 		if (!s) {
@@ -115,7 +115,7 @@ widget_init (struct widget *widget) {
 			/* empty event buffer */
 			mpd_recv_idle(connection, true);
 			if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
-				W_LOG_ERR("recv error: %s", mpd_connection_get_error_message(connection));
+				LOG_ERR("mpd: recv error: %s", mpd_connection_get_error_message(connection));
 				break;
 			}
 			widget_update(widget, connection);

@@ -116,7 +116,7 @@ get_weather_information (struct location *location) {
 	if (!json_is_string(weather_code) || !json_is_string(weather_temp)) {
 		json_decref(weather_data);
 		free(weather);
-		LOG_ERR("invalid weather query result (weather code or temp missing)");
+		LOG_ERR("weather: invalid weather query result (weather code or temp missing)");
 
 		return NULL;
 	}
@@ -135,7 +135,7 @@ widget_update (struct widget *widget, struct location *location, struct widget_c
 
 	weather = get_weather_information(location);
 	if (!weather) {
-		W_LOG_ERR("error while fetching weather data");
+		LOG_ERR("error while fetching weather data");
 
 		return -1;
 	}
@@ -184,7 +184,7 @@ widget_init (struct widget *widget) {
 		location = get_geoip_location(location);
 	}
 	if (!location) {
-		W_LOG_WARN("could not get GeoIP location, consider setting the location manually in config.json");
+		LOG_WARN("could not get GeoIP location, consider setting the location manually in config.json");
 		free(location);
 
 		return 0;
