@@ -12,6 +12,12 @@
 #define ANSI_ESC_BOLD    "\x1b[1m"
 #define ANSI_ESC_RESET   "\x1b[0m"
 
-void LOG_ERR (char const *format, ...);
-void LOG_INFO (char const *format, ...);
-void LOG_WARN (char const *format, ...);
+void LOG (const char *prefix, const char *desc, const char *format, ...);
+
+#define LOG_ERR(format, ...)  LOG(ANSI_ESC_BOLD ANSI_ESC_RED "ERROR: " ANSI_ESC_RESET ANSI_ESC_RED, NULL, format, ## __VA_ARGS__)
+#define LOG_INFO(format, ...) LOG("", NULL, format, ## __VA_ARGS__)
+#define LOG_WARN(format, ...) LOG(ANSI_ESC_BOLD ANSI_ESC_YELLOW "WARNING: " ANSI_ESC_RESET ANSI_ESC_YELLOW, NULL, format, ## __VA_ARGS__)
+
+#define W_LOG_ERR(format, ...)  LOG(ANSI_ESC_BOLD ANSI_ESC_RED "ERROR: " ANSI_ESC_RESET ANSI_ESC_RED, widget->name, format, ## __VA_ARGS__)
+#define W_LOG_INFO(format, ...) LOG("", widget->name, format, ## __VA_ARGS__)
+#define W_LOG_WARN(format, ...) LOG(ANSI_ESC_BOLD ANSI_ESC_YELLOW "WARNING: " ANSI_ESC_RESET ANSI_ESC_YELLOW, widget->name, format, ## __VA_ARGS__)
