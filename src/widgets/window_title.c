@@ -49,7 +49,7 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 
 static void
 widget_cleanup (void *arg) {
-	LOG_INFO("widget cleanup: window_title");
+	LOG_DEBUG("cleanup");
 
 	void **cleanup_data = arg;
 
@@ -61,9 +61,11 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
+	LOG_DEBUG("init");
+
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	if (xcb_connection_has_error(conn)) {
-		LOG_INFO("Could not connect to display %s.", getenv("DISPLAY"));
+		LOG_ERR("could not connect to display %s.", getenv("DISPLAY"));
 
 		return 0;
 	}
@@ -83,7 +85,7 @@ widget_init (struct widget *widget) {
 	                                                                                  values));
 
 	if (err != NULL) {
-		LOG_INFO("desktops: could not request EWMH property change notifications");
+		LOG_ERR("could not request EWMH property change notifications");
 
 		return 0;
 	}

@@ -154,7 +154,7 @@ widget_update (struct widget *widget, struct location *location, struct widget_c
 
 static void
 widget_cleanup (void *arg) {
-	LOG_INFO("widget cleanup: weather");
+	LOG_DEBUG("cleanup");
 
 	void **cleanup_data = arg;
 	struct location *location = cleanup_data[0];
@@ -168,6 +168,8 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
+	LOG_DEBUG("init");
+
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget, "location", config.location);
 	widget_init_config_string(widget, "unit", config.unit);

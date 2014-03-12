@@ -13,13 +13,13 @@ widget_update (struct widget *widget, struct mpd_connection *connection) {
 	mpd_send_status(connection);
 	status = mpd_recv_status(connection);
 	if (status == NULL) {
-		LOG_ERR("mpd: status error: %s", mpd_connection_get_error_message(connection));
+		LOG_ERR("status error: %s", mpd_connection_get_error_message(connection));
 
 		return -1;
 	}
 	state = mpd_status_get_state(status);
 	if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
-		LOG_ERR("mpd: state error: %s", mpd_connection_get_error_message(connection));
+		LOG_ERR("state error: %s", mpd_connection_get_error_message(connection));
 
 		return -1;
 	}
@@ -39,7 +39,7 @@ widget_update (struct widget *widget, struct mpd_connection *connection) {
 			mpd_song_free(song);
 
 			if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
-				LOG_ERR("mpd: song error: %s", mpd_connection_get_error_message(connection));
+				LOG_ERR("song error: %s", mpd_connection_get_error_message(connection));
 
 				return -1;
 			}
@@ -64,7 +64,7 @@ widget_update (struct widget *widget, struct mpd_connection *connection) {
 
 static void
 widget_cleanup (void *arg) {
-	LOG_INFO("widget cleanup: now_playing_mpd");
+	LOG_DEBUG("cleanup");
 
 	void **cleanup_data = arg;
 
@@ -74,6 +74,8 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
+	LOG_DEBUG("init");
+
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget, "host", config.host);
 	widget_init_config_integer(widget, "port", config.port);
@@ -82,7 +84,7 @@ widget_init (struct widget *widget) {
 	struct mpd_connection *connection = mpd_connection_new(config.host, config.port, config.timeout);
 
 	if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
-		LOG_ERR("mpd: failed to connect to mpd server at %s:%i: %s",
+		LOG_ERR("failed to connect to mpd server at %s:%i: %s",
 		        config.host, config.port,
 		        mpd_connection_get_error_message(connection));
 		mpd_connection_free(connection);
@@ -104,7 +106,7 @@ widget_init (struct widget *widget) {
 
 		s = select(FD_SETSIZE, &fds, NULL, NULL, NULL);
 		if (s < 0) {
-			LOG_ERR("mpd: select error");
+			LOG_ERR("select error");
 			break;
 		}
 		if (!s) {
@@ -115,7 +117,7 @@ widget_init (struct widget *widget) {
 			/* empty event buffer */
 			mpd_recv_idle(connection, true);
 			if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
-				LOG_ERR("mpd: recv error: %s", mpd_connection_get_error_message(connection));
+				LOG_ERR("recv error: %s", mpd_connection_get_error_message(connection));
 				break;
 			}
 			widget_update(widget, connection);

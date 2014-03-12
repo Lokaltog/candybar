@@ -30,6 +30,8 @@ widget_update (struct widget *widget, struct widget_config config) {
 
 void*
 widget_init (struct widget *widget) {
+	LOG_DEBUG("init");
+
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget, "date_format", config.date_format);
 	widget_init_config_string(widget, "time_format", config.time_format);

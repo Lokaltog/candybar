@@ -9,7 +9,7 @@ static void
 cancel_threads () {
 	unsigned short i;
 	if (widget_threads && (widgets_len > 0)) {
-		LOG_INFO("stopping widget threads");
+		LOG_DEBUG("stopping widget threads");
 		for (i = 0; i < widgets_len; i++) {
 			if (widget_threads[i]) {
 				/* this call may fail if the thread never
@@ -32,7 +32,7 @@ web_view_update_widget (struct widget *widget) {
 	script = malloc(script_length + 1);
 
 	if (widget_get_config_boolean_silent(widget, "debug")) {
-		LOG_INFO("updating widget %s: %s", widget->name, widget->data);
+		LOG_DEBUG("updating widget %s: %s", widget->name, widget->data);
 	}
 
 	snprintf(script, script_length + 1, script_template, widget->name, widget->data);
@@ -70,8 +70,6 @@ spawn_widget (WebKitWebView *web_view, json_t *json_config, const char *name) {
 	widget->web_view = web_view;
 	widget->name = strdup(name); /* don't forget to free this one */
 
-	LOG_INFO("spawning widget '%s'", name);
-
 	pthread_create(&return_thread, NULL, (void*)widget_init, widget);
 	pthread_setname_np(return_thread, name);
 
@@ -93,14 +91,12 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 	json_t *widgets = json_object_get(config, "widgets");
 	size_t index;
 
-	LOG_INFO("webkit: window object cleared");
+	LOG_DEBUG("webkit: window object cleared");
 
 	cancel_threads();
 
 	widgets_len = json_array_size(widgets);
 	widget_threads = malloc(widgets_len * sizeof(pthread_t));
-
-	LOG_INFO("spawning %i widget threads", widgets_len);
 
 	json_array_foreach(widgets, index, widget) {
 		widget_threads[index] = spawn_widget(web_view,

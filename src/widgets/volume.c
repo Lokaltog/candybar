@@ -21,7 +21,7 @@ widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
 
 static void
 widget_cleanup (void *arg) {
-	LOG_INFO("widget cleanup: volume");
+	LOG_DEBUG("cleanup");
 
 	void **cleanup_data = arg;
 
@@ -32,6 +32,8 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
+	LOG_DEBUG("init");
+
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget, "card", config.card);
 	widget_init_config_string(widget, "selem", config.selem);

@@ -83,7 +83,7 @@ widget_update (struct widget *widget, DBusConnection *connection, DBusMessage *m
 
 static void
 widget_cleanup (void *arg) {
-	LOG_INFO("widget cleanup: notifications");
+	LOG_DEBUG("cleanup");
 
 	void **cleanup_data = arg;
 
@@ -93,6 +93,8 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
+	LOG_DEBUG("init");
+
 	DBusConnection *connection;
 	DBusError dbus_error;
 	DBusError *err = &dbus_error;

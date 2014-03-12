@@ -35,7 +35,7 @@ widget_update (struct widget *widget, struct widget_config config) {
 
 	status = curl_easy_perform(curl);
 	if (status != CURLE_OK) {
-		LOG_ERR("curl/email_imap: unable to request data from %s (this error may be temporary): %s",
+		LOG_ERR("unable to request data from %s (this error may be temporary): %s",
 		        config.address,
 		        curl_easy_strerror(status));
 
@@ -45,7 +45,7 @@ widget_update (struct widget *widget, struct widget_config config) {
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
 
 	if (code != 0) {
-		LOG_ERR("curl/email_imap: server responded with code %ld", code);
+		LOG_ERR("server responded with code %ld", code);
 
 		return 0;
 	}
@@ -82,6 +82,8 @@ widget_update (struct widget *widget, struct widget_config config) {
 
 void*
 widget_init (struct widget *widget) {
+	LOG_DEBUG("init");
+
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget, "address", config.address);
 	widget_init_config_string(widget, "username", config.username);

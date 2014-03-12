@@ -31,7 +31,7 @@ widget_update (struct widget *widget, DBusGProxy *properties_proxy, char *dbus_p
 
 static void
 widget_cleanup (void *arg) {
-	LOG_INFO("widget cleanup: battery");
+	LOG_DEBUG("cleanup");
 
 	void **cleanup_data = arg;
 
@@ -47,6 +47,8 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
+	LOG_DEBUG("init");
+
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget, "name", config.name);
 	widget_init_config_integer(widget, "refresh_interval", config.refresh_interval);
