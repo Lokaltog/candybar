@@ -2,7 +2,7 @@
 #include "desktops.h"
 
 static void
-widget_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nbr) {
+widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nbr) {
 	unsigned short i;
 	uint32_t desktop_curr, desktop_len, client_desktop;
 	xcb_ewmh_get_windows_reply_t clients;
@@ -129,7 +129,7 @@ widget_init (struct widget *widget) {
 	cleanup_data[0] = ewmh;
 
 	pthread_cleanup_push(widget_cleanup, cleanup_data);
-	widget_send_update(widget, ewmh, screen_nbr);
+	widget_update(widget, ewmh, screen_nbr);
 	for (;;) {
 		while ((evt = xcb_wait_for_event(ewmh->connection)) != NULL) {
 			xcb_property_notify_event_t *pne;
@@ -137,13 +137,13 @@ widget_init (struct widget *widget) {
 			case XCB_PROPERTY_NOTIFY:
 				pne = (xcb_property_notify_event_t*)evt;
 				if (pne->atom == ewmh->_NET_DESKTOP_NAMES) {
-					widget_send_update(widget, ewmh, screen_nbr);
+					widget_update(widget, ewmh, screen_nbr);
 				}
 				else if (pne->atom == ewmh->_NET_NUMBER_OF_DESKTOPS) {
-					widget_send_update(widget, ewmh, screen_nbr);
+					widget_update(widget, ewmh, screen_nbr);
 				}
 				else if (pne->atom == ewmh->_NET_CURRENT_DESKTOP) {
-					widget_send_update(widget, ewmh, screen_nbr);
+					widget_update(widget, ewmh, screen_nbr);
 				}
 			default:
 				break;

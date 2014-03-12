@@ -2,7 +2,7 @@
 #include "datetime.h"
 
 static int
-widget_send_update (struct widget *widget, struct widget_config config) {
+widget_update (struct widget *widget, struct widget_config config) {
 	char *json_payload;
 	time_t t;
 	struct tm *tmp;
@@ -42,7 +42,7 @@ widget_init (struct widget *widget) {
 	widget_init_config_integer(widget, "refresh_interval", config.refresh_interval);
 
 	for (;;) {
-		widget_send_update(widget, config);
+		widget_update(widget, config);
 
 		sleep(config.refresh_interval);
 	}

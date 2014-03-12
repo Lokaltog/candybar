@@ -3,7 +3,7 @@
 #include "util/copy_prop.h"
 
 static void
-widget_send_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nbr, xcb_window_t *cur_win) {
+widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nbr, xcb_window_t *cur_win) {
 	xcb_window_t win;
 	xcb_ewmh_get_utf8_strings_reply_t ewmh_txt_prop;
 	xcb_icccm_get_text_property_reply_t icccm_txt_prop;
@@ -95,7 +95,7 @@ widget_init (struct widget *widget) {
 	cleanup_data[0] = ewmh;
 
 	pthread_cleanup_push(widget_cleanup, cleanup_data);
-	widget_send_update(widget, ewmh, screen_nbr, &cur_win);
+	widget_update(widget, ewmh, screen_nbr, &cur_win);
 	for (;;) {
 		while ((evt = xcb_wait_for_event(ewmh->connection)) != NULL) {
 			xcb_property_notify_event_t *pne;
@@ -103,10 +103,10 @@ widget_init (struct widget *widget) {
 			case XCB_PROPERTY_NOTIFY:
 				pne = (xcb_property_notify_event_t*)evt;
 				if (pne->atom == ewmh->_NET_ACTIVE_WINDOW) {
-					widget_send_update(widget, ewmh, screen_nbr, &cur_win);
+					widget_update(widget, ewmh, screen_nbr, &cur_win);
 				}
 				else if ((pne->window != ewmh->screens[screen_nbr]->root) && ((pne->atom == ewmh->_NET_WM_NAME) || (pne->atom == XCB_ATOM_WM_NAME))) {
-					widget_send_update(widget, ewmh, screen_nbr, &cur_win);
+					widget_update(widget, ewmh, screen_nbr, &cur_win);
 				}
 			default:
 				break;

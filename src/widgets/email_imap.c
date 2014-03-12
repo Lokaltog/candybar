@@ -2,7 +2,7 @@
 #include "email_imap.h"
 
 static int
-send_update (struct widget *widget, struct widget_config config) {
+widget_update (struct widget *widget, struct widget_config config) {
 	CURL *curl;
 	CURLcode status;
 	char *data;
@@ -103,7 +103,7 @@ widget_init (struct widget *widget) {
 	}
 
 	for (;;) {
-		send_update(widget, config);
+		widget_update(widget, config);
 
 		sleep(config.refresh_interval);
 	}

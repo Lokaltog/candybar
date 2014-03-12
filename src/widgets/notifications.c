@@ -23,7 +23,7 @@ dbus_array_reply (DBusConnection *connection, DBusMessage *msg, char *array[]) {
 }
 
 static int
-widget_send_update (struct widget *widget, DBusConnection *connection, DBusMessage *msg) {
+widget_update (struct widget *widget, DBusConnection *connection, DBusMessage *msg) {
 	unsigned short i;
 	DBusMessage *reply;
 	DBusMessageIter args;
@@ -142,7 +142,7 @@ widget_init (struct widget *widget) {
 
 		while ((msg = dbus_connection_pop_message(connection)) != NULL) {
 			if (dbus_message_is_method_call(msg, "org.freedesktop.Notifications", "Notify")) {
-				if (widget_send_update(widget, connection, msg) != 0) {
+				if (widget_update(widget, connection, msg) != 0) {
 					LOG_ERR("dbus: error while handling notification");
 					break;
 				}
