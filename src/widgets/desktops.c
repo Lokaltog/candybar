@@ -1,70 +1,84 @@
 #include "widgets.h"
 #include "desktops.h"
+#include "util/copy_prop.h"
 
 static int
 widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nbr) {
 	unsigned short i;
 	uint32_t desktop_curr, desktop_len, client_desktop;
+	char desktop_name[COPY_PROP_BUFSIZ];
+	xcb_ewmh_get_utf8_strings_reply_t desktop_names;
 	xcb_ewmh_get_windows_reply_t clients;
 	xcb_icccm_wm_hints_t window_hints;
-	struct desktop *desktops = calloc(DESKTOP_MAX_LEN, sizeof(struct desktop));
+	struct desktop *desktops;
 
 	/* get current desktop */
-	if (!xcb_ewmh_get_current_desktop_reply(ewmh, xcb_ewmh_get_current_desktop_unchecked(ewmh, screen_nbr), &desktop_curr, NULL)) {
-		LOG_INFO("ewmh: could not get current desktop");
+	int desktop_curr_success = xcb_ewmh_get_current_desktop_reply(ewmh, xcb_ewmh_get_current_desktop_unchecked(ewmh, screen_nbr), &desktop_curr, NULL);
+	if (!desktop_curr_success) {
+		LOG_DEBUG("ewmh: could not get current desktop");
 
 		return 1;
 	}
 
 	/* get desktop count */
-	if (!xcb_ewmh_get_number_of_desktops_reply(ewmh, xcb_ewmh_get_number_of_desktops_unchecked(ewmh, screen_nbr), &desktop_len, NULL)) {
-		LOG_INFO("ewmh: could not get desktop count");
+	int desktop_len_success = xcb_ewmh_get_number_of_desktops_reply(ewmh, xcb_ewmh_get_number_of_desktops_unchecked(ewmh, screen_nbr), &desktop_len, NULL);
+	if (!desktop_len_success) {
+		LOG_DEBUG("ewmh: could not get desktop count");
 
 		return 2;
 	}
 
+	desktops = calloc(desktop_len, sizeof(struct desktop));
+
+	int desktop_names_success = xcb_ewmh_get_desktop_names_reply(ewmh, xcb_ewmh_get_desktop_names_unchecked(ewmh, screen_nbr), &desktop_names, NULL);
+	if (!desktop_names_success) {
+		LOG_DEBUG("ewmh: could not get desktop names");
+	}
+
 	for (i = 0; i < desktop_len; i++) {
 		desktops[i].is_selected = i == desktop_curr;
-		desktops[i].is_valid = true;
 		desktops[i].is_urgent = false;
 		desktops[i].clients_len = 0;
+
+		if (desktop_names_success && desktop_names.strings) {
+			copy_prop(desktop_name, desktop_names.strings, desktop_names.strings_len, i, desktop_len);
+		}
+		else {
+			snprintf(desktop_name, COPY_PROP_BUFSIZ - 1, "%i", i + 1);
+		}
+		desktops[i].name = strndup(desktop_name, strlen(desktop_name));
 	}
 
 	/* get clients */
-	if (!xcb_ewmh_get_client_list_reply(ewmh, xcb_ewmh_get_client_list_unchecked(ewmh, screen_nbr), &clients, NULL)) {
-		LOG_INFO("ewmh: could not get client list");
-
-		return 3;
+	int clients_success = xcb_ewmh_get_client_list_reply(ewmh, xcb_ewmh_get_client_list_unchecked(ewmh, screen_nbr), &clients, NULL);
+	if (!clients_success) {
+		LOG_DEBUG("ewmh: could not get client list");
 	}
+	else {
+		for (i = 0; i < clients.windows_len; i++) {
+			if (!xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop_unchecked(ewmh, clients.windows[i]), &client_desktop, NULL)) {
+				/* window isn't associated with a desktop */
+				continue;
+			}
+			desktops[client_desktop].clients_len++;
 
-	for (i = 0; i < clients.windows_len; i++) {
-		if (!xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop_unchecked(ewmh, clients.windows[i]), &client_desktop, NULL)) {
-			/* window isn't associated with a desktop */
-			continue;
-		}
-		desktops[client_desktop].clients_len++;
-
-		/* check icccm urgency hint on client */
-		if (!xcb_icccm_get_wm_hints_reply(ewmh->connection, xcb_icccm_get_wm_hints_unchecked(ewmh->connection, clients.windows[i]), &window_hints, NULL)) {
-			LOG_INFO("icccm: could not get window hints");
-		}
-		if (window_hints.flags & XCB_ICCCM_WM_HINT_X_URGENCY) {
-			desktops[client_desktop].is_urgent = true;
+			/* check icccm urgency hint on client */
+			if (!xcb_icccm_get_wm_hints_reply(ewmh->connection, xcb_icccm_get_wm_hints_unchecked(ewmh->connection, clients.windows[i]), &window_hints, NULL)) {
+				LOG_DEBUG("icccm: could not get window hints");
+			}
+			if (window_hints.flags & XCB_ICCCM_WM_HINT_X_URGENCY) {
+				desktops[client_desktop].is_urgent = true;
+			}
 		}
 	}
-
-	xcb_ewmh_get_windows_reply_wipe(&clients);
 
 	json_t *json_data_object = json_object();
 	json_t *json_desktops_array = json_array();
 	json_object_set_new(json_data_object, "desktops", json_desktops_array);
 
-	for (i = 0; i < DESKTOP_MAX_LEN; i++) {
-		if (!desktops[i].is_valid) {
-			continue;
-		}
-
+	for (i = 0; i < desktop_len; i++) {
 		json_t *json_desktop = json_object();
+		json_object_set_new(json_desktop, "name", json_string(desktops[i].name));
 		json_object_set_new(json_desktop, "clients_len", json_integer(desktops[i].clients_len));
 		json_object_set_new(json_desktop, "is_urgent", json_boolean(desktops[i].is_urgent));
 		json_array_append_new(json_desktops_array, json_desktop);
@@ -76,6 +90,16 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 
 	widget_send_update(json_data_object, widget);
 
+	/* cleanup */
+	if (desktop_names_success) {
+		xcb_ewmh_get_utf8_strings_reply_wipe(&desktop_names);
+	}
+	if (clients_success) {
+		xcb_ewmh_get_windows_reply_wipe(&clients);
+	}
+	for (i = 0; i < desktop_len; i++) {
+		free(desktops[i].name);
+	}
 	free(desktops);
 
 	return 0;
