@@ -16,22 +16,33 @@ wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
 static void
 parse_args (int argc, char *argv[], json_t *config) {
 	int opt;
+	int int_arg;
+	char *end;
 
 	while ((opt = getopt(argc, argv, "h:p:t:m:")) != -1) {
 		switch (opt) {
-			case 'h':
-				json_object_set(config, "height", json_integer(atoi(optarg)));
-				break;
-			case 'm':
-				json_object_set(config, "monitor", json_integer(atoi(optarg)));
-				break;
-			case 't':
-				json_object_set(config, "theme_uri", json_string(optarg));
-				break;
-			case 'p':
-				json_object_set(config, "position", json_string(optarg));
-				break;
-
+		case 'h':
+			int_arg = strtol(optarg, &end, 10);
+			if (*end) {
+				LOG_ERR("invalid value for 'height': %s", optarg);
+				exit(EXIT_FAILURE);
+			}
+			json_object_set(config, "height", json_integer(int_arg));
+			break;
+		case 'm':
+			int_arg = strtol(optarg, &end, 10);
+			if (*end) {
+				LOG_ERR("invalid value for 'monitor': %s", optarg);
+				exit(EXIT_FAILURE);
+			}
+			json_object_set(config, "monitor", json_integer(int_arg));
+			break;
+		case 't':
+			json_object_set(config, "theme_uri", json_string(optarg));
+			break;
+		case 'p':
+			json_object_set(config, "position", json_string(optarg));
+			break;
 		}
 	}
 }
