@@ -3,8 +3,6 @@
 #include "util/curl.h"
 #include "util/config.h"
 
-#define WEATHER_BUF_SIZE 512
-
 struct location {
 	char *city;
 	char *region_code;

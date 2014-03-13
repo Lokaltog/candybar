@@ -47,30 +47,35 @@ get_geoip_location (struct location *location) {
 
 static struct weather*
 get_weather_information (struct location *location) {
-	char request_uri[WEATHER_BUF_SIZE];
-	char query[WEATHER_BUF_SIZE];
+	int query_str_len, request_uri_len;
+	char *query_str, *query_str_escaped, *request_uri;
+	char *query_str_template = "use \"http://github.com/yql/yql-tables/raw/master/weather/weather.bylocation.xml\" as we;"
+	                           "select * from we where location=\"%s %s %s\" and unit=\"c\"";
+	char *request_uri_template = "http://query.yahooapis.com/v1/public/yql?q=%s&format=json";
 	json_t *weather_data;
 	json_error_t error;
 	struct weather *weather = calloc(1, sizeof(struct weather));
 	CURL *curl;
 
 	curl = curl_easy_init();
-	snprintf(query,
-	         WEATHER_BUF_SIZE,
-	         "use \"http://github.com/yql/yql-tables/raw/master/weather/weather.bylocation.xml\" as we;"
-	         "select * from we where location=\"%s %s %s\" and unit=\"c\"",
-	         location->city,
-	         location->region_code,
-	         location->country_code);
-	snprintf(request_uri,
-	         WEATHER_BUF_SIZE,
-	         "http://query.yahooapis.com/v1/public/yql?q=%s&format=json",
-	         curl_easy_escape(curl, query, 0));
-	curl_easy_cleanup(curl);
-	curl_global_cleanup();
+
+	query_str_len = snprintf(NULL, 0, query_str_template, location->city, location->region_code, location->country_code);
+	query_str = malloc(query_str_len + 1);
+	snprintf(query_str, query_str_len + 1, query_str_template, location->city, location->region_code, location->country_code);
+
+	query_str_escaped = curl_easy_escape(curl, query_str, 0);
+	request_uri_len = snprintf(NULL, 0, request_uri_template, query_str_escaped);
+	request_uri = malloc(request_uri_len + 1);
+	snprintf(request_uri, request_uri_len + 1, request_uri_template, query_str_escaped);
 
 	char *weather_raw_json = wkline_curl_request(request_uri);
 	weather_data = json_loads(weather_raw_json, 0, &error);
+
+	free(query_str);
+	free(query_str_escaped);
+	free(request_uri);
+	curl_easy_cleanup(curl);
+	curl_global_cleanup();
 
 	if (!weather_data) {
 		free(weather);
