@@ -15,6 +15,7 @@ cancel_threads () {
 				/* this call may fail if the thread never
 				   entered the main thread loop */
 				pthread_cancel(widget_threads[i]);
+				pthread_join(widget_threads[i], NULL);
 			}
 		}
 	}
