@@ -14,6 +14,40 @@ wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
 #endif
 
 static void
+parse_args (int argc, char *argv[], json_t *config) {
+	int opt;
+	int int_arg;
+	char *end;
+
+	while ((opt = getopt(argc, argv, "h:p:t:m:")) != -1) {
+		switch (opt) {
+		case 'h':
+			int_arg = strtol(optarg, &end, 10);
+			if (*end) {
+				LOG_ERR("invalid value for 'height': %s", optarg);
+				exit(EXIT_FAILURE);
+			}
+			json_object_set(config, "height", json_integer(int_arg));
+			break;
+		case 'm':
+			int_arg = strtol(optarg, &end, 10);
+			if (*end) {
+				LOG_ERR("invalid value for 'monitor': %s", optarg);
+				exit(EXIT_FAILURE);
+			}
+			json_object_set(config, "monitor", json_integer(int_arg));
+			break;
+		case 't':
+			json_object_set(config, "theme_uri", json_string(optarg));
+			break;
+		case 'p':
+			json_object_set(config, "position", json_string(optarg));
+			break;
+		}
+	}
+}
+
+static void
 wk_realize_handler (GtkWidget *window, gpointer user_data) {
 	struct wkline *wkline = user_data;
 	GdkAtom net_wm_strut_atom = gdk_atom_intern("_NET_WM_STRUT", FALSE);
@@ -110,6 +144,8 @@ main (int argc, char *argv[]) {
 		LOG_ERR("config file not found.");
 		goto config_err;
 	}
+
+	parse_args(argc, argv, wkline->config);
 
 	signal(SIGTERM, handle_interrupt);
 	signal(SIGINT, handle_interrupt);
