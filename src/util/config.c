@@ -6,10 +6,27 @@ json_t*
 load_config_file () {
 	const gchar*const *paths_array;
 	gchar *config_filename;
+	gchar *override_path;
 	json_t *json_config;
 	json_error_t err;
 
-	config_filename = g_build_filename(g_get_user_config_dir(), PACKAGE, "config.json", NULL);
+	override_path = getenv("WKLINE_CONFIG_PATH");
+	if (override_path != NULL) {
+		config_filename = g_build_filename(override_path, "config.json", NULL);
+
+		FILE *file;
+		if ((file = fopen(config_filename, "r"))) {
+			fclose(file);
+		} else {
+			LOG_ERR("could not open config file at: %s", config_filename);
+			goto default_config_path;
+		}
+	} else {
+		default_config_path:
+			config_filename = g_build_filename(g_get_user_config_dir(), PACKAGE, "config.json", NULL);
+	}
+
+	LOG_INFO("config path: %s", config_filename);
 	json_config = json_load_file(config_filename, 0, &err);
 	if (!json_config) {
 		if (err.line != -1) {
