@@ -1,21 +1,58 @@
-.TH WKLINE 1 "March 2014" "beta" "wkline man page"
-.SH NAME
+.TH "wkline" 1 "March 2014" "beta" "wkline man page"
+
+.SH "NAME"
 wkline \- WebKit-based statusline for tiling window managers
-.SH SYNOPSIS
-.B wkline [-c
-.I config-file
+
+.SH "SYNOPSIS"
+.B wkline [-h
+.I height
+.B ] [-m
+.I monitor
+.B ] [-p
+.I position
+.B ] [-t
+.I theme-uri
 .B ]
-.SH DESCRIPTION
+
+.SH "DESCRIPTION"
 .B wkline
 is a statusline plugin that launches a plain GTK window with a WebKit WebView
 pointing to a static HTML file containing the statusline. It provides a smooth
 looking statusline with CSS transitions and effects and the possibility of having a
 blurred background without a desktop compositor running.
-.SH OPTIONS
-.IP "-c config-file"
-Use the specified config file. This overrides the system-wide and per-user
-configuration files.
-.SH FILES
+
+.SH "OPTIONS"
+.IP "-h height"
+Set the height of the statusline in pixels.
+.IP "-m monitor"
+Define which monitor the statusline appears on.
+.IP "-p position"
+Set the statusline position. Valid options are \fItop\fP and \fIbottom\fP.
+.IP "-t theme-uri"
+Set the URI for a theme HTML file. Must be a valid URI, i.e. local files must be
+prefixed with \fIfile://\fP.
+
+.SH "WINDOW MANAGER SUPPORT"
+.TP 10
+.B bspwm
+supported; requires bspwm to be configured to reserve space with \fIbspc config
+top_padding 24\fP.
+.TP
+.B dwm
+supported; requires the dwm built-in bar to be enabled and set to the same position
+and height as wkline, wkline will be placed on top of the dwm bar.
+.TP
+.B i3wm
+supported
+.TP
+.B monsterwm
+supported
+.TP
+.B qtile
+supported; requires a recent version, support for the required EWMH properties was
+implemented in qtile revision 02fd471.
+
+.SH "FILES"
 .I /etc/xdg/wkline/config.json
 .RS
 System-wide configuration file. See
@@ -27,10 +64,13 @@ for further details.
 Per-user configuration file. See
 .BR wkline (5)
 for further details.
-.SH ISSUES
+
+.SH "ISSUES"
 See the issue tracker at
 .I https://github.com/Lokaltog/wkline/issues
-.SH AUTHOR
+
+.SH "AUTHOR"
 Kim Silkebækken <kim.silkebaekken@gmail.com>
+
 .SH "SEE ALSO"
 .BR wkline (5)
