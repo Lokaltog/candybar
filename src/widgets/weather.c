@@ -126,8 +126,24 @@ get_weather_information (struct location *location) {
 		return NULL;
 	}
 
-	sscanf(json_string_value(weather_code), "%u", &weather->code);
-	sscanf(json_string_value(weather_temp), "%lf", &weather->temp);
+	int int_val;
+	char *end;
+
+	int_val = strtol(json_string_value(weather_code), &end, 10);
+	if (*end) {
+		LOG_WARN("received weather code is not an integer");
+	}
+	else {
+		weather->code = int_val;
+	}
+
+	int_val = strtol(json_string_value(weather_temp), &end, 10);
+	if (*end) {
+		LOG_WARN("received temperature is not an integer");
+	}
+	else {
+		weather->temp = int_val;
+	}
 
 	json_decref(weather_data);
 
