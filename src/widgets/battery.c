@@ -68,6 +68,7 @@ widget_init (struct widget *widget) {
 
 	if (conn == NULL) {
 		LOG_ERR("dbus: failed to open connection to bus: %s\n", error->message);
+
 		g_error_free(error);
 
 		return 0;
@@ -85,8 +86,9 @@ widget_init (struct widget *widget) {
 	if ((properties_proxy = dbus_g_proxy_new_from_proxy(proxy,
 	                                                    "org.freedesktop.DBus.Properties",
 	                                                    dbus_g_proxy_get_path(proxy))) == NULL) {
-		g_object_unref(proxy);
 		LOG_ERR("dbus: failed to create proxy object");
+
+		g_object_unref(proxy);
 
 		return 0;
 	}
@@ -94,6 +96,9 @@ widget_init (struct widget *widget) {
 	unsigned int state;
 	if (!proxy_uint_value(&state, properties_proxy, dbus_path, "State")) {
 		LOG_ERR("dbus: invalid battery");
+
+		g_object_unref(proxy);
+		g_object_unref(properties_proxy);
 
 		return 0;
 	}

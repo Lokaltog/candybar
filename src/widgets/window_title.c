@@ -65,7 +65,9 @@ widget_init (struct widget *widget) {
 
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	if (xcb_connection_has_error(conn)) {
-		LOG_ERR("could not connect to display %s.", getenv("DISPLAY"));
+		LOG_ERR("could not connect to display %s", getenv("DISPLAY"));
+
+		xcb_disconnect(conn);
 
 		return 0;
 	}
@@ -86,6 +88,8 @@ widget_init (struct widget *widget) {
 
 	if (err != NULL) {
 		LOG_ERR("could not request EWMH property change notifications");
+
+		xcb_ewmh_connection_wipe(ewmh);
 
 		return 0;
 	}
