@@ -68,9 +68,7 @@ widget_cleanup (void *arg) {
 
 	void **cleanup_data = arg;
 
-	if (cleanup_data[0] != NULL) {
-		mpd_connection_free(cleanup_data[0]);
-	}
+	mpd_connection_free(cleanup_data[0]);
 	free(arg);
 }
 
@@ -89,7 +87,9 @@ widget_init (struct widget *widget) {
 		LOG_ERR("failed to connect to mpd server at %s:%i: %s",
 		        config.host, config.port,
 		        mpd_connection_get_error_message(connection));
-		goto cleanup;
+		mpd_connection_free(connection);
+
+		return 0;
 	}
 
 	fd_set fds;
@@ -124,11 +124,6 @@ widget_init (struct widget *widget) {
 		}
 	}
 	pthread_cleanup_pop(1);
-
-cleanup:
-	if (connection != NULL) {
-		mpd_connection_free(connection);
-	}
 
 	return 0;
 }
