@@ -31,7 +31,7 @@ def configure(ctx):
 
 	# compiler options
 	if ctx.options.debug:
-		ctx.env.append_unique('CFLAGS', ['-g3', '-O0', '-Wall', '-Werror'])
+		ctx.env.append_unique('CFLAGS', ['-g3', '-O0', '-Wall'])
 		ctx.define('DEBUG', 1)
 	else:
 		ctx.env.append_unique('CFLAGS', ['-O3', '-Wall', '-Werror'])
