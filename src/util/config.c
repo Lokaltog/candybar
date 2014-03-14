@@ -12,7 +12,7 @@ load_config_file () {
 
 	override_path = getenv("WKLINE_CONFIG_PATH");
 	if (override_path != NULL) {
-		config_filename = g_build_filename(override_path, "config.json", NULL);
+		config_filename = g_build_filename(override_path, NULL);
 
 		if (access(config_filename, R_OK) == -1) {
 			LOG_ERR("could not open config file '%s' for reading: %s", config_filename, strerror(errno));
