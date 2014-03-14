@@ -40,7 +40,7 @@ widget_init (struct widget *widget) {
 	/* modify image */
 	MagickCropImage(m_wand, width, height, 0, 0);
 	if (config.blur_radius != 0) {
-		MagickBlurImage(m_wand, 0, config.blur_radius);
+		MagickBlurImage(m_wand, config.blur_radius, config.blur_radius);
 	}
 	if ((config.brightness != 100) || (config.saturation != 100)) {
 		MagickModulateImage(m_wand, config.brightness, config.saturation, 100);
