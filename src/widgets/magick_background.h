@@ -6,16 +6,14 @@
 
 static struct widget_config {
 	const char *image;
-	const char *css_gradient_overlay_start;
-	const char *css_gradient_overlay_end;
+	const char *css_gradient_overlay;
 	int blur_radius;
 	int brightness;
 	int height;
 	int saturation;
 } widget_config_defaults = {
 	.image = "",
-	.css_gradient_overlay_start = "transparent",
-	.css_gradient_overlay_end = "rgba(0, 0, 0, .4)",
+	.css_gradient_overlay = "top, transparent, rgba(0, 0, 0, .5)",
 	.blur_radius = 0,
 	.brightness = 100,
 	.height = 40,

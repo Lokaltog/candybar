@@ -7,8 +7,7 @@ widget_init (struct widget *widget) {
 
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget, "image", config.image);
-	widget_init_config_string(widget, "css_gradient_overlay_start", config.css_gradient_overlay_start);
-	widget_init_config_string(widget, "css_gradient_overlay_end", config.css_gradient_overlay_end);
+	widget_init_config_string(widget, "css_gradient_overlay", config.css_gradient_overlay);
 	widget_init_config_integer(widget, "blur_radius", config.blur_radius);
 	widget_init_config_integer(widget, "brightness", config.brightness);
 	widget_init_config_integer(widget, "height", config.height);
@@ -57,8 +56,7 @@ widget_init (struct widget *widget) {
 
 	json_t *json_data_object = json_object();
 	json_object_set_new(json_data_object, "image", json_string(img_base64));
-	json_object_set_new(json_data_object, "gradient_start", json_string(config.css_gradient_overlay_start));
-	json_object_set_new(json_data_object, "gradient_end", json_string(config.css_gradient_overlay_end));
+	json_object_set_new(json_data_object, "gradient_overlay", json_string(config.css_gradient_overlay));
 
 	widget_send_update(json_data_object, widget);
 
