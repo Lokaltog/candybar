@@ -14,19 +14,17 @@ load_config_file () {
 	if (override_path != NULL) {
 		config_filename = g_build_filename(override_path, "config.json", NULL);
 
-		FILE *file;
-		if ((file = fopen(config_filename, "r"))) {
-			fclose(file);
-		} else {
-			LOG_ERR("could not open config file at: %s", config_filename);
-			goto default_config_path;
+		if (access(config_filename, R_OK) == -1) {
+			LOG_ERR("could not open config file '%s' for reading: %s", config_filename, strerror(errno));
+			exit(EXIT_FAILURE);
 		}
-	} else {
-		default_config_path:
-			config_filename = g_build_filename(g_get_user_config_dir(), PACKAGE, "config.json", NULL);
+	}
+	else {
+		config_filename = g_build_filename(g_get_user_config_dir(), PACKAGE, "config.json", NULL);
 	}
 
-	LOG_INFO("config path: %s", config_filename);
+	LOG_INFO("using config file '%s'", config_filename);
+
 	json_config = json_load_file(config_filename, 0, &err);
 	if (!json_config) {
 		if (err.line != -1) {
@@ -45,6 +43,7 @@ load_config_file () {
 					if (err.line != -1) {
 						/* syntax error */
 						LOG_ERR("error in config file: %s", err.text);
+						exit(EXIT_FAILURE);
 					}
 				}
 				else {
