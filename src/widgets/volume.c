@@ -25,8 +25,12 @@ widget_cleanup (void *arg) {
 
 	void **cleanup_data = arg;
 
-	free(cleanup_data[0]);
-	snd_mixer_close(cleanup_data[1]);
+	if (cleanup_data[0] != NULL) {
+		free(cleanup_data[0]);
+	}
+	if (cleanup_data[1] != NULL) {
+		snd_mixer_close(cleanup_data[1]);
+	}
 	free(arg);
 }
 
@@ -38,17 +42,29 @@ widget_init (struct widget *widget) {
 	widget_init_config_string(widget, "card", config.card);
 	widget_init_config_string(widget, "selem", config.selem);
 
-	snd_mixer_t *mixer;
-	snd_mixer_selem_id_t *sid;
+	snd_mixer_t *mixer = NULL;
+	snd_mixer_selem_id_t *sid = NULL;
 	struct pollfd *pollfds = NULL;
-	int nfds = 0, n, err, wait_err;
+	int nfds = 0, n, err = 0, wait_err;
 	unsigned short revents;
 
 	/* open mixer */
-	snd_mixer_open(&mixer, 0);
-	snd_mixer_attach(mixer, config.card);
-	snd_mixer_selem_register(mixer, NULL, NULL);
-	snd_mixer_load(mixer);
+	if ((err = snd_mixer_open(&mixer, 0)) < 0) {
+		LOG_ERR("could not open mixer (%i)", err);
+		goto cleanup;
+	}
+	if ((err = snd_mixer_attach(mixer, config.card)) < 0) {
+		LOG_ERR("could not attach card '%s' to mixer (%i)", config.card, err);
+		goto cleanup;
+	}
+	if ((err = snd_mixer_selem_register(mixer, NULL, NULL)) < 0) {
+		LOG_ERR("could not register mixer simple element class (%i)", err);
+		goto cleanup;
+	}
+	if ((err = snd_mixer_load(mixer)) < 0) {
+		LOG_ERR("could not load mixer (%i)", err);
+		goto cleanup;
+	}
 
 	snd_mixer_selem_id_alloca(&sid);
 	snd_mixer_selem_id_set_index(sid, 0);
@@ -111,6 +127,14 @@ widget_init (struct widget *widget) {
 		widget_update(widget, elem);
 	}
 	pthread_cleanup_pop(1);
+
+cleanup:
+	if (pollfds != NULL) {
+		free(pollfds);
+	}
+	if (mixer != NULL) {
+		snd_mixer_close(mixer);
+	}
 
 	return 0;
 }

@@ -11,8 +11,7 @@ get_geoip_location (struct location *location) {
 
 	if (!location_data) {
 		LOG_WARN("error while fetching GeoIP data");
-
-		return NULL;
+		goto error;
 	}
 
 	free(geoip_raw_json);
@@ -20,29 +19,38 @@ get_geoip_location (struct location *location) {
 	geoip_city = json_object_get(location_data, "city");
 	if (!json_is_string(geoip_city)) {
 		LOG_ERR("received GeoIP city is not a string");
-
-		return NULL;
+		goto error;
 	}
 	geoip_region_code = json_object_get(location_data, "region_code");
 	if (!json_is_string(geoip_region_code)) {
 		LOG_ERR("received GeoIP region code is not a string");
-
-		return NULL;
+		goto error;
 	}
 	geoip_country_code = json_object_get(location_data, "country_code");
 	if (!json_is_string(geoip_country_code)) {
 		LOG_ERR("received GeoIP country code is not a string");
-
-		return NULL;
+		goto error;
 	}
 
 	location->city = strdup(json_string_value(geoip_city));
 	location->region_code = strdup(json_string_value(geoip_region_code));
 	location->country_code = strdup(json_string_value(geoip_country_code));
 
-	json_decref(location_data);
+	if (location_data != NULL) {
+		json_decref(location_data);
+	}
 
 	return location;
+
+error:
+	if (geoip_raw_json != NULL) {
+		free(geoip_raw_json);
+	}
+	if (location_data != NULL) {
+		json_decref(location_data);
+	}
+
+	return NULL;
 }
 
 static struct weather*
@@ -78,52 +86,30 @@ get_weather_information (struct location *location) {
 	curl_global_cleanup();
 
 	if (!weather_data) {
-		free(weather);
-
-		return NULL;
+		goto error;
 	}
 
 	free(weather_raw_json);
 
 	json_t *tmp_obj, *weather_code, *weather_temp;
 	tmp_obj = json_object_get(weather_data, "query");
-	if (!json_is_object(tmp_obj)) {
-		return NULL;
-	}
 	tmp_obj = json_object_get(tmp_obj, "results");
-	if (!json_is_object(tmp_obj)) {
-		return NULL;
-	}
 	tmp_obj = json_object_get(tmp_obj, "weather");
-	if (!json_is_object(tmp_obj)) {
-		return NULL;
-	}
 	tmp_obj = json_object_get(tmp_obj, "rss");
-	if (!json_is_object(tmp_obj)) {
-		return NULL;
-	}
 	tmp_obj = json_object_get(tmp_obj, "channel");
-	if (!json_is_object(tmp_obj)) {
-		return NULL;
-	}
 	tmp_obj = json_object_get(tmp_obj, "item");
-	if (!json_is_object(tmp_obj)) {
-		return NULL;
-	}
 	tmp_obj = json_object_get(tmp_obj, "condition");
 	if (!json_is_object(tmp_obj)) {
-		return NULL;
+		LOG_ERR("invalid weather data object received");
+		goto error;
 	}
 
 	weather_code = json_object_get(tmp_obj, "code");
 	weather_temp = json_object_get(tmp_obj, "temp");
 
 	if (!json_is_string(weather_code) || !json_is_string(weather_temp)) {
-		json_decref(weather_data);
-		free(weather);
-		LOG_ERR("weather: invalid weather query result (weather code or temp missing)");
-
-		return NULL;
+		LOG_ERR("invalid weather query result received (weather code or temp missing)");
+		goto error;
 	}
 
 	int int_val;
@@ -145,9 +131,27 @@ get_weather_information (struct location *location) {
 		weather->temp = int_val;
 	}
 
-	json_decref(weather_data);
+	if (tmp_obj != NULL) {
+		json_decref(tmp_obj);
+	}
+	if (weather_data != NULL) {
+		json_decref(weather_data);
+	}
 
 	return weather;
+
+error:
+	if (tmp_obj != NULL) {
+		json_decref(tmp_obj);
+	}
+	if (weather_data != NULL) {
+		json_decref(weather_data);
+	}
+	if (weather != NULL) {
+		free(weather);
+	}
+
+	return NULL;
 }
 
 static int
@@ -180,10 +184,18 @@ widget_cleanup (void *arg) {
 	void **cleanup_data = arg;
 	struct location *location = cleanup_data[0];
 
-	free(location->city);
-	free(location->region_code);
-	free(location->country_code);
-	free(location);
+	if (location->city != NULL) {
+		free(location->city);
+	}
+	if (location->region_code != NULL) {
+		free(location->region_code);
+	}
+	if (location->country_code != NULL) {
+		free(location->country_code);
+	}
+	if (location != NULL) {
+		free(location);
+	}
 	free(arg);
 }
 
@@ -208,9 +220,7 @@ widget_init (struct widget *widget) {
 	}
 	if (!location) {
 		LOG_WARN("could not get GeoIP location, consider setting the location manually in config.json");
-		free(location);
-
-		return 0;
+		goto cleanup;
 	}
 
 	void **cleanup_data = malloc(sizeof(void*) * 1);
@@ -223,4 +233,20 @@ widget_init (struct widget *widget) {
 		sleep(config.refresh_interval);
 	}
 	pthread_cleanup_pop(1);
+
+cleanup:
+	if (location->city != NULL) {
+		free(location->city);
+	}
+	if (location->region_code != NULL) {
+		free(location->region_code);
+	}
+	if (location->country_code != NULL) {
+		free(location->country_code);
+	}
+	if (location != NULL) {
+		free(location);
+	}
+
+	return 0;
 }

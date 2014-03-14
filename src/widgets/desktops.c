@@ -111,9 +111,12 @@ widget_cleanup (void *arg) {
 
 	void **cleanup_data = arg;
 
-	xcb_ewmh_connection_t *ewmh = cleanup_data[0];
-	xcb_disconnect(ewmh->connection);
-	xcb_ewmh_connection_wipe(ewmh);
+	if (cleanup_data[0] != NULL) {
+		xcb_ewmh_connection_wipe(cleanup_data[0]);
+	}
+	if (cleanup_data[1] != NULL) {
+		xcb_disconnect(cleanup_data[1]);
+	}
 	free(arg);
 }
 
@@ -121,17 +124,15 @@ void*
 widget_init (struct widget *widget) {
 	LOG_DEBUG("init");
 
+	int screen_nbr = 0; /* FIXME load from config */
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
+	xcb_ewmh_connection_t *ewmh = malloc(sizeof(xcb_ewmh_connection_t));
+
 	if (xcb_connection_has_error(conn)) {
 		LOG_ERR("could not connect to display %s", getenv("DISPLAY"));
-
-		xcb_disconnect(conn);
-
-		return 0;
+		goto cleanup;
 	}
 
-	int screen_nbr = 0; /* FIXME load from config */
-	xcb_ewmh_connection_t *ewmh = malloc(sizeof(xcb_ewmh_connection_t));
 	xcb_intern_atom_cookie_t *ewmh_cookie = xcb_ewmh_init_atoms(conn, ewmh);
 	xcb_ewmh_init_atoms_replies(ewmh, ewmh_cookie, NULL);
 
@@ -145,14 +146,12 @@ widget_init (struct widget *widget) {
 
 	if (err != NULL) {
 		LOG_ERR("could not request EWMH property change notifications");
-
-		xcb_ewmh_connection_wipe(ewmh);
-
-		return 0;
+		goto cleanup;
 	}
 
-	void **cleanup_data = malloc(sizeof(void*) * 1);
+	void **cleanup_data = malloc(sizeof(void*) * 2);
 	cleanup_data[0] = ewmh;
+	cleanup_data[1] = conn;
 
 	pthread_cleanup_push(widget_cleanup, cleanup_data);
 	widget_update(widget, ewmh, screen_nbr);
@@ -177,6 +176,15 @@ widget_init (struct widget *widget) {
 			free(evt);
 		}
 	}
-
 	pthread_cleanup_pop(1);
+
+cleanup:
+	if (ewmh != NULL) {
+		xcb_ewmh_connection_wipe(ewmh);
+	}
+	if (conn != NULL) {
+		xcb_disconnect(conn);
+	}
+
+	return 0;
 }

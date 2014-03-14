@@ -87,7 +87,9 @@ widget_cleanup (void *arg) {
 
 	void **cleanup_data = arg;
 
-	dbus_connection_unref(cleanup_data[0]);
+	if (cleanup_data[0] != NULL) {
+		dbus_connection_unref(cleanup_data[0]);
+	}
 	free(arg);
 }
 
@@ -105,29 +107,25 @@ widget_init (struct widget *widget) {
 	connection = dbus_bus_get(DBUS_BUS_SESSION, err);
 	if (dbus_error_is_set(err)) {
 		LOG_ERR("dbus connection error: %s", err->message);
-		dbus_error_free(err);
-
-		return 0;
+		goto cleanup;
 	}
 	if (!connection) {
 		LOG_ERR("dbus: no connection");
-
-		return 0;
+		goto cleanup;
 	}
 
 	server_result = dbus_bus_request_name(connection, "org.freedesktop.Notifications", DBUS_NAME_FLAG_REPLACE_EXISTING, err);
 	if (dbus_error_is_set(err)) {
 		LOG_ERR("dbus error: %s", err->message);
-		dbus_error_free(err);
-
-		return 0;
+		goto cleanup;
 	}
 	if (server_result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
 		LOG_WARN("dbus: a notification daemon is already running");
-
-		return 0;
+		goto cleanup;
 	}
-	dbus_error_free(err);
+	if (err != NULL) {
+		dbus_error_free(err);
+	}
 
 	void **cleanup_data = malloc(sizeof(void*) * 1);
 	cleanup_data[0] = connection;
@@ -155,4 +153,14 @@ widget_init (struct widget *widget) {
 		}
 	}
 	pthread_cleanup_pop(1);
+
+cleanup:
+	if (err != NULL) {
+		dbus_error_free(err);
+	}
+	if (connection != NULL) {
+		dbus_connection_unref(connection);
+	}
+
+	return 0;
 }
