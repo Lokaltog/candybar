@@ -21,7 +21,7 @@ cancel_threads () {
 }
 
 static pthread_t
-spawn_widget (struct wkline *wkline, WebKitWebView *web_view, json_t *json_config, const char *name) {
+spawn_widget (struct wkline *wkline, json_t *json_config, const char *name) {
 	widget_init_func widget_init;
 	char libname[64];
 	snprintf(libname, 64, "libwidget_%s", name);
@@ -45,7 +45,6 @@ spawn_widget (struct wkline *wkline, WebKitWebView *web_view, json_t *json_confi
 
 	widget->wkline = wkline;
 	widget->json_config = json_config;
-	widget->web_view = web_view;
 	widget->name = strdup(name); /* don't forget to free this one */
 
 	pthread_create(&return_thread, NULL, (void*(*)(void*))widget_init, widget);
@@ -70,7 +69,7 @@ web_view_update_widget (struct widget *widget) {
 
 	snprintf(script, script_length + 1, script_template, widget->name, widget->data);
 
-	webkit_web_view_execute_script(widget->web_view, script);
+	webkit_web_view_execute_script(widget->wkline->web_view, script);
 	free(script);
 
 	return FALSE; /* only run once */
@@ -100,7 +99,6 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 
 	json_array_foreach(widgets, index, widget) {
 		widget_threads[index] = spawn_widget(wkline,
-		                                     web_view,
 		                                     json_object_get(widget, "config"),
 		                                     json_string_value(json_object_get(widget, "module")));
 	}

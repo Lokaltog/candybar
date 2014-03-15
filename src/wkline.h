@@ -19,6 +19,7 @@ typedef enum {
 } wkline_position_t;
 
 struct wkline {
+	WebKitWebView *web_view;
 	wkline_position_t position;
 	int width;
 	int height;

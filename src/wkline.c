@@ -157,6 +157,7 @@ main (int argc, char *argv[]) {
 	                   ? WKLINE_POSITION_BOTTOM : WKLINE_POSITION_TOP;
 	wkline->screen = json_integer_value(wkline_get_config(wkline, "screen"));
 	wkline->theme_uri = json_string_value(wkline_get_config(wkline, "theme_uri"));
+	wkline->web_view = web_view;
 
 	/* get window size */
 	screen = gtk_window_get_screen(window);

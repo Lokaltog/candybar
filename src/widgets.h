@@ -18,7 +18,6 @@ struct wkline;
 struct widget {
 	const char *name;
 	json_t *json_config;
-	WebKitWebView *web_view;
 	char *data;
 	struct wkline *wkline;
 };
