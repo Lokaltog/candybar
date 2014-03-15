@@ -1,10 +1,14 @@
 #include "log.h"
 
+static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 void
 LOG (const char *prefix, const char *color, const char *func, const char *file, const char *format, ...) {
 	va_list args;
 	time_t rawtime;
 	struct tm *date;
+
+	pthread_mutex_lock(&log_mutex);
 
 	time(&rawtime);
 	date = localtime(&rawtime);
@@ -23,4 +27,6 @@ LOG (const char *prefix, const char *color, const char *func, const char *file, 
 		        basename(file));
 	}
 	fprintf(stderr, ANSI_ESC_RESET "\n");
+
+	pthread_mutex_unlock(&log_mutex);
 }
