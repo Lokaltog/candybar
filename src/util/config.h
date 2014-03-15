@@ -1,10 +1,5 @@
 #include <errno.h>
-#include <glib.h>
-#include <jansson.h>
-#include <stdbool.h>
-#include <unistd.h>
 
-#include "util/log.h"
 #include "wkline.h"
 #include "widgets.h"
 
