@@ -74,14 +74,15 @@ widget_init (struct widget *widget) {
 		goto cleanup;
 	}
 
-	if ((proxy = dbus_g_proxy_new_for_name(conn, "org.freedesktop.UPower", dbus_path,
-	                                       "org.freedesktop.UPower.Device.Properties")) == NULL) {
+	proxy = dbus_g_proxy_new_for_name(conn, "org.freedesktop.UPower", dbus_path,
+	                                  "org.freedesktop.UPower.Device.Properties");
+	if (proxy == NULL) {
 		LOG_ERR("dbus: failed to create proxy object");
 		goto cleanup;
 	}
-
-	if ((properties_proxy = dbus_g_proxy_new_from_proxy(proxy, "org.freedesktop.DBus.Properties",
-	                                                    dbus_g_proxy_get_path(proxy))) == NULL) {
+	properties_proxy = dbus_g_proxy_new_from_proxy(proxy, "org.freedesktop.DBus.Properties",
+	                                               dbus_g_proxy_get_path(proxy));
+	if (properties_proxy == NULL) {
 		LOG_ERR("dbus: failed to create proxy object");
 		goto cleanup;
 	}
@@ -89,6 +90,12 @@ widget_init (struct widget *widget) {
 	unsigned int state;
 	if (!proxy_uint_value(&state, properties_proxy, dbus_path, "State")) {
 		LOG_ERR("dbus: invalid battery");
+		if (proxy != NULL) {
+			g_object_unref(proxy);
+		}
+		if (properties_proxy != NULL) {
+			g_object_unref(properties_proxy);
+		}
 		goto cleanup;
 	}
 
@@ -108,12 +115,6 @@ widget_init (struct widget *widget) {
 cleanup:
 	if (error != NULL) {
 		g_error_free(error);
-	}
-	if (proxy != NULL) {
-		g_object_unref(proxy);
-	}
-	if (properties_proxy != NULL) {
-		g_object_unref(properties_proxy);
 	}
 	if (dbus_path != NULL) {
 		free(dbus_path);
