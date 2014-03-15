@@ -27,4 +27,7 @@ struct wkline {
 	json_t *config;
 };
 
+#define MISSING_VALUE ""
+#define LENGTH(X) (sizeof X / sizeof X[0])
+
 #endif
