@@ -1,3 +1,6 @@
+#ifndef WIDGETS_H
+#define WIDGETS_H
+
 #include <gmodule.h>
 #include <jansson.h>
 #include <pthread.h>
@@ -45,3 +48,5 @@ void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpoin
 	WIDGET->data = strdup(json_dumps(DATA_OBJECT, 0)); \
 	g_idle_add((GSourceFunc)web_view_update_widget, WIDGET); \
 	json_decref(DATA_OBJECT);
+
+#endif

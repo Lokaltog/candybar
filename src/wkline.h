@@ -1,3 +1,6 @@
+#ifndef WKLINE_H
+#define WKLINE_H
+
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <jansson.h>
@@ -20,3 +23,5 @@ struct wkline {
 	json_t *config;
 	const char *position;
 };
+
+#endif
