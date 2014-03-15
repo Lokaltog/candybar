@@ -1,6 +1,5 @@
 #include "widgets.h"
 #include "battery.h"
-#include "util/dbus_helpers.h"
 
 static int
 widget_update (struct widget *widget, DBusGProxy *properties_proxy, char *dbus_path) {

@@ -1,9 +1,14 @@
 #include <gmodule.h>
 #include <jansson.h>
 #include <pthread.h>
+#include <stdbool.h>
 #include <string.h>
+#include <sys/select.h>
 #include <webkit/webkit.h>
 
+#include "util/config.h"
+#include "util/copy_prop.h"
+#include "util/gdk_helpers.h"
 #include "util/log.h"
 
 struct widget {

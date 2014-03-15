@@ -1,6 +1,5 @@
 #include "widgets.h"
 #include "desktops.h"
-#include "util/copy_prop.h"
 
 static int
 widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nbr) {

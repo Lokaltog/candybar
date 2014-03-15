@@ -1,5 +1,3 @@
-#include "util/config.h"
-
 static struct widget_config {
 	const char *date_format;
 	const char *time_format;

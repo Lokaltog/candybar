@@ -1,6 +1,5 @@
 #include "widgets.h"
-#include "util/config.h"
-#include "util/log.h"
+#include "wkline.h"
 
 static pthread_t *widget_threads = NULL;
 static size_t widgets_len = 0;

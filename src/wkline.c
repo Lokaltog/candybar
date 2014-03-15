@@ -1,6 +1,3 @@
-#include "util/config.h"
-#include "util/gdk_helpers.h"
-#include "util/log.h"
 #include "wkline.h"
 #include "widgets.h"
 

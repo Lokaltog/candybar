@@ -1,8 +1,4 @@
-#include <pthread.h>
-#include <string.h>
 #include <wand/magick_wand.h>
-
-#include "util/config.h"
 
 static struct widget_config {
 	const char *image;
