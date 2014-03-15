@@ -29,13 +29,13 @@ parse_args (int argc, char *argv[], json_t *config) {
 			}
 			json_object_set(config, "height", json_integer(int_arg));
 			break;
-		case 'm':
+		case 's':
 			int_arg = strtol(optarg, &end, 10);
 			if (*end) {
-				LOG_ERR("invalid value for 'monitor': %s", optarg);
+				LOG_ERR("invalid value for 'screen': %s", optarg);
 				exit(EXIT_FAILURE);
 			}
-			json_object_set(config, "monitor", json_integer(int_arg));
+			json_object_set(config, "screen", json_integer(int_arg));
 			break;
 		case 't':
 			json_object_set(config, "theme_uri", json_string(optarg));
@@ -162,7 +162,7 @@ main (int argc, char *argv[]) {
 	/* get window size */
 	screen = gtk_window_get_screen(window);
 	gdk_screen_get_monitor_geometry(screen,
-	                                json_integer_value(wkline_get_config(wkline, "monitor")),
+	                                json_integer_value(wkline_get_config(wkline, "screen")),
 	                                &dest);
 	wkline->dim.w = dest.width;
 	wkline->dim.h = json_integer_value(wkline_get_config(wkline, "height"));
