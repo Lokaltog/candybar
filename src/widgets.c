@@ -21,7 +21,7 @@ cancel_threads () {
 }
 
 static pthread_t
-spawn_widget (struct wkline *wkline, json_t *json_config, const char *name) {
+spawn_widget (struct wkline *wkline, json_t *config, const char *name) {
 	widget_init_func widget_init;
 	char libname[64];
 	snprintf(libname, 64, "libwidget_%s", name);
@@ -44,7 +44,7 @@ spawn_widget (struct wkline *wkline, json_t *json_config, const char *name) {
 	struct widget *widget = malloc(sizeof(struct widget));
 
 	widget->wkline = wkline;
-	widget->json_config = json_config;
+	widget->config = config;
 	widget->name = strdup(name); /* don't forget to free this one */
 
 	pthread_create(&return_thread, NULL, (void*(*)(void*))widget_init, widget);
@@ -63,7 +63,7 @@ web_view_update_widget (struct widget *widget) {
 	script_length = snprintf(NULL, 0, script_template, widget->name, widget->data);
 	script = malloc(script_length + 1);
 
-	if (widget_get_config_boolean_silent(widget, "debug")) {
+	if (get_config_option_boolean_silent(widget->config, "debug")) {
 		LOG_DEBUG("updating widget %s: %s", widget->name, widget->data);
 	}
 

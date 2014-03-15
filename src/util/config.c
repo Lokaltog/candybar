@@ -57,23 +57,11 @@ load_config_file () {
 }
 
 json_t*
-wkline_get_config (struct wkline *wkline, const char *config_key) {
-	json_t *object;
-	object = json_object_get(wkline->config, config_key);
-	if (!object) {
-		LOG_WARN("wkline config key '%s' not found in config file", config_key);
+get_config_option (json_t *config_object, const char *option, bool silent) {
+	json_t *value = json_object_get(config_object, option);
+	if (!value && !silent) {
+		LOG_WARN("option '%s' not found in config object", option);
 	}
 
-	return object;
-}
-
-json_t*
-widget_get_config (struct widget *widget, const char *config_key, bool silent) {
-	json_t *object;
-	object = json_object_get(widget->json_config, config_key);
-	if (!object && !silent) {
-		LOG_WARN("widget config key '%s' in widget '%s' not found in config file", config_key, widget->name);
-	}
-
-	return object;
+	return value;
 }

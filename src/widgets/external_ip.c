@@ -22,8 +22,8 @@ widget_init (struct widget *widget) {
 	LOG_DEBUG("init");
 
 	struct widget_config config = widget_config_defaults;
-	widget_init_config_string(widget, "address", config.address);
-	widget_init_config_integer(widget, "refresh_interval", config.refresh_interval);
+	widget_init_config_string(widget->config, "address", config.address);
+	widget_init_config_integer(widget->config, "refresh_interval", config.refresh_interval);
 
 	for (;;) {
 		widget_update(widget, config);

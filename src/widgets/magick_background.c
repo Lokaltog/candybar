@@ -6,11 +6,11 @@ widget_init (struct widget *widget) {
 	LOG_DEBUG("init");
 
 	struct widget_config config = widget_config_defaults;
-	widget_init_config_string(widget, "image", config.image);
-	widget_init_config_string(widget, "css_gradient_overlay", config.css_gradient_overlay);
-	widget_init_config_integer(widget, "blur_radius", config.blur_radius);
-	widget_init_config_integer(widget, "brightness", config.brightness);
-	widget_init_config_integer(widget, "saturation", config.saturation);
+	widget_init_config_string(widget->config, "image", config.image);
+	widget_init_config_string(widget->config, "css_gradient_overlay", config.css_gradient_overlay);
+	widget_init_config_integer(widget->config, "blur_radius", config.blur_radius);
+	widget_init_config_integer(widget->config, "brightness", config.brightness);
+	widget_init_config_integer(widget->config, "saturation", config.saturation);
 
 	if (!strlen(config.image)) {
 		LOG_WARN("'image' config property not set, disabling widget");

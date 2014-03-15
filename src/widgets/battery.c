@@ -51,8 +51,8 @@ widget_init (struct widget *widget) {
 	LOG_DEBUG("init");
 
 	struct widget_config config = widget_config_defaults;
-	widget_init_config_string(widget, "name", config.name);
-	widget_init_config_integer(widget, "refresh_interval", config.refresh_interval);
+	widget_init_config_string(widget->config, "name", config.name);
+	widget_init_config_integer(widget->config, "refresh_interval", config.refresh_interval);
 
 	DBusGConnection *conn = NULL;
 	DBusGProxy *proxy = NULL;

@@ -39,8 +39,8 @@ widget_init (struct widget *widget) {
 	LOG_DEBUG("init");
 
 	struct widget_config config = widget_config_defaults;
-	widget_init_config_string(widget, "card", config.card);
-	widget_init_config_string(widget, "selem", config.selem);
+	widget_init_config_string(widget->config, "card", config.card);
+	widget_init_config_string(widget->config, "selem", config.selem);
 
 	snd_mixer_t *mixer = NULL;
 	snd_mixer_selem_id_t *sid = NULL;

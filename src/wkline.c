@@ -153,21 +153,21 @@ main (int argc, char *argv[]) {
 	}
 	parse_args(argc, argv, wkline->config);
 
-	wkline->position = !strcmp(json_string_value(wkline_get_config(wkline, "position")), "bottom")
+	wkline->position = !strcmp(get_config_option_string(wkline->config, "position"), "bottom")
 	                   ? WKLINE_POSITION_BOTTOM : WKLINE_POSITION_TOP;
-	wkline->screen = json_integer_value(wkline_get_config(wkline, "screen"));
+	wkline->screen = get_config_option_integer(wkline->config, "screen");
 	wkline->web_view = web_view;
 
-	json_t *theme_config = wkline_get_config(wkline, "theme");
-	wkline->theme_uri = json_string_value(json_object_get(theme_config, "uri"));
-	wkline->theme_config = json_object_get(theme_config, "config");
+	json_t *theme_config = get_config_option(wkline->config, "theme", false);
+	wkline->theme_uri = get_config_option_string(theme_config, "uri");
+	wkline->theme_config = get_config_option(theme_config, "config", true);
 
 	/* get window size */
 	screen = gtk_window_get_screen(window);
 	gdk_screen_get_monitor_geometry(screen, wkline->screen, &dest);
 
 	wkline->width = dest.width;
-	wkline->height = json_integer_value(wkline_get_config(wkline, "height"));
+	wkline->height = get_config_option_integer(wkline->config, "height");
 
 	/* set window properties */
 	gtk_window_set_default_size(window, wkline->width, wkline->height);

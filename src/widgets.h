@@ -16,7 +16,7 @@
 
 struct widget {
 	const char *name;
-	json_t *json_config;
+	json_t *config;
 	char *data;
 	struct wkline *wkline;
 };
@@ -28,16 +28,16 @@ void handle_interrupt (int signal);
 void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data);
 
 #define widget_init_config_string(WIDGET, KEY, TARGET) \
-	{ json_t *CONF = widget_get_config(WIDGET, KEY, true); \
+	{ json_t *CONF = get_config_option(WIDGET, KEY, true); \
 	  if (CONF != NULL) { TARGET = json_string_value(CONF); } }
 #define widget_init_config_integer(WIDGET, KEY, TARGET) \
-	{ json_t *CONF = widget_get_config(WIDGET, KEY, true); \
+	{ json_t *CONF = get_config_option(WIDGET, KEY, true); \
 	  if (CONF != NULL) { TARGET = json_integer_value(CONF); } }
 #define widget_init_config_real(WIDGET, KEY, TARGET) \
-	{ json_t *CONF = widget_get_config(WIDGET, KEY, true); \
+	{ json_t *CONF = get_config_option(WIDGET, KEY, true); \
 	  if (CONF != NULL) { TARGET = json_real_value(CONF); } }
 #define widget_init_config_boolean(WIDGET, KEY, TARGET) \
-	{ json_t *CONF = widget_get_config(WIDGET, KEY, true); \
+	{ json_t *CONF = get_config_option(WIDGET, KEY, true); \
 	  if (CONF != NULL) { TARGET = json_is_true(CONF); } }
 
 #define widget_send_update(DATA_OBJECT, WIDGET) \

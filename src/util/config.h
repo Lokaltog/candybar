@@ -1,21 +1,15 @@
 #include <errno.h>
-
 #include "wkline.h"
-#include "widgets.h"
-
-struct wkline;
-struct widget;
 
 json_t* load_config_file ();
-json_t* wkline_get_config (struct wkline *wkline, const char *key);
-json_t* widget_get_config (struct widget *widget, const char *key, bool silent);
+json_t* get_config_option (json_t *config_object, const char *key, bool silent);
 
-#define widget_get_config_string(WIDGET, KEY)  json_string_value(widget_get_config(WIDGET, KEY, false))
-#define widget_get_config_integer(WIDGET, KEY) json_integer_value(widget_get_config(WIDGET, KEY, false))
-#define widget_get_config_real(WIDGET, KEY)    json_real_value(widget_get_config(WIDGET, KEY, false))
-#define widget_get_config_boolean(WIDGET, KEY) json_is_true(widget_get_config(WIDGET, KEY, false))
+#define get_config_option_string(OBJ, OPTION)  json_string_value(get_config_option(OBJ, OPTION, false))
+#define get_config_option_integer(OBJ, OPTION) json_integer_value(get_config_option(OBJ, OPTION, false))
+#define get_config_option_real(OBJ, OPTION)    json_real_value(get_config_option(OBJ, OPTION, false))
+#define get_config_option_boolean(OBJ, OPTION) json_is_true(get_config_option(OBJ, OPTION, false))
 
-#define widget_get_config_string_silent(WIDGET, KEY)  json_string_value(widget_get_config(WIDGET, KEY, true))
-#define widget_get_config_integer_silent(WIDGET, KEY) json_integer_value(widget_get_config(WIDGET, KEY, true))
-#define widget_get_config_real_silent(WIDGET, KEY)    json_real_value(widget_get_config(WIDGET, KEY, true))
-#define widget_get_config_boolean_silent(WIDGET, KEY) json_is_true(widget_get_config(WIDGET, KEY, true))
+#define get_config_option_string_silent(OBJ, OPTION)  json_string_value(get_config_option(OBJ, OPTION, true))
+#define get_config_option_integer_silent(OBJ, OPTION) json_integer_value(get_config_option(OBJ, OPTION, true))
+#define get_config_option_real_silent(OBJ, OPTION)    json_real_value(get_config_option(OBJ, OPTION, true))
+#define get_config_option_boolean_silent(OBJ, OPTION) json_is_true(get_config_option(OBJ, OPTION, true))

@@ -77,9 +77,9 @@ widget_init (struct widget *widget) {
 	LOG_DEBUG("init");
 
 	struct widget_config config = widget_config_defaults;
-	widget_init_config_string(widget, "host", config.host);
-	widget_init_config_integer(widget, "port", config.port);
-	widget_init_config_integer(widget, "timeout", config.timeout);
+	widget_init_config_string(widget->config, "host", config.host);
+	widget_init_config_integer(widget->config, "port", config.port);
+	widget_init_config_integer(widget->config, "timeout", config.timeout);
 
 	struct mpd_connection *connection = mpd_connection_new(config.host, config.port, config.timeout);
 
