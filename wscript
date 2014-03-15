@@ -28,14 +28,15 @@ def configure(ctx):
 	ctx.load('compiler_c')
 	ctx.check_cfg(atleast_pkgconfig_version='0.0.0')
 
-
 	# compiler options
 	if ctx.options.debug:
-		ctx.env.append_unique('CFLAGS', ['-g3', '-O0', '-Wall'])
-		ctx.define('DEBUG', 1)
+		ctx.env.append_unique('CFLAGS', ['-O0', '-g3', '-ggdb', '-Wall', '-Wpedantic', '-Wextra', '-Wno-unused-parameter', '-std=c99'])
+		ctx.env.append_unique('DEFINES', 'DEBUG')
 	else:
-		ctx.env.append_unique('CFLAGS', ['-O3', '-Wall', '-Werror'])
-	ctx.env.append_value('INCLUDES', ['./src'])
+		ctx.env.append_unique('CFLAGS', ['-O3', '-g', '-Werror', '-Wall', '-Wpedantic', '-Wextra', '-Wno-unused-parameter', '-std=c99'])
+		ctx.env.append_unique('DEFINES', 'RELEASE')
+	ctx.env.append_unique('INCLUDES', ['./src'])
+	ctx.env.append_unique('DEFINES', '_POSIX_C_SOURCE=200809L')
 
 	# defines
 	ctx.define('PACKAGE', PACKAGE)
