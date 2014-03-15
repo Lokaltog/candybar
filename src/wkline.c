@@ -156,8 +156,11 @@ main (int argc, char *argv[]) {
 	wkline->position = !strcmp(json_string_value(wkline_get_config(wkline, "position")), "bottom")
 	                   ? WKLINE_POSITION_BOTTOM : WKLINE_POSITION_TOP;
 	wkline->screen = json_integer_value(wkline_get_config(wkline, "screen"));
-	wkline->theme_uri = json_string_value(wkline_get_config(wkline, "theme_uri"));
 	wkline->web_view = web_view;
+
+	json_t *theme_config = wkline_get_config(wkline, "theme");
+	wkline->theme_uri = json_string_value(json_object_get(theme_config, "uri"));
+	wkline->theme_config = json_object_get(theme_config, "config");
 
 	/* get window size */
 	screen = gtk_window_get_screen(window);
@@ -201,6 +204,7 @@ main (int argc, char *argv[]) {
 	gtk_main();
 
 	json_decref(wkline->config);
+	json_decref(theme_config);
 config_err:
 	free(wkline);
 

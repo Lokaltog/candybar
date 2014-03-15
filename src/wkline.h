@@ -24,8 +24,9 @@ struct wkline {
 	int width;
 	int height;
 	int screen;
-	const char *theme_uri;
 	json_t *config;
+	const char *theme_uri;
+	json_t *theme_config;
 };
 
 #define MISSING_VALUE ""
