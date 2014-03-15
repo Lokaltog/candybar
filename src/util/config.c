@@ -1,20 +1,22 @@
 #include "config.h"
 
 json_t*
-load_config_file () {
+get_config_json (char *config_override_filename) {
 	const gchar*const *paths_array;
 	gchar *config_filename;
 	gchar *override_path;
 	json_t *json_config;
 	json_error_t err;
 
-	override_path = getenv("WKLINE_CONFIG_PATH");
+	override_path = config_override_filename != NULL
+	                ? config_override_filename : getenv("WKLINE_CONFIG_PATH");
 	if (override_path != NULL) {
 		config_filename = g_build_filename(override_path, NULL);
 
 		if (access(config_filename, R_OK) == -1) {
 			LOG_ERR("could not open config file '%s' for reading: %s", config_filename, strerror(errno));
-			exit(EXIT_FAILURE);
+
+			return NULL;
 		}
 	}
 	else {
@@ -28,7 +30,8 @@ load_config_file () {
 		if (err.line != -1) {
 			/* syntax error */
 			LOG_ERR("error in config file: %s", err.text);
-			exit(EXIT_FAILURE);
+
+			return NULL;
 		}
 		else {
 			/* file not found
@@ -41,7 +44,8 @@ load_config_file () {
 					if (err.line != -1) {
 						/* syntax error */
 						LOG_ERR("error in config file: %s", err.text);
-						exit(EXIT_FAILURE);
+
+						return NULL;
 					}
 				}
 				else {

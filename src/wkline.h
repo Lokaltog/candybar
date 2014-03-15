@@ -14,6 +14,7 @@
 #include "util/log.h"
 
 typedef enum {
+	WKLINE_POSITION_UNKNOWN,
 	WKLINE_POSITION_TOP,
 	WKLINE_POSITION_BOTTOM,
 } wkline_position_t;

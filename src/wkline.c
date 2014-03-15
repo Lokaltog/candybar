@@ -11,20 +11,27 @@ wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
 #endif
 
 static void
-parse_args (int argc, char *argv[], json_t *config) {
+parse_args (int argc, char *argv[], struct wkline *wkline, char **config_filename) {
 	int opt;
 	int int_arg;
 	char *end;
 
-	while ((opt = getopt(argc, argv, "h:p:t:m:")) != -1) {
+	while ((opt = getopt(argc, argv, "c:h:p:s:t:")) != -1) {
 		switch (opt) {
+		case 'c':
+			*config_filename = optarg;
+			break;
 		case 'h':
 			int_arg = strtol(optarg, &end, 10);
 			if (*end) {
 				LOG_ERR("invalid value for 'height': %s", optarg);
 				exit(EXIT_FAILURE);
 			}
-			json_object_set(config, "height", json_integer(int_arg));
+			wkline->height = int_arg;
+		case 'p':
+			wkline->position = !strcmp(optarg, "bottom")
+			                   ? WKLINE_POSITION_BOTTOM : WKLINE_POSITION_TOP;
+			break;
 			break;
 		case 's':
 			int_arg = strtol(optarg, &end, 10);
@@ -32,13 +39,10 @@ parse_args (int argc, char *argv[], json_t *config) {
 				LOG_ERR("invalid value for 'screen': %s", optarg);
 				exit(EXIT_FAILURE);
 			}
-			json_object_set(config, "screen", json_integer(int_arg));
+			wkline->screen = int_arg;
 			break;
 		case 't':
-			json_object_set(config, "theme_uri", json_string(optarg));
-			break;
-		case 'p':
-			json_object_set(config, "position", json_string(optarg));
+			wkline->theme_uri = optarg;
 			break;
 		}
 	}
@@ -124,6 +128,7 @@ web_view_init () {
 int
 main (int argc, char *argv[]) {
 	struct wkline *wkline = NULL;
+	char *config_filename = NULL;
 	GtkWindow *window;
 	GtkLayout *layout;
 	GdkScreen *screen;
@@ -145,29 +150,41 @@ main (int argc, char *argv[]) {
 	web_view = web_view_init();
 
 	/* init wkline configuration */
-	wkline = malloc(sizeof(struct wkline));
-	wkline->config = load_config_file();
-	if (!wkline->config) {
-		LOG_ERR("config file not found.");
-		goto config_err;
-	}
-	parse_args(argc, argv, wkline->config);
-
-	wkline->position = !strcmp(get_config_option_string(wkline->config, "position"), "bottom")
-	                   ? WKLINE_POSITION_BOTTOM : WKLINE_POSITION_TOP;
-	wkline->screen = get_config_option_integer(wkline->config, "screen");
+	wkline = calloc(1, sizeof(struct wkline));
+	wkline->height = -1; /* default value */
+	wkline->screen = -1; /* default value */
 	wkline->web_view = web_view;
 
+	parse_args(argc, argv, wkline, &config_filename);
+
+	wkline->config = get_config_json(config_filename);
+	if (!wkline->config) {
+		LOG_ERR("an error occured while loading the config file, aborting");
+		goto config_err;
+	}
+
+	if (wkline->position == WKLINE_POSITION_UNKNOWN) {
+		wkline->position = !strcmp(get_config_option_string(wkline->config, "position"), "bottom")
+		                   ? WKLINE_POSITION_BOTTOM : WKLINE_POSITION_TOP;
+	}
+	if (wkline->screen == -1) {
+		wkline->screen = get_config_option_integer(wkline->config, "screen");
+	}
+
 	json_t *theme_config = get_config_option(wkline->config, "theme", false);
-	wkline->theme_uri = get_config_option_string(theme_config, "uri");
 	wkline->theme_config = get_config_option(theme_config, "config", true);
+	if (wkline->theme_uri == NULL) {
+		wkline->theme_uri = get_config_option_string(theme_config, "uri");
+	}
 
 	/* get window size */
 	screen = gtk_window_get_screen(window);
 	gdk_screen_get_monitor_geometry(screen, wkline->screen, &dest);
 
 	wkline->width = dest.width;
-	wkline->height = get_config_option_integer(wkline->config, "height");
+	if (wkline->height == -1) {
+		wkline->height = get_config_option_integer(wkline->config, "height");
+	}
 
 	/* set window properties */
 	gtk_window_set_default_size(window, wkline->width, wkline->height);

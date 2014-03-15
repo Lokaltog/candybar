@@ -4,12 +4,14 @@
 wkline \- WebKit-based statusline for tiling window managers
 
 .SH "SYNOPSIS"
-.B wkline [-h
+.B wkline [-c
+.I config-file
+.B ] [-h
 .I height
-.B ] [-s
-.I screen
 .B ] [-p
 .I position
+.B ] [-s
+.I screen
 .B ] [-t
 .I theme-uri
 .B ]
@@ -22,12 +24,16 @@ looking statusline with CSS transitions and effects and the possibility of havin
 blurred background without a desktop compositor running.
 
 .SH "OPTIONS"
+.IP "-c config-file"
+Read configuration options from the specified \fIconfig-file\fP. \fIconfig-file\fP
+overrides \fIWKLINE_CONFIG_PATH\fP and any system-wide and per-user configuration
+files. The file must exist and be valid JSON.
 .IP "-h height"
 Set the height of the statusline in pixels.
-.IP "-s screen"
-Define which screen the statusline appears on.
 .IP "-p position"
 Set the statusline position. Valid options are \fItop\fP and \fIbottom\fP.
+.IP "-s screen"
+Define which screen the statusline appears on.
 .IP "-t theme-uri"
 Set the URI for a theme HTML file. Must be a valid URI, i.e. local files must be
 prefixed with \fIfile://\fP.
@@ -67,7 +73,9 @@ for further details.
 
 .SH "ENVIRONMENT"
 .IP WKLINE_CONFIG_PATH
-Full path of an alternate \fIconfig.json\fP. The file must exist and be valid JSON.
+Full path of an alternate \fIconfig.json\fP. This variable overrides any system-wide
+and per-user configuration files, but does not override the \fI-c\fP command-line
+argument. The file must exist and be valid JSON.
 
 .SH "ISSUES"
 See the issue tracker at
