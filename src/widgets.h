@@ -14,7 +14,6 @@
 #include "util/gdk_helpers.h"
 #include "util/log.h"
 
-struct wkline;
 struct widget {
 	const char *name;
 	json_t *json_config;
