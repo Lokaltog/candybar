@@ -14,17 +14,18 @@
 #include "util/gdk_helpers.h"
 #include "util/log.h"
 
+struct wkline;
 struct widget {
 	const char *name;
 	json_t *json_config;
 	WebKitWebView *web_view;
 	char *data;
+	struct wkline *wkline;
 };
 
 typedef void (*widget_init_func)(void*);
 
 gboolean web_view_update_widget (struct widget *widget);
-pthread_t spawn_widget (WebKitWebView *web_view, json_t *config, const char *name);
 void handle_interrupt (int signal);
 void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data);
 

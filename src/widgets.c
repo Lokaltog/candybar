@@ -20,6 +20,39 @@ cancel_threads () {
 	}
 }
 
+static pthread_t
+spawn_widget (struct wkline *wkline, WebKitWebView *web_view, json_t *json_config, const char *name) {
+	widget_init_func widget_init;
+	char libname[64];
+	snprintf(libname, 64, "libwidget_%s", name);
+	gchar *libpath = g_module_build_path(LIBDIR, libname);
+	GModule *lib = g_module_open(libpath, G_MODULE_BIND_LOCAL);
+	pthread_t return_thread;
+
+	if (lib == NULL) {
+		LOG_WARN("loading of '%s' (%s) failed", libpath, name);
+
+		return 0;
+	}
+
+	if (!g_module_symbol(lib, "widget_init", (gpointer*)&widget_init)) {
+		LOG_WARN("loading of '%s' (%s) failed: unable to load module symbol", libpath, name);
+
+		return 0;
+	}
+
+	struct widget *widget = malloc(sizeof(struct widget));
+
+	widget->wkline = wkline;
+	widget->json_config = json_config;
+	widget->web_view = web_view;
+	widget->name = strdup(name); /* don't forget to free this one */
+
+	pthread_create(&return_thread, NULL, (void*(*)(void*))widget_init, widget);
+
+	return return_thread;
+}
+
 gboolean
 web_view_update_widget (struct widget *widget) {
 	char *script_template = "if(typeof widgets!=='undefined'){"
@@ -43,38 +76,6 @@ web_view_update_widget (struct widget *widget) {
 	return FALSE; /* only run once */
 }
 
-pthread_t
-spawn_widget (WebKitWebView *web_view, json_t *json_config, const char *name) {
-	widget_init_func widget_init;
-	char libname[64];
-	snprintf(libname, 64, "libwidget_%s", name);
-	gchar *libpath = g_module_build_path(LIBDIR, libname);
-	GModule *lib = g_module_open(libpath, G_MODULE_BIND_LOCAL);
-	pthread_t return_thread;
-
-	if (lib == NULL) {
-		LOG_WARN("loading of '%s' (%s) failed", libpath, name);
-
-		return 0;
-	}
-
-	if (!g_module_symbol(lib, "widget_init", (gpointer*)&widget_init)) {
-		LOG_WARN("loading of '%s' (%s) failed: unable to load module symbol", libpath, name);
-
-		return 0;
-	}
-
-	struct widget *widget = malloc(sizeof(struct widget));
-
-	widget->json_config = json_config;
-	widget->web_view = web_view;
-	widget->name = strdup(name); /* don't forget to free this one */
-
-	pthread_create(&return_thread, NULL, (void*(*)(void*))widget_init, widget);
-
-	return return_thread;
-}
-
 void
 handle_interrupt (int signal) {
 	if ((signal == SIGTERM) || (signal == SIGINT) || (signal == SIGHUP)) {
@@ -85,9 +86,9 @@ handle_interrupt (int signal) {
 
 void
 window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data) {
-	json_t *config = user_data;
+	struct wkline *wkline = user_data;
 	json_t *widget;
-	json_t *widgets = json_object_get(config, "widgets");
+	json_t *widgets = json_object_get(wkline->config, "widgets");
 	size_t index;
 
 	LOG_DEBUG("webkit: window object cleared");
@@ -98,7 +99,8 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 	widget_threads = malloc(widgets_len * sizeof(pthread_t));
 
 	json_array_foreach(widgets, index, widget) {
-		widget_threads[index] = spawn_widget(web_view,
+		widget_threads[index] = spawn_widget(wkline,
+		                                     web_view,
 		                                     json_object_get(widget, "config"),
 		                                     json_string_value(json_object_get(widget, "module")));
 	}
