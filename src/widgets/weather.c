@@ -91,8 +91,8 @@ get_weather_information (struct location *location) {
 
 	free(weather_raw_json);
 
-	json_t *tmp_obj, *weather_code, *weather_temp;
-	tmp_obj = json_object_get(weather_data, "query");
+	json_t *weather_code, *weather_temp;
+	json_t *tmp_obj = json_object_get(weather_data, "query");
 	tmp_obj = json_object_get(tmp_obj, "results");
 	tmp_obj = json_object_get(tmp_obj, "weather");
 	tmp_obj = json_object_get(tmp_obj, "rss");

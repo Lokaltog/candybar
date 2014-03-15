@@ -1,6 +1,6 @@
-#include <poll.h>
-#include <pthread.h>
 #include <mpd/client.h>
+#include <pthread.h>
+#include <sys/select.h>
 
 #include "util/config.h"
 

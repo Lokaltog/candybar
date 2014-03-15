@@ -8,7 +8,7 @@ gdk_get_net_supported () {
 	int actual_length;
 	long *data = NULL;
 	GList *list = NULL;
-	int i;
+	unsigned short i;
 
 	if (!gdk_property_get(gdk_screen_get_root_window(gdk_screen_get_default()),
 	                      gdk_atom_intern("_NET_SUPPORTED", FALSE),

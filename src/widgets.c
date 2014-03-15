@@ -71,8 +71,7 @@ spawn_widget (WebKitWebView *web_view, json_t *json_config, const char *name) {
 	widget->web_view = web_view;
 	widget->name = strdup(name); /* don't forget to free this one */
 
-	pthread_create(&return_thread, NULL, (void*)widget_init, widget);
-	pthread_setname_np(return_thread, name);
+	pthread_create(&return_thread, NULL, (void*(*)(void*))widget_init, widget);
 
 	return return_thread;
 }

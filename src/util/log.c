@@ -3,7 +3,7 @@
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void
-LOG (const char *prefix, const char *color, const char *func, const char *file, const char *format, ...) {
+LOG (const char *prefix, const char *color, const char *func, char *file, const char *format, ...) {
 	va_list args;
 	time_t rawtime;
 	struct tm *date;

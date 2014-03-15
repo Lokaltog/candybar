@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include <gmodule.h>
 #include <jansson.h>
 #include <pthread.h>
@@ -14,7 +13,7 @@ struct widget {
 	char *data;
 };
 
-typedef void (*widget_init_func)(struct widget *widget);
+typedef void (*widget_init_func)(void*);
 
 gboolean web_view_update_widget (struct widget *widget);
 pthread_t spawn_widget (WebKitWebView *web_view, json_t *config, const char *name);

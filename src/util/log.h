@@ -1,4 +1,4 @@
-#define _GNU_SOURCE
+#include <libgen.h>
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -15,14 +15,14 @@
 #define ANSI_ESC_BOLD    "\x1b[1m"
 #define ANSI_ESC_RESET   "\x1b[0m"
 
-void LOG (const char *prefix, const char *color, const char *func, const char *file, const char *format, ...);
+void LOG (const char *prefix, const char *color, const char *func, char *file, const char *format, ...);
 
-#define LOG_ERR(format, ...)  LOG("ERROR", ANSI_ESC_RED, __func__, __FILE__, format, ## __VA_ARGS__)
-#define LOG_INFO(format, ...) LOG("INFO", ANSI_ESC_RESET, __func__, __FILE__, format, ## __VA_ARGS__)
-#define LOG_WARN(format, ...) LOG("WARNING", ANSI_ESC_YELLOW, __func__, __FILE__, format, ## __VA_ARGS__)
+#define LOG_ERR(...)  LOG("ERROR", ANSI_ESC_RED, __func__, __FILE__, __VA_ARGS__)
+#define LOG_INFO(...) LOG("INFO", ANSI_ESC_RESET, __func__, __FILE__, __VA_ARGS__)
+#define LOG_WARN(...) LOG("WARNING", ANSI_ESC_YELLOW, __func__, __FILE__, __VA_ARGS__)
 
 #ifdef DEBUG
-#define LOG_DEBUG(format, ...) LOG("DEBUG", ANSI_ESC_WHITE, __func__, __FILE__, format, ## __VA_ARGS__)
+#define LOG_DEBUG(...) LOG("DEBUG", ANSI_ESC_WHITE, __func__, __FILE__, __VA_ARGS__)
 #else
-#define LOG_DEBUG(format, ...)
+#define LOG_DEBUG(...)
 #endif
