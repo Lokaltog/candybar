@@ -92,7 +92,8 @@ get_weather_information (struct location *location) {
 	free(weather_raw_json);
 
 	json_t *weather_code, *weather_temp;
-	json_t *tmp_obj = json_object_get(weather_data, "query");
+	json_t *tmp_obj = NULL;
+	tmp_obj = json_object_get(weather_data, "query");
 	tmp_obj = json_object_get(tmp_obj, "results");
 	tmp_obj = json_object_get(tmp_obj, "weather");
 	tmp_obj = json_object_get(tmp_obj, "rss");
@@ -109,6 +110,9 @@ get_weather_information (struct location *location) {
 
 	if (!json_is_string(weather_code) || !json_is_string(weather_temp)) {
 		LOG_ERR("invalid weather query result received (weather code or temp missing)");
+		if (tmp_obj != NULL) {
+			json_decref(tmp_obj);
+		}
 		goto error;
 	}
 
@@ -141,9 +145,6 @@ get_weather_information (struct location *location) {
 	return weather;
 
 error:
-	if (tmp_obj != NULL) {
-		json_decref(tmp_obj);
-	}
 	if (weather_data != NULL) {
 		json_decref(weather_data);
 	}
