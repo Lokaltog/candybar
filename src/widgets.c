@@ -1,6 +1,5 @@
 #include "widgets.h"
-#include "util/config.h"
-#include "util/log.h"
+#include "wkline.h"
 
 static pthread_t *widget_threads = NULL;
 static size_t widgets_len = 0;
@@ -21,31 +20,8 @@ cancel_threads () {
 	}
 }
 
-gboolean
-web_view_update_widget (struct widget *widget) {
-	char *script_template = "if(typeof widgets!=='undefined'){"
-	                        "try{widgets.update('%s',%s)}"
-	                        "catch(e){console.log('Could not update widget: '+e)}}";
-	int script_length = 0;
-	char *script;
-
-	script_length = snprintf(NULL, 0, script_template, widget->name, widget->data);
-	script = malloc(script_length + 1);
-
-	if (widget_get_config_boolean_silent(widget, "debug")) {
-		LOG_DEBUG("updating widget %s: %s", widget->name, widget->data);
-	}
-
-	snprintf(script, script_length + 1, script_template, widget->name, widget->data);
-
-	webkit_web_view_execute_script(widget->web_view, script);
-	free(script);
-
-	return FALSE; /* only run once */
-}
-
-pthread_t
-spawn_widget (WebKitWebView *web_view, json_t *json_config, const char *name) {
+static pthread_t
+spawn_widget (struct wkline *wkline, json_t *json_config, const char *name) {
 	widget_init_func widget_init;
 	char libname[64];
 	snprintf(libname, 64, "libwidget_%s", name);
@@ -67,13 +43,36 @@ spawn_widget (WebKitWebView *web_view, json_t *json_config, const char *name) {
 
 	struct widget *widget = malloc(sizeof(struct widget));
 
+	widget->wkline = wkline;
 	widget->json_config = json_config;
-	widget->web_view = web_view;
 	widget->name = strdup(name); /* don't forget to free this one */
 
 	pthread_create(&return_thread, NULL, (void*(*)(void*))widget_init, widget);
 
 	return return_thread;
+}
+
+gboolean
+web_view_update_widget (struct widget *widget) {
+	char *script_template = "if(typeof widgets!=='undefined'){"
+	                        "try{widgets.update('%s',%s)}"
+	                        "catch(e){console.log('Could not update widget: '+e)}}";
+	int script_length = 0;
+	char *script;
+
+	script_length = snprintf(NULL, 0, script_template, widget->name, widget->data);
+	script = malloc(script_length + 1);
+
+	if (widget_get_config_boolean_silent(widget, "debug")) {
+		LOG_DEBUG("updating widget %s: %s", widget->name, widget->data);
+	}
+
+	snprintf(script, script_length + 1, script_template, widget->name, widget->data);
+
+	webkit_web_view_execute_script(widget->wkline->web_view, script);
+	free(script);
+
+	return FALSE; /* only run once */
 }
 
 void
@@ -86,9 +85,9 @@ handle_interrupt (int signal) {
 
 void
 window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data) {
-	json_t *config = user_data;
+	struct wkline *wkline = user_data;
 	json_t *widget;
-	json_t *widgets = json_object_get(config, "widgets");
+	json_t *widgets = json_object_get(wkline->config, "widgets");
 	size_t index;
 
 	LOG_DEBUG("webkit: window object cleared");
@@ -99,7 +98,7 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 	widget_threads = malloc(widgets_len * sizeof(pthread_t));
 
 	json_array_foreach(widgets, index, widget) {
-		widget_threads[index] = spawn_widget(web_view,
+		widget_threads[index] = spawn_widget(wkline,
 		                                     json_object_get(widget, "config"),
 		                                     json_string_value(json_object_get(widget, "module")));
 	}

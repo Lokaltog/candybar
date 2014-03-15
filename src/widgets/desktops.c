@@ -1,6 +1,5 @@
 #include "widgets.h"
 #include "desktops.h"
-#include "util/copy_prop.h"
 
 static int
 widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nbr) {
@@ -124,7 +123,7 @@ void*
 widget_init (struct widget *widget) {
 	LOG_DEBUG("init");
 
-	int screen_nbr = 0; /* FIXME load from config */
+	int screen_nbr = widget->wkline->screen;
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	xcb_ewmh_connection_t *ewmh = malloc(sizeof(xcb_ewmh_connection_t));
 

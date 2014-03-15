@@ -1,6 +1,4 @@
 #include "config.h"
-#include "widgets.h"
-#include "wkline.h"
 
 json_t*
 load_config_file () {

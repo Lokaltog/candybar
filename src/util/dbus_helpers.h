@@ -1,6 +1,6 @@
-#include <stdbool.h>
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib.h>
+
 #include "util/log.h"
 
 gboolean proxy_double_value (gdouble *value, DBusGProxy *properties_proxy, char *path, char *property);

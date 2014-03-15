@@ -1,9 +1,7 @@
 #include <errno.h>
-#include <glib.h>
-#include <jansson.h>
-#include <stdbool.h>
 
-#include "util/log.h"
+#include "wkline.h"
+#include "widgets.h"
 
 struct wkline;
 struct widget;

@@ -66,7 +66,6 @@ def build(bld):
 	]
 
 	bld.objects(source=bld.path.ant_glob('src/util/(log|config|copy_prop|gdk_helpers).c'), target='baseutils', use=basedeps)
-	bld.objects(source='src/widgets.c', target='widgets', use=basedeps)
 
 	# widgets
 	bld.shlib(source='src/widgets/datetime.c', target='widget_datetime', use=basedeps, install_path=LIBDIR)
@@ -96,5 +95,6 @@ def build(bld):
 		bld.shlib(source='src/widgets/desktops.c', target='widget_desktops', use=basedeps + ['XCB'], install_path=LIBDIR)
 		bld.shlib(source='src/widgets/window_title.c', target='widget_window_title', use=basedeps + ['util_copy_prop', 'XCB'], install_path=LIBDIR)
 
+	bld.objects(source='src/widgets.c', target='widgets', use=['baseutils'] + basedeps)
 	bld.program(source='src/wkline.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps, defines=wkline_defines)
 	bld.install_files(bld.options.confdir, ['config.json'])

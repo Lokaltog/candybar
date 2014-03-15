@@ -10,7 +10,6 @@ widget_init (struct widget *widget) {
 	widget_init_config_string(widget, "css_gradient_overlay", config.css_gradient_overlay);
 	widget_init_config_integer(widget, "blur_radius", config.blur_radius);
 	widget_init_config_integer(widget, "brightness", config.brightness);
-	widget_init_config_integer(widget, "height", config.height);
 	widget_init_config_integer(widget, "saturation", config.saturation);
 
 	if (!strlen(config.image)) {
@@ -35,10 +34,11 @@ widget_init (struct widget *widget) {
 	}
 
 	width = MagickGetImageWidth(m_wand);
-	height = config.height;
+	height = widget->wkline->height;
 
 	/* modify image */
 	MagickCropImage(m_wand, width, height, 0, 0);
+
 	if (config.blur_radius != 0) {
 		MagickBlurImage(m_wand, config.blur_radius, config.blur_radius);
 	}
