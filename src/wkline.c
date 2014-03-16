@@ -28,10 +28,10 @@ parse_args (int argc, char *argv[], struct wkline *wkline, char **config_filenam
 				exit(EXIT_FAILURE);
 			}
 			wkline->height = int_arg;
+			break;
 		case 'p':
 			wkline->position = !strcmp(optarg, "bottom")
 			                   ? WKLINE_POSITION_BOTTOM : WKLINE_POSITION_TOP;
-			break;
 			break;
 		case 's':
 			int_arg = strtol(optarg, &end, 10);
