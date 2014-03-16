@@ -3,6 +3,7 @@
 
 #include <gmodule.h>
 #include <jansson.h>
+#include <JavaScriptCore/JavaScript.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <string.h>
@@ -20,6 +21,11 @@ struct widget {
 	char *data;
 	struct wkline *wkline;
 };
+
+typedef struct {
+	JSContextRef context;
+	JSObjectRef object;
+} ref_ctx_t;
 
 typedef void (*widget_init_func)(void*);
 

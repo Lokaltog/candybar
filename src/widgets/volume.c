@@ -1,6 +1,24 @@
 #include "widgets.h"
 #include "volume.h"
 
+static ref_ctx_t *ref_ctx = NULL;
+
+static void
+widget_js_init_cb (JSContextRef ctx, JSObjectRef object) {
+	ref_ctx = calloc(1, sizeof(ref_ctx_t));
+	ref_ctx->context = ctx;
+	ref_ctx->object = object;
+}
+
+static const JSClassDefinition widget_js_def = {
+	0,
+	kJSClassAttributeNone,
+	"VolumeWidget",
+	NULL, NULL, NULL,
+	widget_js_init_cb,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+};
+
 static int
 widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
 	long volume_min, volume_max, volume;
@@ -9,12 +27,24 @@ widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
 	snd_mixer_selem_get_playback_volume_range(elem, &volume_min, &volume_max);
 	snd_mixer_selem_get_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, &volume);
 	snd_mixer_selem_get_playback_switch(elem, SND_MIXER_SCHN_FRONT_LEFT, &muted);
-	volume *= muted; /* if muted set volume to 0 */
 
-	json_t *json_data_object = json_object();
-	json_object_set_new(json_data_object, "percent", json_real(100 * (volume - volume_min) / (volume_max - volume_min)));
+	/* call onDataChanged callback */
+	JSStringRef string_ondatachanged = JSStringCreateWithUTF8CString("onDataChanged");
+	JSValueRef func = JSObjectGetProperty(ref_ctx->context, ref_ctx->object, string_ondatachanged, NULL);
+	JSObjectRef function = JSValueToObject(ref_ctx->context, func, NULL);
+	JSValueRef function_args[] = {
+		JSValueMakeNumber(ref_ctx->context, 100 * (volume - volume_min) / (volume_max - volume_min)),
+		JSValueMakeBoolean(ref_ctx->context, !muted),
+	};
+	JSStringRelease(string_ondatachanged);
 
-	widget_send_update(json_data_object, widget);
+	if (!JSObjectIsFunction(ref_ctx->context, function)) {
+		LOG_DEBUG("onDataChanged is not function or is not set");
+
+		return 1;
+	}
+
+	JSObjectCallAsFunction(ref_ctx->context, function, ref_ctx->object, LENGTH(function_args), function_args, NULL);
 
 	return 0;
 }
@@ -31,6 +61,9 @@ widget_cleanup (void *arg) {
 	if (cleanup_data[1] != NULL) {
 		snd_mixer_close(cleanup_data[1]);
 	}
+	if (ref_ctx != NULL) {
+		free(ref_ctx);
+	}
 	free(arg);
 }
 
@@ -42,13 +75,20 @@ widget_init (struct widget *widget) {
 	widget_init_config_string(widget->config, "card", config.card);
 	widget_init_config_string(widget->config, "selem", config.selem);
 
+	/* init js object */
+	JSClassRef class_def = JSClassCreate(&widget_js_def);
+	JSObjectRef class_obj = JSObjectMake(widget->wkline->wk_context, class_def, widget->wkline->wk_context);
+	JSObjectRef global_obj = JSContextGetGlobalObject(widget->wkline->wk_context);
+	JSStringRef str = JSStringCreateWithUTF8CString("VolumeWidget");
+	JSObjectSetProperty(widget->wkline->wk_context, global_obj, str, class_obj, kJSPropertyAttributeNone, NULL);
+
+	/* open mixer */
 	snd_mixer_t *mixer = NULL;
 	snd_mixer_selem_id_t *sid = NULL;
 	struct pollfd *pollfds = NULL;
 	int nfds = 0, n, err = 0, wait_err;
 	unsigned short revents;
 
-	/* open mixer */
 	if ((err = snd_mixer_open(&mixer, 0)) < 0) {
 		LOG_ERR("could not open mixer (%i)", err);
 		goto cleanup;
