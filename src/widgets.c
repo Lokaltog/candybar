@@ -96,6 +96,7 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 
 	widgets_len = json_array_size(widgets);
 	widget_threads = malloc(widgets_len * sizeof(pthread_t));
+	wkline->wk_context = context;
 
 	json_array_foreach(widgets, index, widget) {
 		widget_threads[index] = spawn_widget(wkline,

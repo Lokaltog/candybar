@@ -28,6 +28,7 @@ struct wkline {
 	json_t *config;
 	const char *theme_uri;
 	json_t *theme_config;
+	void *wk_context;
 };
 
 #define MISSING_VALUE ""
