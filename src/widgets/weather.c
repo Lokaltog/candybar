@@ -197,7 +197,6 @@ widget_cleanup (void *arg) {
 	if (location != NULL) {
 		free(location);
 	}
-	free(arg);
 }
 
 void*
@@ -224,10 +223,8 @@ widget_init (struct widget *widget) {
 		goto cleanup;
 	}
 
-	void **cleanup_data = malloc(sizeof(void*) * 1);
-	cleanup_data[0] = location;
-
-	pthread_cleanup_push(widget_cleanup, cleanup_data);
+	void *cleanup_data[] = { location };
+	pthread_cleanup_push(widget_cleanup, &cleanup_data);
 	for (;;) {
 		widget_update(widget, location, config);
 

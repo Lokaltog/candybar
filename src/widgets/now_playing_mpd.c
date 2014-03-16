@@ -69,7 +69,6 @@ widget_cleanup (void *arg) {
 	void **cleanup_data = arg;
 
 	mpd_connection_free(cleanup_data[0]);
-	free(arg);
 }
 
 void*
@@ -95,10 +94,8 @@ widget_init (struct widget *widget) {
 	fd_set fds;
 	int s, mpd_fd = mpd_connection_get_fd(connection);
 
-	void **cleanup_data = malloc(sizeof(void*) * 1);
-	cleanup_data[0] = connection;
-
-	pthread_cleanup_push(widget_cleanup, cleanup_data);
+	void *cleanup_data[] = { connection };
+	pthread_cleanup_push(widget_cleanup, &cleanup_data);
 	widget_update(widget, connection);
 	for (;;) {
 		FD_ZERO(&fds);

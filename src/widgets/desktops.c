@@ -116,7 +116,6 @@ widget_cleanup (void *arg) {
 	if (cleanup_data[1] != NULL) {
 		xcb_disconnect(cleanup_data[1]);
 	}
-	free(arg);
 }
 
 void*
@@ -148,11 +147,8 @@ widget_init (struct widget *widget) {
 		goto cleanup;
 	}
 
-	void **cleanup_data = malloc(sizeof(void*) * 2);
-	cleanup_data[0] = ewmh;
-	cleanup_data[1] = conn;
-
-	pthread_cleanup_push(widget_cleanup, cleanup_data);
+	void *cleanup_data[] = { ewmh, conn };
+	pthread_cleanup_push(widget_cleanup, &cleanup_data);
 	widget_update(widget, ewmh, screen_nbr);
 	for (;;) {
 		while ((evt = xcb_wait_for_event(ewmh->connection)) != NULL) {

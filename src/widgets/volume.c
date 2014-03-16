@@ -31,7 +31,6 @@ widget_cleanup (void *arg) {
 	if (cleanup_data[1] != NULL) {
 		snd_mixer_close(cleanup_data[1]);
 	}
-	free(arg);
 }
 
 void*
@@ -71,11 +70,8 @@ widget_init (struct widget *widget) {
 	snd_mixer_selem_id_set_name(sid, config.selem);
 	snd_mixer_elem_t *elem = snd_mixer_find_selem(mixer, sid);
 
-	void **cleanup_data = malloc(sizeof(void*) * 2);
-	cleanup_data[0] = pollfds;
-	cleanup_data[1] = mixer;
-
-	pthread_cleanup_push(widget_cleanup, cleanup_data);
+	void *cleanup_data[] = { pollfds, mixer };
+	pthread_cleanup_push(widget_cleanup, &cleanup_data);
 	widget_update(widget, elem);
 	for (;;) {
 		/* Code mostly from the alsamixer main loop */

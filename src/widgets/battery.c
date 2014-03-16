@@ -43,7 +43,6 @@ widget_cleanup (void *arg) {
 	if (cleanup_data[2] != NULL) {
 		free(cleanup_data[2]);
 	}
-	free(arg);
 }
 
 void*
@@ -98,12 +97,8 @@ widget_init (struct widget *widget) {
 		goto cleanup;
 	}
 
-	void **cleanup_data = malloc(sizeof(void*) * 3);
-	cleanup_data[0] = proxy;
-	cleanup_data[1] = properties_proxy;
-	cleanup_data[2] = dbus_path;
-
-	pthread_cleanup_push(widget_cleanup, cleanup_data);
+	void *cleanup_data[] = { proxy, properties_proxy, dbus_path };
+	pthread_cleanup_push(widget_cleanup, &cleanup_data);
 	for (;;) {
 		widget_update(widget, properties_proxy, dbus_path);
 
