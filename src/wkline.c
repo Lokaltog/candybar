@@ -126,7 +126,7 @@ web_view_init () {
 static void
 signal_handler (int signal) {
 	if ((signal == SIGTERM) || (signal == SIGINT) || (signal == SIGHUP)) {
-		cancel_widget_threads();
+		join_widget_threads(wkline);
 		gtk_main_quit();
 	}
 	if (signal == SIGUSR1) {
@@ -169,6 +169,11 @@ main (int argc, char *argv[]) {
 	wkline->height = -1; /* default value */
 	wkline->screen = -1; /* default value */
 	wkline->web_view = web_view;
+	wkline->efd = eventfd(0, 0);
+	if (wkline->efd == -1) {
+		LOG_ERR("could not create event file descriptor: %s", strerror(errno));
+		goto config_err;
+	}
 
 	parse_args(argc, argv, &config_filename);
 

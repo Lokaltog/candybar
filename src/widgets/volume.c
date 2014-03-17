@@ -19,33 +19,19 @@ widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
 	return 0;
 }
 
-static void
-widget_cleanup (void *arg) {
-	LOG_DEBUG("cleanup");
-
-	void **cleanup_data = arg;
-
-	if (cleanup_data[0] != NULL) {
-		free(cleanup_data[0]);
-	}
-	if (cleanup_data[1] != NULL) {
-		snd_mixer_close(cleanup_data[1]);
-	}
-}
-
 void*
 widget_init (struct widget *widget) {
-	LOG_DEBUG("init");
-
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "card", config.card);
 	widget_init_config_string(widget->config, "selem", config.selem);
 
-	snd_mixer_t *mixer = NULL;
+	int err = 0;
+	int mixer_fd;
 	snd_mixer_selem_id_t *sid = NULL;
+	snd_mixer_t *mixer = NULL;
+	struct epoll_event mixer_event;
 	struct pollfd *pollfds = NULL;
-	int nfds = 0, n, err = 0, wait_err;
-	unsigned short revents;
+	unsigned short i;
 
 	/* open mixer */
 	if ((err = snd_mixer_open(&mixer, 0)) < 0) {
@@ -70,59 +56,38 @@ widget_init (struct widget *widget) {
 	snd_mixer_selem_id_set_name(sid, config.selem);
 	snd_mixer_elem_t *elem = snd_mixer_find_selem(mixer, sid);
 
-	void *cleanup_data[] = { pollfds, mixer };
-	pthread_cleanup_push(widget_cleanup, &cleanup_data);
-	widget_update(widget, elem);
-	for (;;) {
-		/* Code mostly from the alsamixer main loop */
-		n = 1 + snd_mixer_poll_descriptors_count(mixer);
-		if (n != nfds) {
-			free(pollfds);
-			nfds = n;
-			pollfds = calloc(nfds, sizeof *pollfds);
-			pollfds[0].fd = fileno(stdin);
-			pollfds[0].events = POLLIN;
-		}
-		err = snd_mixer_poll_descriptors(mixer, &pollfds[1], nfds - 1);
-		if (err < 0) {
-			LOG_ERR("alsa: can't get poll descriptors: %i", err);
-			break;
-		}
-		wait_err = snd_mixer_wait(mixer, -1);
-		if (wait_err < 0) {
-			LOG_ERR("alsa: wait error");
-		}
-		n = poll(pollfds, nfds, -1);
-		if (n < 0) {
-			if (errno == EINTR) {
-				pollfds[0].revents = 0;
-			}
-			else {
-				LOG_ERR("alsa: poll error");
-				break;
-			}
-		}
-		if (pollfds[0].revents & (POLLERR | POLLHUP | POLLNVAL)) {
-			break;
-		}
-		if (n > 0) {
-			err = snd_mixer_poll_descriptors_revents(mixer, &pollfds[1], nfds - 1, &revents);
-			if (err < 0) {
-				LOG_ERR("alsa: fatal error: %i", err);
-				break;
-			}
-			if (revents & (POLLERR | POLLNVAL)) {
-				LOG_INFO("alsa: closing mixer");
-				break;
-			}
-			else if (revents & POLLIN) {
-				snd_mixer_handle_events(mixer);
-			}
-		}
+	widget_epoll_init(widget);
 
-		widget_update(widget, elem);
+	int pollfds_len = snd_mixer_poll_descriptors_count(mixer);
+	pollfds = calloc(pollfds_len, sizeof(*pollfds));
+	err = snd_mixer_poll_descriptors(mixer, &pollfds[0], pollfds_len);
+	if (err < 0) {
+		LOG_ERR("alsa: can't get poll descriptors: %i", err);
 	}
-	pthread_cleanup_pop(1);
+
+	for (i = 0; i < pollfds_len; i++) {
+		mixer_fd = pollfds[i].fd;
+		mixer_event.data.fd = mixer_fd;
+		mixer_event.events = EPOLLIN | EPOLLET;
+		if (epoll_ctl(efd, EPOLL_CTL_ADD, mixer_fd, &mixer_event) == -1) {
+			LOG_ERR("failed to add fd to epoll instance: %s", strerror(errno));
+
+			return 0;
+		}
+	}
+
+	widget_update(widget, elem);
+	while (true) {
+		while ((nfds = epoll_wait(efd, events, MAX_EVENTS, -1)) > 0) {
+			for (i = 0; i < nfds; i++) {
+				if (events[i].data.fd == widget->wkline->efd) {
+					goto cleanup;
+				}
+			}
+			snd_mixer_handle_events(mixer);
+			widget_update(widget, elem);
+		}
+	}
 
 cleanup:
 	if (pollfds != NULL) {
