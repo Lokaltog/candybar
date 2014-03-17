@@ -1,17 +1,16 @@
 #include "wkline.h"
 #include "widgets.h"
 
-#ifndef DEBUG /* only disable context menu in prod build */
+static struct wkline *wkline = NULL;
+
 static gboolean
 wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
 	/* Disable context menu */
 	return TRUE;
 }
 
-#endif
-
 static void
-parse_args (int argc, char *argv[], struct wkline *wkline, char **config_filename) {
+parse_args (int argc, char *argv[], char **config_filename) {
 	int opt;
 	int int_arg;
 	char *end;
@@ -50,7 +49,6 @@ parse_args (int argc, char *argv[], struct wkline *wkline, char **config_filenam
 
 static void
 wk_realize_handler (GtkWidget *window, gpointer user_data) {
-	struct wkline *wkline = user_data;
 	GdkAtom net_wm_strut_atom = gdk_atom_intern("_NET_WM_STRUT", FALSE);
 	GdkAtom net_wm_strut_partial_atom = gdk_atom_intern("_NET_WM_STRUT_PARTIAL", FALSE);
 	GdkWindow *gdkw = gtk_widget_get_window(GTK_WIDGET(window));
@@ -125,23 +123,40 @@ web_view_init () {
 	return web_view;
 }
 
+static void
+signal_handler (int signal) {
+	if ((signal == SIGTERM) || (signal == SIGINT) || (signal == SIGHUP)) {
+		cancel_widget_threads();
+		gtk_main_quit();
+	}
+	if (signal == SIGUSR1) {
+		LOG_DEBUG("reloading theme");
+		webkit_web_view_reload_bypass_cache(wkline->web_view);
+	}
+}
+
 int
 main (int argc, char *argv[]) {
-	struct wkline *wkline = NULL;
 	char *config_filename = NULL;
 	GtkWindow *window;
 	GtkLayout *layout;
 	GdkScreen *screen;
 	GdkRectangle dest;
 	WebKitWebView *web_view;
+	struct sigaction sa;
 
 	gtk_init(&argc, &argv);
 
 	LOG_INFO("%s%s%s %s (%s %s)", ANSI_ESC_CYAN, ANSI_ESC_BOLD, PACKAGE, VERSION, __DATE__, __TIME__);
 
-	signal(SIGTERM, handle_interrupt);
-	signal(SIGINT, handle_interrupt);
-	signal(SIGHUP, handle_interrupt);
+	sa.sa_handler = signal_handler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+
+	sigaction(SIGHUP, &sa, NULL);
+	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGTERM, &sa, NULL);
+	sigaction(SIGUSR1, &sa, NULL);
 
 	/* GtkScrolledWindow fails to lock small heights (<25px), so a GtkLayout
 	   is used instead */
@@ -155,7 +170,7 @@ main (int argc, char *argv[]) {
 	wkline->screen = -1; /* default value */
 	wkline->web_view = web_view;
 
-	parse_args(argc, argv, wkline, &config_filename);
+	parse_args(argc, argv, &config_filename);
 
 	wkline->config = get_config_json(config_filename);
 	if (!wkline->config) {
@@ -206,9 +221,7 @@ main (int argc, char *argv[]) {
 		gtk_window_move(window, dest.x, dest.y - wkline->height);
 	}
 
-#ifndef DEBUG /* only disable context menu in prod build */
 	g_signal_connect(web_view, "context-menu", G_CALLBACK(wk_context_menu_cb), NULL);
-#endif
 	g_signal_connect(web_view, "window-object-cleared", G_CALLBACK(window_object_cleared_cb), wkline);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	g_signal_connect(window, "realize", G_CALLBACK(wk_realize_handler), wkline);
