@@ -4,16 +4,16 @@
 static pthread_t *widget_threads = NULL;
 static size_t widgets_len = 0;
 
-static void
-cancel_threads () {
+void
+join_widget_threads (struct wkline *wkline) {
 	unsigned short i;
 	if (widget_threads && (widgets_len > 0)) {
-		LOG_DEBUG("stopping widget threads");
+		eventfd_write(wkline->efd, 1);
+		LOG_DEBUG("gracefully shutting down widget threads...");
 		for (i = 0; i < widgets_len; i++) {
 			if (widget_threads[i]) {
 				/* this call may fail if the thread never
 				   entered the main thread loop */
-				pthread_cancel(widget_threads[i]);
 				pthread_join(widget_threads[i], NULL);
 			}
 		}
@@ -47,7 +47,9 @@ spawn_widget (struct wkline *wkline, json_t *config, const char *name) {
 	widget->config = config;
 	widget->name = strdup(name); /* don't forget to free this one */
 
-	pthread_create(&return_thread, NULL, (void*(*)(void*))widget_init, widget);
+	if (pthread_create(&return_thread, NULL, (void*(*)(void*))widget_init, widget) != 0) {
+		LOG_ERR("failed to start widget %s: %s", name, strerror(errno));
+	}
 
 	return return_thread;
 }
@@ -76,14 +78,6 @@ web_view_update_widget (struct widget *widget) {
 }
 
 void
-handle_interrupt (int signal) {
-	if ((signal == SIGTERM) || (signal == SIGINT) || (signal == SIGHUP)) {
-		cancel_threads();
-		gtk_main_quit();
-	}
-}
-
-void
 window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data) {
 	struct wkline *wkline = user_data;
 	json_t *widget;
@@ -92,12 +86,13 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 
 	LOG_DEBUG("webkit: window object cleared");
 
-	cancel_threads();
+	join_widget_threads(wkline);
 
 	widgets_len = json_array_size(widgets);
 	widget_threads = malloc(widgets_len * sizeof(pthread_t));
 	wkline->wk_context = context;
 
+	LOG_DEBUG("starting %i widget threads", widgets_len);
 	json_array_foreach(widgets, index, widget) {
 		widget_threads[index] = spawn_widget(wkline,
 		                                     json_object_get(widget, "config"),

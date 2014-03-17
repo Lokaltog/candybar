@@ -1,4 +1,3 @@
-#include <errno.h>
 #include "wkline.h"
 
 json_t* get_config_json (char *config_override_filename);

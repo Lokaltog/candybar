@@ -90,13 +90,10 @@ widget_cleanup (void *arg) {
 	if (cleanup_data[0] != NULL) {
 		dbus_connection_unref(cleanup_data[0]);
 	}
-	free(arg);
 }
 
 void*
 widget_init (struct widget *widget) {
-	LOG_DEBUG("init");
-
 	DBusConnection *connection;
 	DBusError dbus_error;
 	DBusError *err = &dbus_error;
@@ -127,10 +124,8 @@ widget_init (struct widget *widget) {
 		dbus_error_free(err);
 	}
 
-	void **cleanup_data = malloc(sizeof(void*) * 1);
-	cleanup_data[0] = connection;
-
-	pthread_cleanup_push(widget_cleanup, cleanup_data);
+	void *cleanup_data[] = { connection };
+	pthread_cleanup_push(widget_cleanup, &cleanup_data);
 	for (;;) {
 		dbus_connection_read_write(connection, -1);
 

@@ -7,7 +7,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <string.h>
-#include <sys/select.h>
+#include <sys/epoll.h>
 #include <webkit/webkit.h>
 
 #include "util/config.h"
@@ -29,8 +29,8 @@ typedef struct {
 
 typedef void (*widget_init_func)(void*);
 
+void join_widget_threads ();
 gboolean web_view_update_widget (struct widget *widget);
-void handle_interrupt (int signal);
 void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data);
 
 #define widget_init_config_string(WIDGET, KEY, TARGET) \
@@ -50,5 +50,15 @@ void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpoin
 	WIDGET->data = strdup(json_dumps(DATA_OBJECT, 0)); \
 	g_idle_add((GSourceFunc)web_view_update_widget, WIDGET); \
 	json_decref(DATA_OBJECT);
+
+#define MAX_EVENTS 10
+#define widget_epoll_init(WIDGET) \
+	int efd, nfds; \
+	struct epoll_event event, events[MAX_EVENTS]; \
+	if ((efd = epoll_create1(0)) == -1) { LOG_ERR("failed to create epoll instance: %s", strerror(errno)); return 0; } \
+	event.data.fd = WIDGET->wkline->efd; event.events = EPOLLIN | EPOLLET; \
+	if (epoll_ctl(efd, EPOLL_CTL_ADD, WIDGET->wkline->efd, &event) == -1) { LOG_ERR("failed to add fd to epoll instance: %s", strerror(errno)); return 0; }
+#define widget_epoll_wait_goto(WIDGET, TIMEOUT_SECONDS, GOTO_LABEL) nfds = epoll_wait(efd, events, MAX_EVENTS, TIMEOUT_SECONDS * 1000); \
+	if (nfds && (events[0].data.fd == WIDGET->wkline->efd)) { goto GOTO_LABEL; }
 
 #endif

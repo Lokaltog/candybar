@@ -1,10 +1,12 @@
 #ifndef WKLINE_H
 #define WKLINE_H
 
+#include <errno.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <jansson.h>
 #include <string.h>
+#include <sys/eventfd.h>
 #include <unistd.h>
 #include <webkit/webkit.h>
 
@@ -29,6 +31,7 @@ struct wkline {
 	const char *theme_uri;
 	json_t *theme_config;
 	void *wk_context;
+	int efd;
 };
 
 #define MISSING_VALUE ""

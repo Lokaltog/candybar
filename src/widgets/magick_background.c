@@ -3,8 +3,6 @@
 
 void*
 widget_init (struct widget *widget) {
-	LOG_DEBUG("init");
-
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "image", config.image);
 	widget_init_config_string(widget->config, "css_gradient_overlay", config.css_gradient_overlay);
