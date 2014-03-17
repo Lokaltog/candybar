@@ -104,27 +104,14 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 	return 0;
 }
 
-static void
-widget_cleanup (void *arg) {
-	LOG_DEBUG("cleanup");
-
-	void **cleanup_data = arg;
-
-	if (cleanup_data[0] != NULL) {
-		xcb_ewmh_connection_wipe(cleanup_data[0]);
-	}
-	if (cleanup_data[1] != NULL) {
-		xcb_disconnect(cleanup_data[1]);
-	}
-}
-
 void*
 widget_init (struct widget *widget) {
-	LOG_DEBUG("init");
-
+	unsigned short i;
+	int xcb_fd;
 	int screen_nbr = widget->wkline->screen;
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	xcb_ewmh_connection_t *ewmh = malloc(sizeof(xcb_ewmh_connection_t));
+	struct epoll_event xcb_event;
 
 	if (xcb_connection_has_error(conn)) {
 		LOG_ERR("could not connect to display %s", getenv("DISPLAY"));
@@ -147,31 +134,46 @@ widget_init (struct widget *widget) {
 		goto cleanup;
 	}
 
-	void *cleanup_data[] = { ewmh, conn };
-	pthread_cleanup_push(widget_cleanup, &cleanup_data);
+	widget_epoll_init(widget);
+	xcb_fd = xcb_get_file_descriptor(ewmh->connection);
+	xcb_event.data.fd = xcb_fd;
+	xcb_event.events = EPOLLIN | EPOLLET;
+	if (epoll_ctl(efd, EPOLL_CTL_ADD, xcb_fd, &xcb_event) == -1) {
+		LOG_ERR("failed to add fd to epoll instance: %s", strerror(errno));
+
+		return 0;
+	}
+
 	widget_update(widget, ewmh, screen_nbr);
-	for (;;) {
-		while ((evt = xcb_wait_for_event(ewmh->connection)) != NULL) {
-			xcb_property_notify_event_t *pne;
-			switch (XCB_EVENT_RESPONSE_TYPE(evt)) {
-			case XCB_PROPERTY_NOTIFY:
-				pne = (xcb_property_notify_event_t*)evt;
-				if (pne->atom == ewmh->_NET_DESKTOP_NAMES) {
-					widget_update(widget, ewmh, screen_nbr);
+	while (true) {
+		while ((nfds = epoll_wait(efd, events, MAX_EVENTS, -1)) > 0) {
+			for (i = 0; i < nfds; i++) {
+				if (events[i].data.fd == widget->wkline->efd) {
+					goto cleanup;
 				}
-				else if (pne->atom == ewmh->_NET_NUMBER_OF_DESKTOPS) {
-					widget_update(widget, ewmh, screen_nbr);
-				}
-				else if (pne->atom == ewmh->_NET_CURRENT_DESKTOP) {
-					widget_update(widget, ewmh, screen_nbr);
-				}
-			default:
-				break;
 			}
-			free(evt);
+
+			while ((evt = xcb_poll_for_event(ewmh->connection)) != NULL) {
+				xcb_property_notify_event_t *pne;
+				switch (XCB_EVENT_RESPONSE_TYPE(evt)) {
+				case XCB_PROPERTY_NOTIFY:
+					pne = (xcb_property_notify_event_t*)evt;
+					if (pne->atom == ewmh->_NET_DESKTOP_NAMES) {
+						widget_update(widget, ewmh, screen_nbr);
+					}
+					else if (pne->atom == ewmh->_NET_NUMBER_OF_DESKTOPS) {
+						widget_update(widget, ewmh, screen_nbr);
+					}
+					else if (pne->atom == ewmh->_NET_CURRENT_DESKTOP) {
+						widget_update(widget, ewmh, screen_nbr);
+					}
+				default:
+					break;
+				}
+				free(evt);
+			}
 		}
 	}
-	pthread_cleanup_pop(1);
 
 cleanup:
 	if (ewmh != NULL) {

@@ -126,7 +126,7 @@ web_view_init () {
 static void
 signal_handler (int signal) {
 	if ((signal == SIGTERM) || (signal == SIGINT) || (signal == SIGHUP)) {
-		cancel_widget_threads(wkline);
+		join_widget_threads(wkline);
 		gtk_main_quit();
 	}
 	if (signal == SIGUSR1) {

@@ -94,8 +94,6 @@ widget_cleanup (void *arg) {
 
 void*
 widget_init (struct widget *widget) {
-	LOG_DEBUG("init");
-
 	DBusConnection *connection;
 	DBusError dbus_error;
 	DBusError *err = &dbus_error;

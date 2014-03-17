@@ -24,7 +24,7 @@ struct widget {
 
 typedef void (*widget_init_func)(void*);
 
-void cancel_widget_threads ();
+void join_widget_threads ();
 gboolean web_view_update_widget (struct widget *widget);
 void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data);
 

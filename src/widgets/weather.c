@@ -178,31 +178,8 @@ widget_update (struct widget *widget, struct location *location, struct widget_c
 	return 0;
 }
 
-static void
-widget_cleanup (void *arg) {
-	LOG_DEBUG("cleanup");
-
-	void **cleanup_data = arg;
-	struct location *location = cleanup_data[0];
-
-	if (location->city != NULL) {
-		free(location->city);
-	}
-	if (location->region_code != NULL) {
-		free(location->region_code);
-	}
-	if (location->country_code != NULL) {
-		free(location->country_code);
-	}
-	if (location != NULL) {
-		free(location);
-	}
-}
-
 void*
 widget_init (struct widget *widget) {
-	LOG_DEBUG("init");
-
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "location", config.location);
 	widget_init_config_string(widget->config, "unit", config.unit);
@@ -223,14 +200,11 @@ widget_init (struct widget *widget) {
 		goto cleanup;
 	}
 
-	void *cleanup_data[] = { location };
-	pthread_cleanup_push(widget_cleanup, &cleanup_data);
-	for (;;) {
+	widget_epoll_init(widget);
+	while (true) {
 		widget_update(widget, location, config);
-
-		sleep(config.refresh_interval);
+		widget_epoll_wait_goto(widget, config.refresh_interval, cleanup);
 	}
-	pthread_cleanup_pop(1);
 
 cleanup:
 	if (location->city != NULL) {

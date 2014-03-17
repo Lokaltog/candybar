@@ -62,65 +62,59 @@ widget_update (struct widget *widget, struct mpd_connection *connection) {
 	return 0;
 }
 
-static void
-widget_cleanup (void *arg) {
-	LOG_DEBUG("cleanup");
-
-	void **cleanup_data = arg;
-
-	mpd_connection_free(cleanup_data[0]);
-}
-
 void*
 widget_init (struct widget *widget) {
-	LOG_DEBUG("init");
-
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "host", config.host);
 	widget_init_config_integer(widget->config, "port", config.port);
 	widget_init_config_integer(widget->config, "timeout", config.timeout);
 
-	struct mpd_connection *connection = mpd_connection_new(config.host, config.port, config.timeout);
+	unsigned short i;
+	int mpd_fd;
+	struct mpd_connection *conn = mpd_connection_new(config.host, config.port, config.timeout);
+	struct epoll_event mpd_event;
 
-	if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
+	if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
 		LOG_ERR("failed to connect to mpd server at %s:%i: %s",
 		        config.host, config.port,
-		        mpd_connection_get_error_message(connection));
-		mpd_connection_free(connection);
+		        mpd_connection_get_error_message(conn));
+		mpd_connection_free(conn);
 
 		return 0;
 	}
 
-	fd_set fds;
-	int s, mpd_fd = mpd_connection_get_fd(connection);
+	widget_epoll_init(widget);
+	mpd_fd = mpd_connection_get_fd(conn);
+	mpd_event.data.fd = mpd_fd;
+	mpd_event.events = EPOLLIN | EPOLLET;
+	if (epoll_ctl(efd, EPOLL_CTL_ADD, mpd_fd, &mpd_event) == -1) {
+		LOG_ERR("failed to add fd to epoll instance: %s", strerror(errno));
 
-	void *cleanup_data[] = { connection };
-	pthread_cleanup_push(widget_cleanup, &cleanup_data);
-	widget_update(widget, connection);
-	for (;;) {
-		FD_ZERO(&fds);
-		FD_SET(mpd_fd, &fds);
+		return 0;
+	}
 
-		s = select(FD_SETSIZE, &fds, NULL, NULL, NULL);
-		if (s < 0) {
-			LOG_ERR("select error");
-			break;
-		}
-		if (!s) {
-			break;
-		}
-
-		if (FD_ISSET(mpd_fd, &fds)) {
-			/* empty event buffer */
-			mpd_recv_idle(connection, true);
-			if (mpd_connection_get_error(connection) != MPD_ERROR_SUCCESS) {
-				LOG_ERR("recv error: %s", mpd_connection_get_error_message(connection));
-				break;
+	widget_update(widget, conn);
+	while (true) {
+		while ((nfds = epoll_wait(efd, events, MAX_EVENTS, -1)) > 0) {
+			for (i = 0; i < nfds; i++) {
+				if (events[i].data.fd == widget->wkline->efd) {
+					goto cleanup;
+				}
+				else if (events[i].data.fd == mpd_fd) {
+					/* empty event buffer */
+					mpd_recv_idle(conn, true);
+					if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
+						LOG_ERR("recv error: %s", mpd_connection_get_error_message(conn));
+						break;
+					}
+					widget_update(widget, conn);
+				}
 			}
-			widget_update(widget, connection);
 		}
 	}
-	pthread_cleanup_pop(1);
+
+cleanup:
+	mpd_connection_free(conn);
 
 	return 0;
 }

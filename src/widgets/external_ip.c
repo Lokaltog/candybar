@@ -19,15 +19,17 @@ widget_update (struct widget *widget, struct widget_config config) {
 
 void*
 widget_init (struct widget *widget) {
-	LOG_DEBUG("init");
-
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "address", config.address);
 	widget_init_config_integer(widget->config, "refresh_interval", config.refresh_interval);
 
-	for (;;) {
+	widget_epoll_init(widget);
+	while (true) {
 		widget_update(widget, config);
-
-		sleep(config.refresh_interval);
+		widget_epoll_wait_goto(widget, config.refresh_interval, cleanup);
 	}
+
+cleanup:
+
+	return 0;
 }

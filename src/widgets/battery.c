@@ -28,27 +28,8 @@ widget_update (struct widget *widget, DBusGProxy *properties_proxy, char *dbus_p
 	return 0;
 }
 
-static void
-widget_cleanup (void *arg) {
-	LOG_DEBUG("cleanup");
-
-	void **cleanup_data = arg;
-
-	if (cleanup_data[0] != NULL) {
-		g_object_unref(cleanup_data[0]);
-	}
-	if (cleanup_data[1] != NULL) {
-		g_object_unref(cleanup_data[1]);
-	}
-	if (cleanup_data[2] != NULL) {
-		free(cleanup_data[2]);
-	}
-}
-
 void*
 widget_init (struct widget *widget) {
-	LOG_DEBUG("init");
-
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "name", config.name);
 	widget_init_config_integer(widget->config, "refresh_interval", config.refresh_interval);
@@ -97,18 +78,21 @@ widget_init (struct widget *widget) {
 		goto cleanup;
 	}
 
-	void *cleanup_data[] = { proxy, properties_proxy, dbus_path };
-	pthread_cleanup_push(widget_cleanup, &cleanup_data);
-	for (;;) {
+	widget_epoll_init(widget);
+	while (true) {
 		widget_update(widget, properties_proxy, dbus_path);
-
-		sleep(config.refresh_interval);
+		widget_epoll_wait_goto(widget, config.refresh_interval, cleanup);
 	}
-	pthread_cleanup_pop(1);
 
 cleanup:
 	if (error != NULL) {
 		g_error_free(error);
+	}
+	if (proxy != NULL) {
+		g_object_unref(proxy);
+	}
+	if (properties_proxy != NULL) {
+		g_object_unref(properties_proxy);
 	}
 	if (dbus_path != NULL) {
 		free(dbus_path);
