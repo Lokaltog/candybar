@@ -46,4 +46,14 @@ void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpoin
 	g_idle_add((GSourceFunc)web_view_update_widget, WIDGET); \
 	json_decref(DATA_OBJECT);
 
+#define MAX_EVENTS 10
+#define widget_epoll_init(WIDGET) \
+	int efd, nfds; \
+	struct epoll_event event, events[MAX_EVENTS]; \
+	if ((efd = epoll_create1(0)) == -1) { LOG_ERR("failed to create epoll instance: %s", strerror(errno)); return 0; } \
+	event.data.fd = WIDGET->wkline->efd; event.events = EPOLLIN | EPOLLET; \
+	if (epoll_ctl(efd, EPOLL_CTL_ADD, WIDGET->wkline->efd, &event) == -1) { LOG_ERR("failed to add fd to epoll instance: %s", strerror(errno)); return 0; }
+#define widget_epoll_wait_goto(WIDGET, TIMEOUT_SECONDS, GOTO_LABEL) nfds = epoll_wait(efd, events, MAX_EVENTS, TIMEOUT_SECONDS * 1000); \
+	if (nfds && (events[0].data.fd == WIDGET->wkline->efd)) { goto GOTO_LABEL; }
+
 #endif
