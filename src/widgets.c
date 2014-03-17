@@ -5,9 +5,10 @@ static pthread_t *widget_threads = NULL;
 static size_t widgets_len = 0;
 
 void
-cancel_widget_threads () {
+cancel_widget_threads (struct wkline *wkline) {
 	unsigned short i;
 	if (widget_threads && (widgets_len > 0)) {
+		eventfd_write(wkline->efd, 1);
 		LOG_DEBUG("stopping widget threads");
 		for (i = 0; i < widgets_len; i++) {
 			if (widget_threads[i]) {
@@ -84,7 +85,7 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer c
 
 	LOG_DEBUG("webkit: window object cleared");
 
-	cancel_widget_threads();
+	cancel_widget_threads(wkline);
 
 	widgets_len = json_array_size(widgets);
 	widget_threads = malloc(widgets_len * sizeof(pthread_t));

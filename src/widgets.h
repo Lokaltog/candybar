@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sys/epoll.h>
 #include <sys/select.h>
 #include <webkit/webkit.h>
 
