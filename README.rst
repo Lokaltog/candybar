@@ -11,6 +11,9 @@ pointing to a static HTML file containing the statusline. It provides a smooth
 looking statusline with CSS transitions and effects and the possibility of having a
 blurred background without a desktop compositor running.
 
+Screenshots are available on `the wiki
+<https://github.com/Lokaltog/wkline/wiki/Screenshots>`_.
+
 Installation
 ------------
 
@@ -24,12 +27,11 @@ Dependencies:
 
 Optional dependencies:
 
-* xcb (desktops/window title widgets)
-* xcb-wm (desktops/window title widgets)
+* xcb + xcb-wm (desktop list and window title widgets)
 * alsa (volume widget)
-* libcurl (weather/remote IP widgets)
-* libdbus (notification daemon widget)
-* libmpdclient (now playing/mpd widget)
+* libcurl (weather and remote IP widgets)
+* libdbus (battery status and notification daemon widgets)
+* libmpdclient (mpd status widget)
 
 Installation instructions::
 
@@ -59,24 +61,3 @@ Configuration
 Copy ``config.json`` to ``$XDG_CONFIG_HOME/wkline/config.json`` (usually at
 ``~/.config/wkline/config.json``) and change the configuration. Please make sure that
 your config file is valid JSON, this can be checked with e.g. ``jsonlint``.
-
-Screenshots
------------
-
-.. image:: http://i.imgur.com/tWGCVze.gif
-   :alt: Notification demo
-
-.. image:: http://i.imgur.com/bIjz45R.gif
-   :alt: Notification demo
-
-.. image:: http://i.imgur.com/CdtPSJi.png
-   :alt: Test script screenshot
-
-.. image:: http://i.imgur.com/qkZjKw6.png
-   :alt: Concept screenshot
-
-.. image:: http://i.imgur.com/whgqRGH.png
-   :alt: Concept screenshot
-
-.. image:: http://i.imgur.com/gpEKgyS.png
-   :alt: Concept screenshot
