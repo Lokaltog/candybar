@@ -141,6 +141,7 @@ main (int argc, char *argv[]) {
 	GtkWindow *window;
 	GtkLayout *layout;
 	GdkScreen *screen;
+	int monitors_num;
 	GdkRectangle dest;
 	WebKitWebView *web_view;
 	struct sigaction sa;
@@ -199,6 +200,11 @@ main (int argc, char *argv[]) {
 
 	/* get window size */
 	screen = gtk_window_get_screen(window);
+	monitors_num = gdk_screen_get_n_monitors(screen);
+	if (monitors_num - 1 < wkline->monitor) {
+		LOG_ERR("invalid monitor index '%i'", wkline->monitor);
+		exit(EXIT_FAILURE);
+	}
 	gdk_screen_get_monitor_geometry(screen, wkline->monitor, &dest);
 
 	wkline->width = dest.width;
