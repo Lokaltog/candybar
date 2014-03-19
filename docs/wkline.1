@@ -1,87 +1,130 @@
-.TH "wkline" 1 "March 2014" "beta" "wkline man page"
-
+'\" t
+.\"     Title: wkline
+.\"    Author: [see the "Authors" section]
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 03/19/2014
+.\"    Manual: Wkline Manual
+.\"    Source: wkline
+.\"  Language: English
+.\"
+.TH "WKLINE" "1" "03/19/2014" "wkline" "Wkline Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
 .SH "NAME"
-wkline \- WebKit-based statusline for tiling window managers
-
+wkline \- WebKit\-based statusline utility for tiling window managers
 .SH "SYNOPSIS"
-.B wkline [-c
-.I config-file
-.B ] [-h
-.I height
-.B ] [-m
-.I monitor
-.B ] [-p
-.I position
-.B ] [-t
-.I theme-uri
-.B ]
-
+.sp
+\fBwkline\fR [\fB\-c\fR \fIconfig\-file\fR | \fB\-h\fR \fIheight\fR | \fB\-m\fR \fImonitor\fR | \fB\-p\fR \fIposition\fR | \fB\-t\fR \fItheme\-uri\fR]
 .SH "DESCRIPTION"
-.B wkline
-displays a HTML-based statusline in a WebKit web view. It provides a smooth looking
-statusline with CSS transitions and effects, and the possibility of having a
-transparent background with effects without a desktop compositor running.
-
+.sp
+\fBwkline\fR displays a HTML\-based statusline in a WebKit web view\&. It provides a smooth looking statusline with CSS transitions and effects, and the possibility of having a transparent background with effects without a desktop compositor running\&.
+.sp
+Screenshots are available on the wkline wiki\&.
 .SH "OPTIONS"
-.IP "-c config-file"
-Read configuration options from the specified \fIconfig-file\fP. \fIconfig-file\fP
-overrides \fIWKLINE_CONFIG_PATH\fP and any system-wide and per-user configuration
-files. The file must exist and be valid JSON.
-.IP "-h height"
-Set the height of the statusline in pixels.
-.IP "-m monitor"
-Define which monitor the statusline appears on.
-.IP "-p position"
-Set the statusline position. Valid options are \fItop\fP and \fIbottom\fP.
-.IP "-t theme-uri"
-Set the URI for a theme HTML file. Must be a valid URI, i.e. local files must be
-prefixed with \fIfile://\fP.
-
-.SH "WINDOW MANAGER SUPPORT"
-.TP 10
-.B bspwm
-supported; requires bspwm to be configured to reserve space with \fIbspc config
-top_padding 24\fP.
-.TP
-.B dwm
-supported; requires the dwm built-in bar to be enabled and set to the same position
-and height as wkline, wkline will be placed on top of the dwm bar.
-.TP
-.B i3wm
-supported
-.TP
-.B monsterwm
-supported
-.TP
-.B qtile
-supported; requires a recent version, support for the required EWMH properties was
-implemented in qtile revision 02fd471.
-
-.SH "FILES"
-.I /etc/xdg/wkline/config.json
-.RS
-System-wide configuration file. See
-.BR wkline (5)
-for further details.
+.PP
+\fB\-c\fR \fIconfig\-file\fR
+.RS 4
+Read configuration options from the specified
+\fIconfig\-file\fR\&. config\-file overrides
+\fIWKLINE_CONFIG_PATH\fR
+and any system\-wide and per\-user configuration files\&. The file must exist and be valid JSON\&.
 .RE
-.I ~/.config/wkline/config.json
-.RS
-Per-user configuration file. See
-.BR wkline (5)
-for further details.
-
+.PP
+\fB\-h\fR \fIheight\fR
+.RS 4
+Set the height of the statusline in pixels\&.
+.RE
+.PP
+\fB\-m\fR \fImonitor\fR
+.RS 4
+Define which monitor the statusline appears on\&.
+.RE
+.PP
+\fB\-p\fR \fIposition\fR
+.RS 4
+Set the statusline position\&. Valid options are
+\fItop\fR
+and
+\fIbottom\fR\&.
+.RE
+.PP
+\fB\-t\fR \fItheme\-uri\fR
+.RS 4
+Set the URI for a theme HTML file\&. Must be a valid URI, i\&.e\&. local files must be prefixed with
+\fIfile://\fR\&.
+.RE
+.SH "WINDOW MANAGER SUPPORT"
+.PP
+\fBbspwm\fR
+.RS 4
+supported; requires bspwm to be configured to reserve space with
+\fIbspc config top_padding 24\fR\&.
+.RE
+.PP
+\fBdwm\fR
+.RS 4
+supported; requires the dwm built\-in bar to be enabled and set to the same position and height as wkline, wkline will be placed on top of the dwm bar\&.
+.RE
+.PP
+\fBi3\fR
+.RS 4
+supported
+.RE
+.PP
+\fBmonsterwm\fR
+.RS 4
+supported
+.RE
+.PP
+\fBqtile\fR
+.RS 4
+supported; requires a recent version, support for desktop EWMH properties was implemented in qtile revision 02fd471\&.
+.RE
+.SH "FILES"
+.PP
+\fI~/\&.config/wkline/config\&.json\fR
+.RS 4
+Per\-user configuration file\&. See
+\fBwkline\fR(5) for further details\&.
+.RE
+.PP
+\fI/etc/xdg/wkline/config\&.json\fR
+.RS 4
+System\-wide configuration file\&. See
+\fBwkline\fR(5) for further details\&.
+.RE
 .SH "ENVIRONMENT"
-.IP WKLINE_CONFIG_PATH
-Full path of an alternate \fIconfig.json\fP. This variable overrides any system-wide
-and per-user configuration files, but does not override the \fI-c\fP command-line
-argument. The file must exist and be valid JSON.
-
-.SH "ISSUES"
-See the issue tracker at
-.I https://github.com/Lokaltog/wkline/issues
-
-.SH "AUTHOR"
-Kim Silkebækken <kim.silkebaekken@gmail.com>
-
+.PP
+\fIWKLINE_CONFIG_PATH\fR
+.RS 4
+Full path of an alternate
+\fIconfig\&.json\fR
+file\&. This variable overrides any system\-wide and per\-user configuration files, but does not override the
+\fB\-c\fR
+command\-line argument\&. The file must exist and be valid JSON\&.
+.RE
+.SH "AUTHORS"
+.sp
+Kim Silkebækken <kim\&.silkebaekken@gmail\&.com>
+.sp
+See https://github\&.com/Lokaltog/wkline/graphs/contributors for a list of all contributors\&.
 .SH "SEE ALSO"
-.BR wkline (5)
+.sp
+\fBwkline\fR(5)
