@@ -1,50 +1,20 @@
 #include "widgets.h"
 #include "volume.h"
 
-static ref_ctx_t *ref_ctx = NULL;
-
-static void
-widget_js_init_cb (JSContextRef ctx, JSObjectRef object) {
-	ref_ctx = calloc(1, sizeof(ref_ctx_t));
-	ref_ctx->context = ctx;
-	ref_ctx->object = object;
-}
-
-static const JSClassDefinition widget_js_def = {
-	0,
-	kJSClassAttributeNone,
-	"VolumeWidget",
-	NULL, NULL, NULL,
-	widget_js_init_cb,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-};
-
 static int
 widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
 	long volume_min, volume_max, volume;
-	int muted;
+	int active;
 
 	snd_mixer_selem_get_playback_volume_range(elem, &volume_min, &volume_max);
 	snd_mixer_selem_get_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, &volume);
-	snd_mixer_selem_get_playback_switch(elem, SND_MIXER_SCHN_FRONT_LEFT, &muted);
+	snd_mixer_selem_get_playback_switch(elem, SND_MIXER_SCHN_FRONT_LEFT, &active);
 
-	/* call onDataChanged callback */
-	JSStringRef string_ondatachanged = JSStringCreateWithUTF8CString("onDataChanged");
-	JSValueRef func = JSObjectGetProperty(ref_ctx->context, ref_ctx->object, string_ondatachanged, NULL);
-	JSObjectRef function = JSValueToObject(ref_ctx->context, func, NULL);
-	JSValueRef function_args[] = {
-		JSValueMakeNumber(ref_ctx->context, 100 * (volume - volume_min) / (volume_max - volume_min)),
-		JSValueMakeBoolean(ref_ctx->context, !muted),
+	JSValueRef args[] = {
+		JSValueMakeNumber(widget->js_context, 100 * (volume - volume_min) / (volume_max - volume_min)),
+		JSValueMakeBoolean(widget->js_context, !active),
 	};
-	JSStringRelease(string_ondatachanged);
-
-	if (!JSObjectIsFunction(ref_ctx->context, function)) {
-		LOG_DEBUG("onDataChanged is not function or is not set");
-
-		return 1;
-	}
-
-	JSObjectCallAsFunction(ref_ctx->context, function, ref_ctx->object, LENGTH(function_args), function_args, NULL);
+	web_view_update(widget, args);
 
 	return 0;
 }
@@ -54,13 +24,6 @@ widget_init (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "card", config.card);
 	widget_init_config_string(widget->config, "selem", config.selem);
-
-	/* init js object */
-	JSClassRef class_def = JSClassCreate(&widget_js_def);
-	JSObjectRef class_obj = JSObjectMake(widget->wkline->wk_context, class_def, widget->wkline->wk_context);
-	JSObjectRef global_obj = JSContextGetGlobalObject(widget->wkline->wk_context);
-	JSStringRef str = JSStringCreateWithUTF8CString("VolumeWidget");
-	JSObjectSetProperty(widget->wkline->wk_context, global_obj, str, class_obj, kJSPropertyAttributeNone, NULL);
 
 	/* open mixer */
 	int err = 0;
@@ -132,9 +95,6 @@ cleanup:
 	}
 	if (mixer != NULL) {
 		snd_mixer_close(mixer);
-	}
-	if (ref_ctx != NULL) {
-		free(ref_ctx);
 	}
 
 	return 0;

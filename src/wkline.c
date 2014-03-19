@@ -107,13 +107,13 @@ web_view_init () {
 	/* set webview settings */
 	web_view_settings = webkit_web_settings_new();
 	g_object_set(G_OBJECT(web_view_settings),
-	             "enable-accelerated-compositing", TRUE,
-	             "enable-css-shaders", TRUE,
+	             "enable-accelerated-compositing", FALSE,
+	             "enable-css-shaders", FALSE,
 	             "enable-dns-prefetching", FALSE,
 	             "enable-java-applet", FALSE,
 	             "enable-plugins", FALSE,
 	             "enable-universal-access-from-file-uris", TRUE,
-	             "enable-webgl", TRUE,
+	             "enable-webgl", FALSE,
 	             "enable-xss-auditor", FALSE,
 	             NULL);
 

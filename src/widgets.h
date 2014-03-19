@@ -20,18 +20,17 @@ struct widget {
 	json_t *config;
 	char *data;
 	struct wkline *wkline;
+	JSContextRef js_context;
+	JSObjectRef js_object;
 };
-
-typedef struct {
-	JSContextRef context;
-	JSObjectRef object;
-} ref_ctx_t;
 
 typedef void (*widget_init_func)(void*);
 
 void join_widget_threads ();
 gboolean web_view_update_widget (struct widget *widget);
-void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data);
+bool web_view_update (struct widget *widget, JSValueRef *args);
+void document_load_finished_cb (WebKitWebView *web_view, WebKitWebFrame *web_frame, void *user_data);
+void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *context, void *window_object, void *user_data);
 
 #define widget_init_config_string(WIDGET, KEY, TARGET) \
 	{ json_t *CONF = get_config_option(WIDGET, KEY, true); \
