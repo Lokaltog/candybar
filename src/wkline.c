@@ -15,7 +15,7 @@ parse_args (int argc, char *argv[], char **config_filename) {
 	int int_arg;
 	char *end;
 
-	while ((opt = getopt(argc, argv, "c:h:p:s:t:")) != -1) {
+	while ((opt = getopt(argc, argv, "c:h:m:p:t:")) != -1) {
 		switch (opt) {
 		case 'c':
 			*config_filename = optarg;
@@ -32,13 +32,13 @@ parse_args (int argc, char *argv[], char **config_filename) {
 			wkline->position = !strcmp(optarg, "bottom")
 			                   ? WKLINE_POSITION_BOTTOM : WKLINE_POSITION_TOP;
 			break;
-		case 's':
+		case 'm':
 			int_arg = strtol(optarg, &end, 10);
 			if (*end) {
-				LOG_ERR("invalid value for 'screen': %s", optarg);
+				LOG_ERR("invalid value for 'monitor': %s", optarg);
 				exit(EXIT_FAILURE);
 			}
-			wkline->screen = int_arg;
+			wkline->monitor = int_arg;
 			break;
 		case 't':
 			wkline->theme_uri = optarg;
@@ -167,7 +167,7 @@ main (int argc, char *argv[]) {
 	/* init wkline configuration */
 	wkline = calloc(1, sizeof(struct wkline));
 	wkline->height = -1; /* default value */
-	wkline->screen = -1; /* default value */
+	wkline->monitor = -1; /* default value */
 	wkline->web_view = web_view;
 	wkline->efd = eventfd(0, 0);
 	if (wkline->efd == -1) {
@@ -187,8 +187,8 @@ main (int argc, char *argv[]) {
 		wkline->position = !strcmp(get_config_option_string(wkline->config, "position"), "bottom")
 		                   ? WKLINE_POSITION_BOTTOM : WKLINE_POSITION_TOP;
 	}
-	if (wkline->screen == -1) {
-		wkline->screen = get_config_option_integer(wkline->config, "screen");
+	if (wkline->monitor == -1) {
+		wkline->monitor = get_config_option_integer(wkline->config, "monitor");
 	}
 
 	json_t *theme_config = get_config_option(wkline->config, "theme", false);
@@ -199,7 +199,7 @@ main (int argc, char *argv[]) {
 
 	/* get window size */
 	screen = gtk_window_get_screen(window);
-	gdk_screen_get_monitor_geometry(screen, wkline->screen, &dest);
+	gdk_screen_get_monitor_geometry(screen, wkline->monitor, &dest);
 
 	wkline->width = dest.width;
 	if (wkline->height == -1) {
