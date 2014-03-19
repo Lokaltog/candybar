@@ -42,6 +42,9 @@ struct widget {
 
 typedef void (*widget_init_func)(void*);
 
+pthread_mutex_t update_mutex;
+pthread_cond_t update_cond;
+
 void join_widget_threads ();
 bool web_view_callback (struct js_callback_data *data);
 void document_load_finished_cb (WebKitWebView *web_view, WebKitWebFrame *web_frame, void *user_data);
@@ -63,7 +66,10 @@ void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void 
 #define widget_data_callback(WIDGET, ...) \
 	{ struct js_callback_arg args[] = { __VA_ARGS__ }; \
 	  struct js_callback_data data = { .widget = WIDGET, .args = args, .args_len = LENGTH(args) }; \
-	  g_idle_add((GSourceFunc)web_view_callback, &data); }
+	  pthread_mutex_lock(&update_mutex); \
+	  g_idle_add((GSourceFunc)web_view_callback, &data); \
+	  pthread_cond_wait(&update_cond, &update_mutex); \
+	  pthread_mutex_unlock(&update_mutex); }
 
 #define MAX_EVENTS 10
 #define widget_epoll_init(WIDGET) \

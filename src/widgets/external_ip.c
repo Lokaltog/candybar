@@ -11,15 +11,14 @@ widget_init (struct widget *widget) {
 	widget_epoll_init(widget);
 	while (true) {
 		external_ip = wkline_curl_request(config.address);
-
 		widget_data_callback(widget,
 		                     { kJSTypeString, .value.string = external_ip });
+		free(external_ip);
 
 		widget_epoll_wait_goto(widget, config.refresh_interval, cleanup);
 	}
 
 cleanup:
-	free(external_ip);
 
 	return 0;
 }

@@ -4,6 +4,9 @@
 static pthread_t *widget_threads = NULL;
 static size_t widgets_len = 0;
 
+pthread_mutex_t update_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t update_cond = PTHREAD_COND_INITIALIZER;
+
 static void
 init_widget_js_obj (void *context, struct widget *widget) {
 	char classname[64];
@@ -109,6 +112,9 @@ web_view_callback (struct js_callback_data *data) {
 	JSValueRef func = JSObjectGetProperty(data->widget->js_context, data->widget->js_object, str_ondatachanged, NULL);
 	JSObjectRef function = JSValueToObject(data->widget->js_context, func, NULL);
 	JSStringRelease(str_ondatachanged);
+
+	/* let the thread know we're done with the data so it can cleanup */
+	pthread_cond_signal(&update_cond);
 
 	if (!JSObjectIsFunction(data->widget->js_context, function)) {
 		LOG_DEBUG("onDataChanged callback for 'widget_%s' is not a function or is not set", data->widget->name);
