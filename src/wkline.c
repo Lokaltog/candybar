@@ -32,13 +32,13 @@ parse_args (int argc, char *argv[], char **config_filename) {
 			wkline->position = !strcmp(optarg, "bottom")
 			                   ? WKLINE_POSITION_BOTTOM : WKLINE_POSITION_TOP;
 			break;
-		case 's':
+		case 'm':
 			int_arg = strtol(optarg, &end, 10);
 			if (*end) {
-				LOG_ERR("invalid value for 'screen': %s", optarg);
+				LOG_ERR("invalid value for 'monitor': %s", optarg);
 				exit(EXIT_FAILURE);
 			}
-			wkline->screen = int_arg;
+			wkline->monitor = int_arg;
 			break;
 		case 't':
 			wkline->theme_uri = optarg;
@@ -199,7 +199,7 @@ main (int argc, char *argv[]) {
 
 	/* get window size */
 	screen = gtk_window_get_screen(window);
-	gdk_screen_get_monitor_geometry(screen, wkline->screen, &dest);
+	gdk_screen_get_monitor_geometry(screen, wkline->monitor, &dest);
 
 	wkline->width = dest.width;
 	if (wkline->height == -1) {
