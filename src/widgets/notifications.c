@@ -70,13 +70,11 @@ widget_update (struct widget *widget, DBusConnection *connection, DBusMessage *m
 	}
 	dbus_message_unref(reply);
 
-	json_t *json_data_object = json_object();
-	json_object_set_new(json_data_object, "appname", json_string(appname));
-	json_object_set_new(json_data_object, "summary", json_string(summary));
-	json_object_set_new(json_data_object, "body", json_string(body));
-	json_object_set_new(json_data_object, "expires", json_integer(expires));
-
-	widget_send_update(json_data_object, widget);
+	widget_data_callback(widget,
+	                     { kJSTypeString, .value.string = appname },
+	                     { kJSTypeString, .value.string = summary },
+	                     { kJSTypeString, .value.string = body },
+	                     { kJSTypeNumber, .value.number = expires });
 
 	return 0;
 }

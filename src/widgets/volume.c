@@ -10,11 +10,9 @@ widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
 	snd_mixer_selem_get_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, &volume);
 	snd_mixer_selem_get_playback_switch(elem, SND_MIXER_SCHN_FRONT_LEFT, &active);
 
-	JSValueRef args[] = {
-		JSValueMakeNumber(widget->js_context, 100 * (volume - volume_min) / (volume_max - volume_min)),
-		JSValueMakeBoolean(widget->js_context, !active),
-	};
-	web_view_update(widget, args);
+	widget_data_callback(widget,
+	                     { kJSTypeNumber, .value.number = 100 * (volume - volume_min) / (volume_max - volume_min) },
+	                     { kJSTypeBoolean, .value.boolean = active })
 
 	return 0;
 }
