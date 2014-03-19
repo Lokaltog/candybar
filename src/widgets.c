@@ -71,45 +71,52 @@ join_widget_threads (struct wkline *wkline) {
 	}
 }
 
-gboolean
-web_view_update_widget (struct widget *widget) {
-	char *script_template = "if(typeof widgets!=='undefined'){"
-	                        "try{widgets.update('%s',%s)}"
-	                        "catch(e){console.log('Could not update widget: '+e)}}";
-	int script_length = 0;
-	char *script;
+bool
+web_view_callback (struct js_callback_data *data) {
+	unsigned short i;
 
-	script_length = snprintf(NULL, 0, script_template, widget->name, widget->data);
-	script = malloc(script_length + 1);
-
-	if (get_config_option_boolean_silent(widget->config, "debug")) {
-		LOG_DEBUG("updating widget %s: %s", widget->name, widget->data);
+	JSValueRef js_args[data->args_len];
+	for (i = 0; i < data->args_len; i++) {
+		switch (data->args[i].type) {
+		case kJSTypeNumber:
+			js_args[i] = JSValueMakeNumber(data->widget->js_context, data->args[i].value.number);
+			break;
+		case kJSTypeBoolean:
+			js_args[i] = JSValueMakeBoolean(data->widget->js_context, data->args[i].value.boolean);
+			break;
+		case kJSTypeUndefined:
+			js_args[i] = JSValueMakeUndefined(data->widget->js_context);
+			break;
+		case kJSTypeNull:
+			js_args[i] = JSValueMakeNull(data->widget->js_context);
+			break;
+		case kJSTypeString: {
+			JSStringRef str = JSStringCreateWithUTF8CString(data->args[i].value.string);
+			js_args[i] = JSValueMakeString(data->widget->js_context, str);
+			JSStringRelease(str);
+			break;
+		}
+		case kJSTypeObject:
+			LOG_WARN("invalid data type returned from widget");
+			js_args[i] = JSValueMakeUndefined(data->widget->js_context);
+			break;
+		}
 	}
 
-	snprintf(script, script_length + 1, script_template, widget->name, widget->data);
-
-	webkit_web_view_execute_script(widget->wkline->web_view, script);
-	free(script);
-
-	return FALSE; /* only run once */
-}
-
-bool
-web_view_update (struct widget *widget, JSValueRef *args) {
 	JSStringRef str_ondatachanged = JSStringCreateWithUTF8CString("onDataChanged");
-	JSValueRef func = JSObjectGetProperty(widget->js_context, widget->js_object, str_ondatachanged, NULL);
-	JSObjectRef function = JSValueToObject(widget->js_context, func, NULL);
+	JSValueRef func = JSObjectGetProperty(data->widget->js_context, data->widget->js_object, str_ondatachanged, NULL);
+	JSObjectRef function = JSValueToObject(data->widget->js_context, func, NULL);
 	JSStringRelease(str_ondatachanged);
 
-	if (!JSObjectIsFunction(widget->js_context, function)) {
-		LOG_DEBUG("onDataChanged callback for '%s' widget is not a function or is not set", widget->name);
+	if (!JSObjectIsFunction(data->widget->js_context, function)) {
+		LOG_DEBUG("onDataChanged callback for '%s' widget is not a function or is not set", data->widget->name);
 
-		return false;
+		return false; /* only run once */
 	}
 
-	JSObjectCallAsFunction(widget->js_context, function, NULL, LENGTH(args), args, NULL);
+	JSObjectCallAsFunction(data->widget->js_context, function, NULL, data->args_len, js_args, NULL);
 
-	return true;
+	return false; /* only run once */
 }
 
 void

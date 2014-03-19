@@ -15,6 +15,22 @@
 #include "util/gdk_helpers.h"
 #include "util/log.h"
 
+struct js_callback_arg {
+	JSType type;
+	union {
+		int number;
+		bool boolean;
+		const char *string;
+		char *null;
+	} value;
+};
+
+struct js_callback_data {
+	struct widget *widget;
+	struct js_callback_arg *args;
+	int args_len;
+};
+
 struct widget {
 	const char *name;
 	json_t *config;
@@ -27,8 +43,7 @@ struct widget {
 typedef void (*widget_init_func)(void*);
 
 void join_widget_threads ();
-gboolean web_view_update_widget (struct widget *widget);
-bool web_view_update (struct widget *widget, JSValueRef *args);
+bool web_view_callback (struct js_callback_data *data);
 void document_load_finished_cb (WebKitWebView *web_view, WebKitWebFrame *web_frame, void *user_data);
 void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *context, void *window_object, void *user_data);
 
@@ -45,10 +60,10 @@ void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void 
 	{ json_t *CONF = get_config_option(WIDGET, KEY, true); \
 	  if (CONF != NULL) { TARGET = json_is_true(CONF); } }
 
-#define widget_send_update(DATA_OBJECT, WIDGET) \
-	WIDGET->data = strdup(json_dumps(DATA_OBJECT, 0)); \
-	g_idle_add((GSourceFunc)web_view_update_widget, WIDGET); \
-	json_decref(DATA_OBJECT);
+#define widget_data_callback(WIDGET, ...) \
+	{ struct js_callback_arg args[] = { __VA_ARGS__ }; \
+	  struct js_callback_data data = { .widget = WIDGET, .args = args, .args_len = LENGTH(args) }; \
+	  g_idle_add((GSourceFunc)web_view_callback, &data); }
 
 #define MAX_EVENTS 10
 #define widget_epoll_init(WIDGET) \
