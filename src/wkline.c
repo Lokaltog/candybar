@@ -203,7 +203,7 @@ main (int argc, char *argv[]) {
 	monitors_num = gdk_screen_get_n_monitors(screen);
 	if (monitors_num - 1 < wkline->monitor) {
 		LOG_ERR("invalid monitor index '%i'", wkline->monitor);
-		exit(EXIT_FAILURE);
+		goto config_err;
 	}
 	gdk_screen_get_monitor_geometry(screen, wkline->monitor, &dest);
 
