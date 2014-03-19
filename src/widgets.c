@@ -6,12 +6,14 @@ static size_t widgets_len = 0;
 
 static void
 init_widget_js_obj (void *context, struct widget *widget) {
-	const JSClassDefinition widget_js_def = { .className = widget->name };
+	char classname[64];
+	snprintf(classname, 64, "widget_%s", widget->name);
+	const JSClassDefinition widget_js_def = { .className = classname };
 
 	JSClassRef class_def = JSClassCreate(&widget_js_def);
 	JSObjectRef class_obj = JSObjectMake(context, class_def, context);
 	JSObjectRef global_obj = JSContextGetGlobalObject(context);
-	JSStringRef str_name = JSStringCreateWithUTF8CString(widget->name);
+	JSStringRef str_name = JSStringCreateWithUTF8CString(classname);
 	JSObjectSetProperty(context, global_obj, str_name, class_obj, kJSPropertyAttributeNone, NULL);
 	JSStringRelease(str_name);
 
@@ -109,7 +111,7 @@ web_view_callback (struct js_callback_data *data) {
 	JSStringRelease(str_ondatachanged);
 
 	if (!JSObjectIsFunction(data->widget->js_context, function)) {
-		LOG_DEBUG("onDataChanged callback for '%s' widget is not a function or is not set", data->widget->name);
+		LOG_DEBUG("onDataChanged callback for 'widget_%s' is not a function or is not set", data->widget->name);
 
 		return false; /* only run once */
 	}
