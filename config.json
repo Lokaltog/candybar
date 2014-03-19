@@ -1,7 +1,7 @@
 {
 	"height": 24,
 	"position": "top",
-	"screen": 0,
+	"monitor": 0,
 	"theme": {
 		"uri": "http://lokaltog.github.io/wkline-theme-default/",
 		"config": {}

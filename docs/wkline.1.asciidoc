@@ -1,0 +1,88 @@
+:man source:   wkline
+:man version:  {revnumber}
+:man manual:   Wkline Manual
+
+wkline(1)
+=========
+
+Name
+----
+
+wkline - WebKit-based statusline utility for tiling window managers
+
+Synopsis
+--------
+
+*wkline* [*-c* _config-file_ | *-h* _height_ | *-m* _monitor_ | *-p* _position_ |
+ *-t* _theme-uri_]
+
+Description
+-----------
+
+*wkline* displays a HTML-based statusline in a WebKit web view. It provides a smooth
+looking statusline with CSS transitions and effects, and the possibility of having a
+transparent background with effects without a desktop compositor running.
+
+Screenshots are available on the
+https://github.com/Lokaltog/wkline/wiki/Screenshots[wkline wiki].
+
+Options
+-------
+
+*-c* _config-file_:: Read configuration options from the specified
+_config-file_. config-file overrides _WKLINE_CONFIG_PATH_ and any system-wide and
+per-user configuration files. The file must exist and be valid JSON.
+
+*-h* _height_:: Set the height of the statusline in pixels.
+
+*-m* _monitor_:: Define which monitor the statusline appears on.
+
+*-p* _position_:: Set the statusline position. Valid options are _top_ and _bottom_.
+
+*-t* _theme-uri_:: Set the URI for a theme HTML file. Must be a valid URI, i.e. local
+files must be prefixed with _file://_.
+
+Window manager support
+----------------------
+
+*bspwm*:: supported; requires bspwm to be configured to reserve space with _bspc
+config top_padding 24_.
+
+*dwm*:: supported; requires the dwm built-in bar to be enabled and set to the same
+position and height as wkline, wkline will be placed on top of the dwm bar.
+
+*i3*:: supported
+
+*monsterwm*:: supported
+
+*qtile*:: supported; requires a recent version, support for desktop EWMH properties
+was implemented in qtile revision 02fd471.
+
+Files
+-----
+
+_~/.config/wkline/config.json_:: Per-user configuration file. See *wkline*(5) for
+further details.
+
+_/etc/xdg/wkline/config.json_:: System-wide configuration file. See *wkline*(5) for
+further details.
+
+Environment
+-----------
+
+_WKLINE_CONFIG_PATH_:: Full path of an alternate _config.json_ file. This variable
+overrides any system-wide and per-user configuration files, but does not override the
+*-c* command-line argument. The file must exist and be valid JSON.
+
+Authors
+-------
+
+Kim Silkebækken <kim.silkebaekken@gmail.com>
+
+See https://github.com/Lokaltog/wkline/graphs/contributors for a list of all
+contributors.
+
+See also
+--------
+
+*wkline*(5)

@@ -1,0 +1,48 @@
+:man source:   wkline
+:man version:  {revnumber}
+:man manual:   Wkline Manual
+
+wkline(5)
+=========
+
+Name
+----
+
+wkline - configuration file for customizing wkline
+
+Synopsis
+--------
+
+_~/.config/wkline/config.json_
+
+_/etc/xdg/wkline/config.json_
+
+Description
+-----------
+
+*config.json* is a JSON file that defines the appearance, enabled widgets and widget
+options for *wkline*(1).
+
+[TODO] add widgets and config options
+
+Files
+-----
+
+_~/.config/wkline/config.json_:: Per-user configuration file. See *wkline*(5) for
+further details.
+
+_/etc/xdg/wkline/config.json_:: System-wide configuration file. See *wkline*(5) for
+further details.
+
+Authors
+-------
+
+Kim Silkebækken <kim.silkebaekken@gmail.com>
+
+See https://github.com/Lokaltog/wkline/graphs/contributors for a list of all
+contributors.
+
+See also
+--------
+
+*wkline*(1)

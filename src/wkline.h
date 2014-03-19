@@ -26,7 +26,7 @@ struct wkline {
 	wkline_position_t position;
 	int width;
 	int height;
-	int screen;
+	int monitor;
 	json_t *config;
 	const char *theme_uri;
 	json_t *theme_config;

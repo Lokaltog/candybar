@@ -50,7 +50,7 @@ void*
 widget_init (struct widget *widget) {
 	unsigned short i;
 	int xcb_fd;
-	int screen_nbr = widget->wkline->screen;
+	int screen_nbr = 0;
 	xcb_window_t cur_win = 0;
 	xcb_connection_t *conn = xcb_connect(NULL, NULL);
 	xcb_ewmh_connection_t *ewmh = malloc(sizeof(xcb_ewmh_connection_t));
