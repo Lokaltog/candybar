@@ -4,12 +4,11 @@ wkline
 :Author: Kim Silkebækken (kim.silkebaekken@gmail.com)
 :Source: https://github.com/Lokaltog/wkline
 
-**WebKit-based status line for tiling window managers.**
+**WebKit-based statusline utility for tiling window managers.**
 
-wkline is a statusline plugin that launches a plain GTK window with a WebKit WebView
-pointing to a static HTML file containing the statusline. It provides a smooth
-looking statusline with CSS transitions and effects and the possibility of having a
-blurred background without a desktop compositor running.
+wkline displays a HTML-based statusline in a WebKit web view. It provides a smooth
+looking statusline with CSS transitions and effects, and the possibility of having a
+transparent background with effects without a desktop compositor running.
 
 Screenshots are available on `the wiki
 <https://github.com/Lokaltog/wkline/wiki/Screenshots>`_.
