@@ -19,11 +19,9 @@ widget_update (struct widget *widget, struct widget_config config) {
 	strftime(datestr, sizeof(datestr), config.date_format, tmp);
 	strftime(timestr, sizeof(timestr), config.time_format, tmp);
 
-	json_t *json_data_object = json_object();
-	json_object_set_new(json_data_object, "date", json_string(datestr));
-	json_object_set_new(json_data_object, "time", json_string(timestr));
-
-	widget_send_update(json_data_object, widget);
+	widget_data_callback(widget,
+	                     { kJSTypeString, .value.string = datestr },
+	                     { kJSTypeString, .value.string = timestr })
 
 	return 0;
 }

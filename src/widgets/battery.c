@@ -17,13 +17,11 @@ widget_update (struct widget *widget, DBusGProxy *properties_proxy, char *dbus_p
 	unsigned int time_to_empty = time_to_empty64 & 0xffffffff;
 	unsigned int time_to_full = time_to_full64 & 0xffffffff;
 
-	json_t *json_data_object = json_object();
-	json_object_set_new(json_data_object, "percentage", json_real(percentage));
-	json_object_set_new(json_data_object, "state", json_integer(state));
-	json_object_set_new(json_data_object, "time_to_empty", json_integer(time_to_empty));
-	json_object_set_new(json_data_object, "time_to_full", json_integer(time_to_full));
-
-	widget_send_update(json_data_object, widget);
+	widget_data_callback(widget,
+	                     { kJSTypeNumber, .value.number = percentage },
+	                     { kJSTypeNumber, .value.number = state },
+	                     { kJSTypeNumber, .value.number = time_to_empty },
+	                     { kJSTypeNumber, .value.number = time_to_full });
 
 	return 0;
 }

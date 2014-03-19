@@ -3,6 +3,7 @@
 
 #include <gmodule.h>
 #include <jansson.h>
+#include <JavaScriptCore/JavaScript.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <string.h>
@@ -14,18 +15,40 @@
 #include "util/gdk_helpers.h"
 #include "util/log.h"
 
+struct js_callback_arg {
+	JSType type;
+	union {
+		int number;
+		bool boolean;
+		const char *string;
+		char *null;
+	} value;
+};
+
+struct js_callback_data {
+	struct widget *widget;
+	struct js_callback_arg *args;
+	int args_len;
+};
+
 struct widget {
 	const char *name;
 	json_t *config;
 	char *data;
 	struct wkline *wkline;
+	JSContextRef js_context;
+	JSObjectRef js_object;
 };
 
 typedef void (*widget_init_func)(void*);
 
+pthread_mutex_t update_mutex;
+pthread_cond_t update_cond;
+
 void join_widget_threads ();
-gboolean web_view_update_widget (struct widget *widget);
-void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpointer context, gpointer window_object, gpointer user_data);
+bool web_view_callback (struct js_callback_data *data);
+void document_load_finished_cb (WebKitWebView *web_view, WebKitWebFrame *web_frame, void *user_data);
+void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *context, void *window_object, void *user_data);
 
 #define widget_init_config_string(WIDGET, KEY, TARGET) \
 	{ json_t *CONF = get_config_option(WIDGET, KEY, true); \
@@ -40,10 +63,13 @@ void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, gpoin
 	{ json_t *CONF = get_config_option(WIDGET, KEY, true); \
 	  if (CONF != NULL) { TARGET = json_is_true(CONF); } }
 
-#define widget_send_update(DATA_OBJECT, WIDGET) \
-	WIDGET->data = strdup(json_dumps(DATA_OBJECT, 0)); \
-	g_idle_add((GSourceFunc)web_view_update_widget, WIDGET); \
-	json_decref(DATA_OBJECT);
+#define widget_data_callback(WIDGET, ...) \
+	{ struct js_callback_arg args[] = { __VA_ARGS__ }; \
+	  struct js_callback_data data = { .widget = WIDGET, .args = args, .args_len = LENGTH(args) }; \
+	  pthread_mutex_lock(&update_mutex); \
+	  g_idle_add((GSourceFunc)web_view_callback, &data); \
+	  pthread_cond_wait(&update_cond, &update_mutex); \
+	  pthread_mutex_unlock(&update_mutex); }
 
 #define MAX_EVENTS 10
 #define widget_epoll_init(WIDGET) \

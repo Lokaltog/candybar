@@ -3,8 +3,6 @@
 
 static int
 widget_update (struct widget *widget, struct mpd_connection *connection) {
-	json_t *json_data_object = json_object();
-
 	struct mpd_song *song;
 	struct mpd_status *status;
 	enum mpd_state state;
@@ -29,12 +27,13 @@ widget_update (struct widget *widget, struct mpd_connection *connection) {
 		mpd_send_current_song(connection);
 
 		while ((song = mpd_recv_song(connection)) != NULL) {
-			json_object_set_new(json_data_object, "title", json_string(mpd_song_get_tag(song, MPD_TAG_TITLE, 0)));
-			json_object_set_new(json_data_object, "artist", json_string(mpd_song_get_tag(song, MPD_TAG_ARTIST, 0)));
-			json_object_set_new(json_data_object, "album", json_string(mpd_song_get_tag(song, MPD_TAG_ALBUM, 0)));
-			json_object_set_new(json_data_object, "total_sec", json_integer(mpd_status_get_total_time(status)));
-			json_object_set_new(json_data_object, "elapsed_sec", json_integer(mpd_status_get_elapsed_time(status)));
-			json_object_set_new(json_data_object, "playing", json_boolean(state == MPD_STATE_PLAY));
+			widget_data_callback(widget,
+			                     { kJSTypeString, .value.string = mpd_song_get_tag(song, MPD_TAG_TITLE, 0) },
+			                     { kJSTypeString, .value.string = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0) },
+			                     { kJSTypeString, .value.string = mpd_song_get_tag(song, MPD_TAG_ALBUM, 0) },
+			                     { kJSTypeNumber, .value.number = mpd_status_get_total_time(status) },
+			                     { kJSTypeNumber, .value.number = mpd_status_get_elapsed_time(status) },
+			                     { kJSTypeBoolean, .value.boolean = state == MPD_STATE_PLAY });
 
 			mpd_song_free(song);
 
@@ -46,18 +45,12 @@ widget_update (struct widget *widget, struct mpd_connection *connection) {
 		}
 	}
 	else {
-		json_object_set_new(json_data_object, "title", json_null());
-		json_object_set_new(json_data_object, "artist", json_null());
-		json_object_set_new(json_data_object, "album", json_null());
-		json_object_set_new(json_data_object, "total_sec", json_null());
-		json_object_set_new(json_data_object, "elapsed_sec", json_null());
-		json_object_set_new(json_data_object, "playing", json_null());
+		widget_data_callback(widget,
+		                     { kJSTypeNull, .value.null = NULL });
 	}
 
 	mpd_status_free(status);
 	mpd_send_idle_mask(connection, MPD_IDLE_PLAYER);
-
-	widget_send_update(json_data_object, widget);
 
 	return 0;
 }

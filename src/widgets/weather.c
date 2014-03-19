@@ -166,12 +166,10 @@ widget_update (struct widget *widget, struct location *location, struct widget_c
 		return -1;
 	}
 
-	json_t *json_data_object = json_object();
-	json_object_set_new(json_data_object, "icon", json_integer(weather->code));
-	json_object_set_new(json_data_object, "temp", json_real(weather->temp));
-	json_object_set_new(json_data_object, "unit", json_string(config.unit));
-
-	widget_send_update(json_data_object, widget);
+	widget_data_callback(widget,
+	                     { kJSTypeNumber, .value.number = weather->code },
+	                     { kJSTypeNumber, .value.number = weather->temp },
+	                     { kJSTypeString, .value.string = config.unit })
 
 	free(weather);
 

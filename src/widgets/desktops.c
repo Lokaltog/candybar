@@ -87,7 +87,12 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 		}
 	}
 
-	widget_send_update(json_data_object, widget);
+	char *json_str = strdup(json_dumps(json_data_object, 0));
+	widget_data_callback(widget,
+	                     { kJSTypeString, .value.string = json_str });
+
+	json_decref(json_data_object);
+	free(json_str);
 
 	/* cleanup */
 	if (desktop_names_success) {

@@ -52,11 +52,9 @@ widget_init (struct widget *widget) {
 	unsigned char *img_data = MagickWriteImageBlob(m_wand, &img_len);
 	char *img_base64 = g_base64_encode(img_data, img_len);
 
-	json_t *json_data_object = json_object();
-	json_object_set_new(json_data_object, "image", json_string(img_base64));
-	json_object_set_new(json_data_object, "gradient_overlay", json_string(config.css_gradient_overlay));
-
-	widget_send_update(json_data_object, widget);
+	widget_data_callback(widget,
+	                     { kJSTypeString, .value.string = img_base64 },
+	                     { kJSTypeString, .value.string = config.css_gradient_overlay });
 
 	g_free(img_base64);
 	DestroyMagickWand(m_wand);

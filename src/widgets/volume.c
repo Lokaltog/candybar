@@ -4,17 +4,15 @@
 static int
 widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
 	long volume_min, volume_max, volume;
-	int muted;
+	int active;
 
 	snd_mixer_selem_get_playback_volume_range(elem, &volume_min, &volume_max);
 	snd_mixer_selem_get_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, &volume);
-	snd_mixer_selem_get_playback_switch(elem, SND_MIXER_SCHN_FRONT_LEFT, &muted);
-	volume *= muted; /* if muted set volume to 0 */
+	snd_mixer_selem_get_playback_switch(elem, SND_MIXER_SCHN_FRONT_LEFT, &active);
 
-	json_t *json_data_object = json_object();
-	json_object_set_new(json_data_object, "percent", json_real(100 * (volume - volume_min) / (volume_max - volume_min)));
-
-	widget_send_update(json_data_object, widget);
+	widget_data_callback(widget,
+	                     { kJSTypeNumber, .value.number = 100 * (volume - volume_min) / (volume_max - volume_min) },
+	                     { kJSTypeBoolean, .value.boolean = active })
 
 	return 0;
 }
@@ -25,6 +23,7 @@ widget_init (struct widget *widget) {
 	widget_init_config_string(widget->config, "card", config.card);
 	widget_init_config_string(widget->config, "selem", config.selem);
 
+	/* open mixer */
 	int err = 0;
 	int mixer_fd;
 	snd_mixer_selem_id_t *sid = NULL;
@@ -33,7 +32,6 @@ widget_init (struct widget *widget) {
 	struct pollfd *pollfds = NULL;
 	unsigned short i;
 
-	/* open mixer */
 	if ((err = snd_mixer_open(&mixer, 0)) < 0) {
 		LOG_ERR("could not open mixer (%i)", err);
 		goto cleanup;

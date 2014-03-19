@@ -70,12 +70,9 @@ widget_update (struct widget *widget, struct widget_config config) {
 
 	free(data);
 
-	/* send json data */
-	json_t *json_data_object = json_object();
-	json_object_set_new(json_data_object, "username", json_string(config.username));
-	json_object_set_new(json_data_object, "unread", json_integer(unread));
-
-	widget_send_update(json_data_object, widget);
+	widget_data_callback(widget,
+	                     { kJSTypeNumber, .value.number = unread },
+	                     { kJSTypeString, .value.string = config.username });
 
 	return 0;
 }
