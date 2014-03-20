@@ -1,6 +1,31 @@
 #include "widgets.h"
 #include "volume.h"
 
+static JSValueRef
+widget_js_func_set_active (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
+	if (!argc) {
+		LOG_WARN("set_active: requires at least one argument");
+		goto error;
+	}
+	if (!JSValueIsBoolean(ctx, argv[0])) {
+		LOG_WARN("set_active: argument 1 must be a boolean");
+		goto error;
+	}
+
+	bool active = JSValueToBoolean(ctx, argv[0]);
+
+	LOG_WARN("set active: %i", active);
+
+error:
+
+	return JSValueMakeUndefined(ctx);
+}
+
+const JSStaticFunction widget_js_staticfuncs[] = {
+	{ "set_active", widget_js_func_set_active, kJSPropertyAttributeReadOnly },
+	{ NULL, NULL, 0 },
+};
+
 static int
 widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
 	long volume_min, volume_max, volume;
