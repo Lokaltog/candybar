@@ -17,7 +17,7 @@ init_widget_js_obj (void *context, struct widget *widget) {
 	};
 
 	JSClassRef class_def = JSClassCreate(&widget_js_def);
-	JSObjectRef class_obj = JSObjectMake(context, class_def, context);
+	JSObjectRef class_obj = JSObjectMake(context, class_def, widget);
 	JSObjectRef global_obj = JSContextGetGlobalObject(context);
 	JSStringRef str_name = JSStringCreateWithUTF8CString(classname);
 	JSObjectSetProperty(context, global_obj, str_name, class_obj, kJSPropertyAttributeNone, NULL);
