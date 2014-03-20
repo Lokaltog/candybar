@@ -1,6 +1,47 @@
 #include "widgets.h"
 #include "desktops.h"
 
+static JSValueRef
+widget_js_func_set_desktop (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
+	if (!argc) {
+		LOG_WARN("set_desktop: requires at least one argument");
+		goto cleanup;
+	}
+	if (!JSValueIsNumber(ctx, argv[0])) {
+		LOG_WARN("set_desktop: argument 1 must be a number");
+		goto cleanup;
+	}
+
+	int desktop = JSValueToNumber(ctx, argv[0], NULL);
+
+	int screen_nbr = 0;
+	xcb_connection_t *conn = xcb_connect(NULL, NULL);
+	xcb_ewmh_connection_t *ewmh = malloc(sizeof(xcb_ewmh_connection_t));
+	if (xcb_connection_has_error(conn)) {
+		LOG_ERR("could not connect to display %s", getenv("DISPLAY"));
+		goto cleanup;
+	}
+	xcb_intern_atom_cookie_t *ewmh_cookie = xcb_ewmh_init_atoms(conn, ewmh);
+	xcb_ewmh_init_atoms_replies(ewmh, ewmh_cookie, NULL);
+
+	xcb_ewmh_request_change_current_desktop(ewmh, screen_nbr, desktop, XCB_CURRENT_TIME);
+
+cleanup:
+	if (ewmh != NULL) {
+		xcb_ewmh_connection_wipe(ewmh);
+	}
+	if (conn != NULL) {
+		xcb_disconnect(conn);
+	}
+
+	return JSValueMakeUndefined(ctx);
+}
+
+const JSStaticFunction widget_js_staticfuncs[] = {
+	{ "set_desktop", widget_js_func_set_desktop, kJSPropertyAttributeReadOnly },
+	{ NULL, NULL, 0 },
+};
+
 static int
 widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nbr) {
 	unsigned short i;
