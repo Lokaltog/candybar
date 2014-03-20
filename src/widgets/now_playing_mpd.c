@@ -55,7 +55,7 @@ widget_update (struct widget *widget, struct mpd_connection *connection) {
 }
 
 void*
-widget_init (struct widget *widget) {
+widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "host", config.host);
 	widget_init_config_integer(widget->config, "port", config.port);

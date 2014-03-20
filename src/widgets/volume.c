@@ -18,7 +18,7 @@ widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
 }
 
 void*
-widget_init (struct widget *widget) {
+widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "card", config.card);
 	widget_init_config_string(widget->config, "selem", config.selem);

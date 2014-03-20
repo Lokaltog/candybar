@@ -22,7 +22,7 @@ widget_update (struct widget *widget, DBusGProxy *properties_proxy, char *dbus_p
 }
 
 void*
-widget_init (struct widget *widget) {
+widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "name", config.name);
 	widget_init_config_integer(widget->config, "refresh_interval", config.refresh_interval);

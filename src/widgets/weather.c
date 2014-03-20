@@ -169,7 +169,7 @@ widget_update (struct widget *widget, struct location *location, struct widget_c
 }
 
 void*
-widget_init (struct widget *widget) {
+widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "location", config.location);
 	widget_init_config_string(widget->config, "unit", config.unit);
