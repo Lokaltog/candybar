@@ -1,0 +1,80 @@
+== Dependencies
+
+* +gtk3+
+* +jansson+
+* +webkitgtk+
+
+=== Optional widget dependencies
+
+[options='header']
+|===
+|Widget |Dependencies
+|+battery+
+|+libdbus+
+
+|+desktops+
+|+xcb+, +xcb-util-wm+
+
+|+email_imap+
+|+libcurl+
+
+|+external_ip+
+|+libcurl+
+
+|+magick_background+
+|+graphicsmagick+
+
+|+notifications+
+|+libdbus+
+
+|+now_playing_mpd+
+|+libmpdclient+
+
+|+volume+
+|+alsa+
+
+|+weather+
+|+libcurl+
+
+|+window_title+
+|+xcb+, +xcb-util-wm+
+|===
+
+== Installation
+
+[source,sh]
+----
+git clone https://github.com/Lokaltog/wkline.git
+cd wkline
+
+./waf configure build
+./waf install
+
+wkline
+----
+
+=== Debug/development build
+
+This is useful for development as it uses a relative library search path, so wkline
+doesn't have to be installed system-wide for widgets to work.
+
+[source,sh]
+----
+./waf clean configure build install \  # <1>
+      --debug \                        # <2>
+      --prefix=/ \                     # <3>
+      --libdir=`pwd`/out/lib/wkline \  # <4>
+      --destdir=out/                   # <5>
+
+out/bin/wkline
+----
+<1> the +clean+ and +configure+ actions are optional after the initial build
+<2> enable debug build (disable optimizations, enable debug logging)
+<3> disable prefixing the destination directory with +/usr/+
+<4> tell +wkline+ to search for widget libraries in the +out/lib/+ directory
+<5> installs into +out/+, remember to change +--libdir+ if you change this directory
+
+== Packages
+
+* Arch Linux
+** https://aur.archlinux.org/packages/wkline-git/[wkline-git]
