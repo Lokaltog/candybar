@@ -5,18 +5,53 @@ static JSValueRef
 widget_js_func_set_active (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
 	if (!argc) {
 		LOG_WARN("set_active: requires at least one argument");
-		goto error;
+		goto cleanup;
 	}
 	if (!JSValueIsBoolean(ctx, argv[0])) {
 		LOG_WARN("set_active: argument 1 must be a boolean");
-		goto error;
+		goto cleanup;
 	}
 
+	struct widget *widget = JSObjectGetPrivate(this);
 	bool active = JSValueToBoolean(ctx, argv[0]);
 
-	LOG_WARN("set active: %i", active);
+	struct widget_config config = widget_config_defaults;
+	widget_init_config_string(widget->config, "card", config.card);
+	widget_init_config_string(widget->config, "selem", config.selem);
 
-error:
+	/* open mixer */
+	int err = 0;
+	snd_mixer_selem_id_t *sid = NULL;
+	snd_mixer_t *mixer = NULL;
+
+	if ((err = snd_mixer_open(&mixer, 0)) < 0) {
+		LOG_ERR("could not open mixer (%i)", err);
+		goto cleanup;
+	}
+	if ((err = snd_mixer_attach(mixer, config.card)) < 0) {
+		LOG_ERR("could not attach card '%s' to mixer (%i)", config.card, err);
+		goto cleanup;
+	}
+	if ((err = snd_mixer_selem_register(mixer, NULL, NULL)) < 0) {
+		LOG_ERR("could not register mixer simple element class (%i)", err);
+		goto cleanup;
+	}
+	if ((err = snd_mixer_load(mixer)) < 0) {
+		LOG_ERR("could not load mixer (%i)", err);
+		goto cleanup;
+	}
+
+	snd_mixer_selem_id_alloca(&sid);
+	snd_mixer_selem_id_set_index(sid, 0);
+	snd_mixer_selem_id_set_name(sid, config.selem);
+	snd_mixer_elem_t *elem = snd_mixer_find_selem(mixer, sid);
+
+	snd_mixer_selem_set_playback_switch_all(elem, active);
+
+cleanup:
+	if (mixer != NULL) {
+		snd_mixer_close(mixer);
+	}
 
 	return JSValueMakeUndefined(ctx);
 }
