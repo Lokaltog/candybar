@@ -37,7 +37,224 @@ wkline \- configuration file for customizing wkline
 .SH "DESCRIPTION"
 .sp
 \fBconfig\&.json\fR is a JSON file that defines the appearance, enabled widgets and widget options for \fBwkline\fR(1)\&.
-.SS "Widgets"
+.SS "Configurable Widget Options"
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBDefaults\fR
+.RS 4
+.PP
+\fIbattery\fR
+.RS 4
+.TS
+tab(:);
+lt lt
+lt lt.
+T{
+name
+T}:T{
+BAT0
+T}
+T{
+refresh_interval
+T}:T{
+20
+T}
+.TE
+.sp 1
+.RE
+.PP
+\fIdatetime\fR
+.RS 4
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt.
+T{
+date_format
+T}:T{
+"%Y\-%m\-%d"
+T}
+T{
+time_format
+T}:T{
+"%H:%M:%S"
+T}
+T{
+refresh_interval
+T}:T{
+1
+T}
+.TE
+.sp 1
+.RE
+.PP
+\fIemail_imap\fR
+.RS 4
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+address
+T}:T{
+imaps://imap\&.gmail\&.com:993/INBOX
+T}
+T{
+username
+T}:T{
+blank
+T}
+T{
+password
+T}:T{
+blank
+T}
+T{
+ssl_verify
+T}:T{
+true
+T}
+T{
+refresh_interval
+T}:T{
+60
+T}
+.TE
+.sp 1
+.RE
+.PP
+\fIexternal_ip\fR
+.RS 4
+.TS
+tab(:);
+lt lt
+lt lt.
+T{
+address
+T}:T{
+http://ipv4\&.icanhazip\&.com
+T}
+T{
+refresh_interval
+T}:T{
+3600
+T}
+.TE
+.sp 1
+.RE
+.PP
+\fImagick_background\fR
+.RS 4
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt.
+T{
+blur_radius
+T}:T{
+0
+T}
+T{
+brightness
+T}:T{
+100
+T}
+T{
+saturation
+T}:T{
+100
+T}
+.TE
+.sp 1
+.RE
+.PP
+\fInow_playing_mpd\fR
+.RS 4
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+host
+T}:T{
+localhost
+T}
+T{
+port
+T}:T{
+6600
+T}
+T{
+timeout
+T}:T{
+5000
+T}
+T{
+update_interval
+T}:T{
+1000
+T}
+.TE
+.sp 1
+.RE
+.PP
+\fIvolume\fR
+.RS 4
+.TS
+tab(:);
+lt lt
+lt lt.
+T{
+card
+T}:T{
+default
+T}
+T{
+selem
+T}:T{
+Master
+T}
+.TE
+.sp 1
+.RE
+.PP
+\fIweather\fR
+.RS 4
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt.
+T{
+location
+T}:T{
+blank
+T}
+T{
+unit
+T}:T{
+c
+T}
+T{
+refresh_interval
+T}:T{
+1800
+T}
+.TE
+.sp 1
+.RE
+.RE
 .sp
 .it 1 an-trap
 .nr an-no-space-flag 1
@@ -46,16 +263,26 @@ wkline \- configuration file for customizing wkline
 .ps +1
 \fBbattery\fR
 .RS 4
-.PP
+.TS
+tab(:);
+lt lt
+lt lt.
+T{
+.sp
 \fIname\fR
-.RS 4
-UPower name for the battery device (default: BAT0)
-.RE
-.PP
+T}:T{
+.sp
+UPower name for the battery device
+T}
+T{
+.sp
 \fIrefresh_interval\fR
-.RS 4
-How quickly to check level in seconds (default: 20)
-.RE
+T}:T{
+.sp
+How quickly to check level in seconds
+T}
+.TE
+.sp 1
 .RE
 .sp
 .it 1 an-trap
@@ -65,21 +292,34 @@ How quickly to check level in seconds (default: 20)
 .ps +1
 \fBdatetime\fR
 .RS 4
-.PP
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt.
+T{
+.sp
 \fIdate_format\fR
-.RS 4
-Date format (default: "%Y\-%m\-%d")
-.RE
-.PP
+T}:T{
+.sp
+Date format\&. %Y, %m, %d are variables
+T}
+T{
+.sp
 \fItime_format\fR
-.RS 4
-Time format (default: "%H:%M:%S")
-.RE
-.PP
+T}:T{
+.sp
+Time format\&. %H, %M, %S are variables
+T}
+T{
+.sp
 \fIrefresh_interval\fR
-.RS 4
-How quickly to refresh in seconds (default: 1)
-.RE
+T}:T{
+.sp
+How quickly to refresh in seconds
+T}
+.TE
+.sp 1
 .RE
 .sp
 .it 1 an-trap
@@ -89,31 +329,50 @@ How quickly to refresh in seconds (default: 1)
 .ps +1
 \fBemail_imap\fR
 .RS 4
-.PP
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
 \fIaddress\fR
-.RS 4
-URL of IMAP server (default: "imaps://imap\&.gmail\&.com:993/INBOX")
-.RE
-.PP
+T}:T{
+.sp
+URL of IMAP server
+T}
+T{
+.sp
 \fIusername\fR
-.RS 4
-Username to log in (default: none)
-.RE
-.PP
+T}:T{
+.sp
+Username to authenticate
+T}
+T{
+.sp
 \fIpassword\fR
-.RS 4
-Password to use (default: none)
-.RE
-.PP
+T}:T{
+.sp
+Password to authenticate
+T}
+T{
+.sp
 \fIssl_verify\fR
-.RS 4
-Use certificate verification (default: true)
-.RE
-.PP
+T}:T{
+.sp
+Use HTTPS certificate verification
+T}
+T{
+.sp
 \fIrefresh_interval\fR
-.RS 4
-How often to check for new mail in seconds (default: 60)
-.RE
+T}:T{
+.sp
+How often to check for new mail in seconds
+T}
+.TE
+.sp 1
 .RE
 .sp
 .it 1 an-trap
@@ -123,16 +382,26 @@ How often to check for new mail in seconds (default: 60)
 .ps +1
 \fBexternal_ip\fR
 .RS 4
-.PP
+.TS
+tab(:);
+lt lt
+lt lt.
+T{
+.sp
 \fIaddress\fR
-.RS 4
-URL to query data (default: "http://ipv4\&.icanhazip\&.com/")
-.RE
-.PP
+T}:T{
+.sp
+URL to query for IP address
+T}
+T{
+.sp
 \fIrefresh_interval\fR
-.RS 4
-How often to check address in seconds (default: 3600)
-.RE
+T}:T{
+.sp
+How often to check address in seconds
+T}
+.TE
+.sp 1
 .RE
 .sp
 .it 1 an-trap
@@ -142,21 +411,34 @@ How often to check address in seconds (default: 3600)
 .ps +1
 \fBmagick_background\fR
 .RS 4
-.PP
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt.
+T{
+.sp
 \fIblur_radius\fR
-.RS 4
-How much blurring to apply (default: 0)
-.RE
-.PP
+T}:T{
+.sp
+How much blurring to apply
+T}
+T{
+.sp
 \fIbrightness\fR
-.RS 4
-Brightness level (default: 100)
-.RE
-.PP
+T}:T{
+.sp
+Brightness level
+T}
+T{
+.sp
 \fIsaturation\fR
-.RS 4
-Saturation level (default: 100)
-.RE
+T}:T{
+.sp
+Saturation level
+T}
+.TE
+.sp 1
 .RE
 .sp
 .it 1 an-trap
@@ -166,26 +448,42 @@ Saturation level (default: 100)
 .ps +1
 \fBnow_playing_mpd\fR
 .RS 4
-.PP
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
 \fIhost\fR
-.RS 4
+T}:T{
+.sp
 Hostname of mpd server (default: "localhost")
-.RE
-.PP
+T}
+T{
+.sp
 \fIport\fR
-.RS 4
+T}:T{
+.sp
 Port of the server (default: "6600")
-.RE
-.PP
+T}
+T{
+.sp
 \fItimeout\fR
-.RS 4
+T}:T{
+.sp
 How to attempt connecting in ms (default: "5000")
-.RE
-.PP
+T}
+T{
+.sp
 \fIupdate_interval\fR
-.RS 4
+T}:T{
+.sp
 How often to update in ms (default: "1000")
-.RE
+T}
+.TE
+.sp 1
 .RE
 .sp
 .it 1 an-trap
@@ -195,16 +493,26 @@ How often to update in ms (default: "1000")
 .ps +1
 \fBvolume\fR
 .RS 4
-.PP
+.TS
+tab(:);
+lt lt
+lt lt.
+T{
+.sp
 \fIcard\fR
-.RS 4
+T}:T{
+.sp
 ALSA sound card to use (default: "default")
-.RE
-.PP
+T}
+T{
+.sp
 \fIselem\fR
-.RS 4
+T}:T{
+.sp
 Which ALSA control to adjust (default: "Master")
-.RE
+T}
+.TE
+.sp 1
 .RE
 .sp
 .it 1 an-trap
@@ -214,21 +522,34 @@ Which ALSA control to adjust (default: "Master")
 .ps +1
 \fBweather\fR
 .RS 4
-.PP
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt.
+T{
+.sp
 \fIlocation\fR
-.RS 4
+T}:T{
+.sp
 ZIP code of requested location (default: none)
-.RE
-.PP
+T}
+T{
+.sp
 \fIunit\fR
-.RS 4
+T}:T{
+.sp
 Farenheit or Centigrade (default: "c")
-.RE
-.PP
+T}
+T{
+.sp
 \fIrefresh_interval\fR
-.RS 4
+T}:T{
+.sp
 How often to check for updates in s (default: "1800")
-.RE
+T}
+.TE
+.sp 1
 .RE
 .SH "FILES"
 .PP
