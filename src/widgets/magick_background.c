@@ -2,7 +2,7 @@
 #include "magick_background.h"
 
 void*
-widget_init (struct widget *widget) {
+widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "image", config.image);
 	widget_init_config_string(widget->config, "css_gradient_overlay", config.css_gradient_overlay);

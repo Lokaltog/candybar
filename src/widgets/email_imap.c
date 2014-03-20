@@ -78,7 +78,7 @@ widget_update (struct widget *widget, struct widget_config config) {
 }
 
 void*
-widget_init (struct widget *widget) {
+widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "address", config.address);
 	widget_init_config_string(widget->config, "username", config.username);

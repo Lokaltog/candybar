@@ -98,8 +98,7 @@ widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
 }
 
 void*
-widget_init (struct widget *widget) {
-	/* open mixer */
+widget_main (struct widget *widget) {
 	int err = 0;
 	int mixer_fd;
 	struct epoll_event mixer_event;

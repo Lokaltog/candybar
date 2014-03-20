@@ -41,7 +41,7 @@ struct widget {
 	JSStaticFunction *js_staticfuncs;
 };
 
-typedef void (*widget_init_t)(void*);
+typedef void (*widget_main_t)(void*);
 
 pthread_mutex_t update_mutex;
 pthread_cond_t update_cond;

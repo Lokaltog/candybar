@@ -29,7 +29,7 @@ init_widget_js_obj (void *context, struct widget *widget) {
 
 static pthread_t
 spawn_widget (struct wkline *wkline, void *context, json_t *config, const char *name) {
-	widget_init_t widget_init;
+	widget_main_t widget_main;
 	char libname[64];
 	snprintf(libname, 64, "libwidget_%s", name);
 	gchar *libpath = g_module_build_path(LIBDIR, libname);
@@ -43,7 +43,7 @@ spawn_widget (struct wkline *wkline, void *context, json_t *config, const char *
 		goto error;
 	}
 
-	if (!g_module_symbol(lib, "widget_init", (void*)&widget_init)) {
+	if (!g_module_symbol(lib, "widget_main", (void*)&widget_main)) {
 		LOG_WARN("loading of '%s' (%s) failed: unable to load module symbol", libpath, name);
 
 		goto error;
@@ -63,7 +63,7 @@ spawn_widget (struct wkline *wkline, void *context, json_t *config, const char *
 
 	init_widget_js_obj(context, widget);
 
-	if (pthread_create(&return_thread, NULL, (void*(*)(void*))widget_init, widget) != 0) {
+	if (pthread_create(&return_thread, NULL, (void*(*)(void*))widget_main, widget) != 0) {
 		LOG_ERR("failed to start widget %s: %s", name, strerror(errno));
 
 		goto error;
