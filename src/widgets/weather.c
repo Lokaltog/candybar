@@ -3,7 +3,7 @@
 
 static struct location*
 get_geoip_location (struct location *location) {
-	json_t *location_data, *geoip_city, *geoip_region_code, *geoip_country_code;
+	json_t *location_data, *geoip_city, *geoip_country_code;
 	json_error_t error;
 
 	char *geoip_raw_json = wkline_curl_request("http://freegeoip.net/json/");
@@ -21,11 +21,6 @@ get_geoip_location (struct location *location) {
 		LOG_ERR("received GeoIP city is not a string");
 		goto error;
 	}
-	geoip_region_code = json_object_get(location_data, "region_code");
-	if (!json_is_string(geoip_region_code)) {
-		LOG_ERR("received GeoIP region code is not a string");
-		goto error;
-	}
 	geoip_country_code = json_object_get(location_data, "country_code");
 	if (!json_is_string(geoip_country_code)) {
 		LOG_ERR("received GeoIP country code is not a string");
@@ -33,7 +28,6 @@ get_geoip_location (struct location *location) {
 	}
 
 	location->city = strdup(json_string_value(geoip_city));
-	location->region_code = strdup(json_string_value(geoip_region_code));
 	location->country_code = strdup(json_string_value(geoip_country_code));
 
 	if (location_data != NULL) {
@@ -58,7 +52,7 @@ get_weather_information (struct location *location) {
 	int query_str_len, request_uri_len;
 	char *query_str, *query_str_escaped, *request_uri;
 	char *query_str_template = "select item.condition.code, item.condition.temp from weather.forecast "
-	                           "where u = 'c' and woeid in (select woeid from geo.places where text = '%s %s %s' limit 1) limit 1;";
+	                           "where u = 'c' and woeid in (select woeid from geo.places where text = '%s %s' limit 1) limit 1;";
 	char *request_uri_template = "http://query.yahooapis.com/v1/public/yql?q=%s&format=json";
 	json_t *weather_data;
 	json_error_t error;
@@ -67,9 +61,9 @@ get_weather_information (struct location *location) {
 
 	curl = curl_easy_init();
 
-	query_str_len = snprintf(NULL, 0, query_str_template, location->city, location->region_code, location->country_code);
+	query_str_len = snprintf(NULL, 0, query_str_template, location->city, location->country_code);
 	query_str = malloc(query_str_len + 1);
-	snprintf(query_str, query_str_len + 1, query_str_template, location->city, location->region_code, location->country_code);
+	snprintf(query_str, query_str_len + 1, query_str_template, location->city, location->country_code);
 
 	query_str_escaped = curl_easy_escape(curl, query_str, 0);
 	request_uri_len = snprintf(NULL, 0, request_uri_template, query_str_escaped);
@@ -185,7 +179,6 @@ widget_init (struct widget *widget) {
 
 	if (strlen(config.location) > 0) {
 		location->city = strdup(config.location);
-		location->region_code = strdup("");
 		location->country_code = strdup("");
 	}
 	else {
@@ -205,9 +198,6 @@ widget_init (struct widget *widget) {
 cleanup:
 	if (location->city != NULL) {
 		free(location->city);
-	}
-	if (location->region_code != NULL) {
-		free(location->region_code);
 	}
 	if (location->country_code != NULL) {
 		free(location->country_code);

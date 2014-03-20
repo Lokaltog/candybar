@@ -2,7 +2,6 @@
 
 struct location {
 	char *city;
-	char *region_code;
 	char *country_code;
 };
 
