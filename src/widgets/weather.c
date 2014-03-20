@@ -57,8 +57,8 @@ static struct weather*
 get_weather_information (struct location *location) {
 	int query_str_len, request_uri_len;
 	char *query_str, *query_str_escaped, *request_uri;
-	char *query_str_template = "use \"http://github.com/yql/yql-tables/raw/master/weather/weather.bylocation.xml\" as we;"
-	                           "select * from we where location=\"%s %s %s\" and unit=\"c\"";
+	char *query_str_template = "select item.condition.code, item.condition.temp from weather.forecast "
+	                           "where u = 'c' and woeid in (select woeid from geo.places where text = '%s %s %s' limit 1) limit 1;";
 	char *request_uri_template = "http://query.yahooapis.com/v1/public/yql?q=%s&format=json";
 	json_t *weather_data;
 	json_error_t error;
@@ -95,8 +95,6 @@ get_weather_information (struct location *location) {
 	json_t *tmp_obj = NULL;
 	tmp_obj = json_object_get(weather_data, "query");
 	tmp_obj = json_object_get(tmp_obj, "results");
-	tmp_obj = json_object_get(tmp_obj, "weather");
-	tmp_obj = json_object_get(tmp_obj, "rss");
 	tmp_obj = json_object_get(tmp_obj, "channel");
 	tmp_obj = json_object_get(tmp_obj, "item");
 	tmp_obj = json_object_get(tmp_obj, "condition");
