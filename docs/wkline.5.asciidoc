@@ -26,14 +26,72 @@ options for *wkline*(1).
 Widgets
 ~~~~~~~
 
-Battery
+battery
 ^^^^^^^
-[height="50%"]
 |========================================================================
-|Name               | Setting
 |name               | UPower name for the battery device (default: BAT0)
 |refresh_interval   | How quickly to check level in seconds (default: 20)
 |========================================================================
+
+
+datetime
+^^^^^^^^
+|===================================================================
+|date_format        | Date format (default: "%Y-%m-%d")
+|time_format        | Time format (default: "%H:%M:%S")
+|refresh_interval   | How quickly to refresh in seconds (default: 1)
+|===================================================================
+
+email_imap
+^^^^^^^^^^
+|=====================================================================================
+|address            | URL of IMAP server (default: "imaps://imap.gmail.com:993/INBOX")
+|username           | Username to log in (default: none)
+|password           | Password to use (default: none)
+|ssl_verify         | Use certificate verification (default: true)
+|refresh_interval   | How often to check for new mail in seconds (default: 60)
+|=====================================================================================
+
+external_ip
+^^^^^^^^^^^
+|==============================================================================
+|address            | URL to query data (default: "http://ipv4.icanhazip.com/")
+|refresh_interval   | How often to check address in seconds (default: 3600)
+|==============================================================================
+
+magick_background
+^^^^^^^^^^^^^^^^^
+|================================================================================
+|image                  | Location of image file (default: none)
+|css_gradient_overlay   | No idea (default: "top, transparent, rgba(0, 0, 0, .5)"
+|blur_radius            | How much blurring to apply (default: 0)
+|brightness             | Brightness level (default: 100)
+|saturation             | Saturation level (default: 100)
+|================================================================================
+
+now_playing_mpd
+^^^^^^^^^^^^^^^
+|==================================================================
+|host           | Hostname of mpd server (default: "localhost")
+|port           | Port of the server (default: "6600")
+|timeout        | How to attempt connecting in ms (default: "5000")
+|update_interval| How often to update in ms (default: "1000")
+|==================================================================
+
+volume
+^^^^^^
+|=========================================================
+|card   | ALSA sound card to use (default: "default")
+|selem  | Which ALSA control to adjust (default: "Master")
+|=========================================================
+
+weather
+^^^^^^^
+|==========================================================================
+|location           | ZIP code of requested location (default: none)
+|unit               | Farenheit or Centigrade (default: "c")
+|refresh_interval   | How often to check for updates in s (default: "1800")
+|==========================================================================
 
 Files
 -----
