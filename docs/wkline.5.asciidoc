@@ -23,8 +23,12 @@ Description
 *config.json* is a JSON file that defines the appearance, enabled widgets and widget
 options for *wkline*(1).
 
-battery
+Widgets
 ~~~~~~~
+
+Battery
+^^^^^^^
+[height="50%"]
 |========================================================================
 |Name               | Setting
 |name               | UPower name for the battery device (default: BAT0)
