@@ -71,8 +71,8 @@ widget_update (struct widget *widget, struct widget_config config) {
 	free(data);
 
 	widget_data_callback(widget,
-	                     { kJSTypeNumber, .value.number = unread },
-	                     { kJSTypeString, .value.string = config.username });
+	                     widget_data_arg_number(unread),
+	                     widget_data_arg_string(config.username));
 
 	return 0;
 }

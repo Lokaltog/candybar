@@ -167,9 +167,9 @@ widget_update (struct widget *widget, struct location *location, struct widget_c
 	}
 
 	widget_data_callback(widget,
-	                     { kJSTypeNumber, .value.number = weather->code },
-	                     { kJSTypeNumber, .value.number = weather->temp },
-	                     { kJSTypeString, .value.string = config.unit })
+	                     widget_data_arg_number(weather->code),
+	                     widget_data_arg_number(weather->temp),
+	                     widget_data_arg_string(config.unit));
 
 	free(weather);
 

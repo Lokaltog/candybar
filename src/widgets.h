@@ -2,7 +2,6 @@
 #define WIDGETS_H
 
 #include <gmodule.h>
-#include <jansson.h>
 #include <JavaScriptCore/JavaScript.h>
 #include <pthread.h>
 #include <stdbool.h>
@@ -18,10 +17,11 @@
 struct js_callback_arg {
 	JSType type;
 	union {
-		int number;
+		JSObjectRef object;
 		bool boolean;
-		const char *string;
 		char *null;
+		const char *string;
+		int number;
 	} value;
 };
 
@@ -70,6 +70,12 @@ void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void 
 	  g_idle_add((GSourceFunc)web_view_callback, &data); \
 	  pthread_cond_wait(&update_cond, &update_mutex); \
 	  pthread_mutex_unlock(&update_mutex); }
+#define widget_data_arg_boolean(ARG) { .type = kJSTypeBoolean, .value.boolean = ARG }
+#define widget_data_arg_null()       { .type = kJSTypeNull, .value.null = NULL }
+#define widget_data_arg_number(ARG)  { .type = kJSTypeNumber, .value.number = ARG }
+#define widget_data_arg_object(ARG)  { .type = kJSTypeObject, .value.object = ARG }
+#define widget_data_arg_string(ARG)  { .type = kJSTypeString, .value.string = ARG }
+#define widget_data_arg_undefined()  { .type = kJSTypeUndefined, .value.null = NULL }
 
 #define MAX_EVENTS 10
 #define widget_epoll_init(WIDGET) \

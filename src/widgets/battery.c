@@ -5,23 +5,18 @@ static int
 widget_update (struct widget *widget, DBusGProxy *properties_proxy, char *dbus_path) {
 	gdouble percentage = 0;
 	guint state = 0;
-	gint64 time_to_empty64 = 0, time_to_full64 = 0;
+	gint64 time_to_empty = 0, time_to_full = 0;
 
 	proxy_double_value(&percentage, properties_proxy, dbus_path, "Percentage");
 	proxy_uint_value(&state, properties_proxy, dbus_path, "State");
-	proxy_int64_value(&time_to_empty64, properties_proxy, dbus_path, "TimeToEmpty");
-	proxy_int64_value(&time_to_full64, properties_proxy, dbus_path, "TimeToFull");
-
-	/* jansson fails with 64-bit integers, but the time left on the battery
-	   should fit in a 32-bit integer */
-	unsigned int time_to_empty = time_to_empty64 & 0xffffffff;
-	unsigned int time_to_full = time_to_full64 & 0xffffffff;
+	proxy_int64_value(&time_to_empty, properties_proxy, dbus_path, "TimeToEmpty");
+	proxy_int64_value(&time_to_full, properties_proxy, dbus_path, "TimeToFull");
 
 	widget_data_callback(widget,
-	                     { kJSTypeNumber, .value.number = percentage },
-	                     { kJSTypeNumber, .value.number = state },
-	                     { kJSTypeNumber, .value.number = time_to_empty },
-	                     { kJSTypeNumber, .value.number = time_to_full });
+	                     widget_data_arg_number(percentage),
+	                     widget_data_arg_number(state),
+	                     widget_data_arg_number(time_to_empty),
+	                     widget_data_arg_number(time_to_full));
 
 	return 0;
 }

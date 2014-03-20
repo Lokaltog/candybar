@@ -71,10 +71,10 @@ widget_update (struct widget *widget, DBusConnection *connection, DBusMessage *m
 	dbus_message_unref(reply);
 
 	widget_data_callback(widget,
-	                     { kJSTypeString, .value.string = appname },
-	                     { kJSTypeString, .value.string = summary },
-	                     { kJSTypeString, .value.string = body },
-	                     { kJSTypeNumber, .value.number = expires });
+	                     widget_data_arg_string(appname),
+	                     widget_data_arg_string(summary),
+	                     widget_data_arg_string(body),
+	                     widget_data_arg_number(expires));
 
 	return 0;
 }

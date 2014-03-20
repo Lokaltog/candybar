@@ -20,8 +20,8 @@ widget_update (struct widget *widget, struct widget_config config) {
 	strftime(timestr, sizeof(timestr), config.time_format, tmp);
 
 	widget_data_callback(widget,
-	                     { kJSTypeString, .value.string = datestr },
-	                     { kJSTypeString, .value.string = timestr })
+	                     widget_data_arg_string(datestr),
+	                     widget_data_arg_string(timestr));
 
 	return 0;
 }

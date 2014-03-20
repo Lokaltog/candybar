@@ -38,8 +38,7 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 		strcpy(window_title, MISSING_VALUE);
 	}
 
-	widget_data_callback(widget,
-	                     { kJSTypeString, .value.string = window_title });
+	widget_data_callback(widget, widget_data_arg_string(window_title));
 
 	return 0;
 }

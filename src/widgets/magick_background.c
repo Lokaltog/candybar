@@ -53,8 +53,8 @@ widget_init (struct widget *widget) {
 	char *img_base64 = g_base64_encode(img_data, img_len);
 
 	widget_data_callback(widget,
-	                     { kJSTypeString, .value.string = img_base64 },
-	                     { kJSTypeString, .value.string = config.css_gradient_overlay });
+	                     widget_data_arg_string(img_base64),
+	                     widget_data_arg_string(config.css_gradient_overlay));
 
 	g_free(img_base64);
 	DestroyMagickWand(m_wand);

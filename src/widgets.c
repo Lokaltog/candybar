@@ -83,17 +83,17 @@ web_view_callback (struct js_callback_data *data) {
 	JSValueRef js_args[data->args_len];
 	for (i = 0; i < data->args_len; i++) {
 		switch (data->args[i].type) {
-		case kJSTypeNumber:
-			js_args[i] = JSValueMakeNumber(data->widget->js_context, data->args[i].value.number);
-			break;
 		case kJSTypeBoolean:
 			js_args[i] = JSValueMakeBoolean(data->widget->js_context, data->args[i].value.boolean);
 			break;
-		case kJSTypeUndefined:
-			js_args[i] = JSValueMakeUndefined(data->widget->js_context);
-			break;
 		case kJSTypeNull:
 			js_args[i] = JSValueMakeNull(data->widget->js_context);
+			break;
+		case kJSTypeNumber:
+			js_args[i] = JSValueMakeNumber(data->widget->js_context, data->args[i].value.number);
+			break;
+		case kJSTypeObject:
+			js_args[i] = data->args[i].value.object;
 			break;
 		case kJSTypeString: {
 			JSStringRef str = JSStringCreateWithUTF8CString(data->args[i].value.string);
@@ -101,8 +101,7 @@ web_view_callback (struct js_callback_data *data) {
 			JSStringRelease(str);
 			break;
 		}
-		case kJSTypeObject:
-			LOG_WARN("invalid data type returned from widget");
+		case kJSTypeUndefined:
 			js_args[i] = JSValueMakeUndefined(data->widget->js_context);
 			break;
 		}

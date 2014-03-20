@@ -11,8 +11,8 @@ widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
 	snd_mixer_selem_get_playback_switch(elem, SND_MIXER_SCHN_FRONT_LEFT, &active);
 
 	widget_data_callback(widget,
-	                     { kJSTypeNumber, .value.number = 100 * (volume - volume_min) / (volume_max - volume_min) },
-	                     { kJSTypeBoolean, .value.boolean = active })
+	                     widget_data_arg_number(100 * (volume - volume_min) / (volume_max - volume_min)),
+	                     widget_data_arg_boolean(active));
 
 	return 0;
 }
