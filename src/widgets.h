@@ -32,15 +32,16 @@ struct js_callback_data {
 };
 
 struct widget {
-	const char *name;
+	char *name;
 	json_t *config;
 	char *data;
 	struct wkline *wkline;
 	JSContextRef js_context;
 	JSObjectRef js_object;
+	JSStaticFunction *js_staticfuncs;
 };
 
-typedef void (*widget_init_func)(void*);
+typedef void (*widget_init_t)(void*);
 
 pthread_mutex_t update_mutex;
 pthread_cond_t update_cond;
