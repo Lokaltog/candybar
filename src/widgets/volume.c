@@ -1,6 +1,51 @@
 #include "widgets.h"
 #include "volume.h"
 
+static bool
+mixer_init (struct widget *widget, snd_mixer_t **mixer, snd_mixer_elem_t **selem) {
+	struct widget_config config = widget_config_defaults;
+	widget_init_config_string(widget->config, "card", config.card);
+	widget_init_config_string(widget->config, "selem", config.selem);
+
+	/* open mixer */
+	int err = 0;
+	snd_mixer_selem_id_t *sid = NULL;
+
+	if ((err = snd_mixer_open(mixer, 0)) < 0) {
+		LOG_ERR("could not open mixer (%i)", err);
+
+		return false;
+	}
+	if ((err = snd_mixer_attach(*mixer, config.card)) < 0) {
+		LOG_ERR("could not attach card '%s' to mixer (%i)", config.card, err);
+
+		return false;
+	}
+	if ((err = snd_mixer_selem_register(*mixer, NULL, NULL)) < 0) {
+		LOG_ERR("could not register mixer simple element class (%i)", err);
+
+		return false;
+	}
+	if ((err = snd_mixer_load(*mixer)) < 0) {
+		LOG_ERR("could not load mixer (%i)", err);
+
+		return false;
+	}
+
+	snd_mixer_selem_id_alloca(&sid);
+	snd_mixer_selem_id_set_index(sid, 0);
+	snd_mixer_selem_id_set_name(sid, config.selem);
+
+	*selem = snd_mixer_find_selem(*mixer, sid);
+	if (*selem == NULL) {
+		LOG_ERR("could not find selem '%s'", config.selem);
+
+		return false;
+	}
+
+	return true;
+}
+
 static JSValueRef
 widget_js_func_set_active (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
 	if (!argc) {
@@ -15,38 +60,13 @@ widget_js_func_set_active (JSContextRef ctx, JSObjectRef func, JSObjectRef this,
 	struct widget *widget = JSObjectGetPrivate(this);
 	bool active = JSValueToBoolean(ctx, argv[0]);
 
-	struct widget_config config = widget_config_defaults;
-	widget_init_config_string(widget->config, "card", config.card);
-	widget_init_config_string(widget->config, "selem", config.selem);
-
-	/* open mixer */
-	int err = 0;
-	snd_mixer_selem_id_t *sid = NULL;
 	snd_mixer_t *mixer = NULL;
-
-	if ((err = snd_mixer_open(&mixer, 0)) < 0) {
-		LOG_ERR("could not open mixer (%i)", err);
-		goto cleanup;
-	}
-	if ((err = snd_mixer_attach(mixer, config.card)) < 0) {
-		LOG_ERR("could not attach card '%s' to mixer (%i)", config.card, err);
-		goto cleanup;
-	}
-	if ((err = snd_mixer_selem_register(mixer, NULL, NULL)) < 0) {
-		LOG_ERR("could not register mixer simple element class (%i)", err);
-		goto cleanup;
-	}
-	if ((err = snd_mixer_load(mixer)) < 0) {
-		LOG_ERR("could not load mixer (%i)", err);
+	snd_mixer_elem_t *selem = NULL;
+	if (!mixer_init(widget, &mixer, &selem)) {
 		goto cleanup;
 	}
 
-	snd_mixer_selem_id_alloca(&sid);
-	snd_mixer_selem_id_set_index(sid, 0);
-	snd_mixer_selem_id_set_name(sid, config.selem);
-	snd_mixer_elem_t *elem = snd_mixer_find_selem(mixer, sid);
-
-	snd_mixer_selem_set_playback_switch_all(elem, active);
+	snd_mixer_selem_set_playback_switch_all(selem, active);
 
 cleanup:
 	if (mixer != NULL) {
@@ -79,40 +99,18 @@ widget_update (struct widget *widget, snd_mixer_elem_t *elem) {
 
 void*
 widget_init (struct widget *widget) {
-	struct widget_config config = widget_config_defaults;
-	widget_init_config_string(widget->config, "card", config.card);
-	widget_init_config_string(widget->config, "selem", config.selem);
-
 	/* open mixer */
 	int err = 0;
 	int mixer_fd;
-	snd_mixer_selem_id_t *sid = NULL;
-	snd_mixer_t *mixer = NULL;
 	struct epoll_event mixer_event;
 	struct pollfd *pollfds = NULL;
 	unsigned short i;
 
-	if ((err = snd_mixer_open(&mixer, 0)) < 0) {
-		LOG_ERR("could not open mixer (%i)", err);
+	snd_mixer_t *mixer = NULL;
+	snd_mixer_elem_t *selem = NULL;
+	if (!mixer_init(widget, &mixer, &selem)) {
 		goto cleanup;
 	}
-	if ((err = snd_mixer_attach(mixer, config.card)) < 0) {
-		LOG_ERR("could not attach card '%s' to mixer (%i)", config.card, err);
-		goto cleanup;
-	}
-	if ((err = snd_mixer_selem_register(mixer, NULL, NULL)) < 0) {
-		LOG_ERR("could not register mixer simple element class (%i)", err);
-		goto cleanup;
-	}
-	if ((err = snd_mixer_load(mixer)) < 0) {
-		LOG_ERR("could not load mixer (%i)", err);
-		goto cleanup;
-	}
-
-	snd_mixer_selem_id_alloca(&sid);
-	snd_mixer_selem_id_set_index(sid, 0);
-	snd_mixer_selem_id_set_name(sid, config.selem);
-	snd_mixer_elem_t *elem = snd_mixer_find_selem(mixer, sid);
 
 	widget_epoll_init(widget);
 
@@ -121,6 +119,7 @@ widget_init (struct widget *widget) {
 	err = snd_mixer_poll_descriptors(mixer, &pollfds[0], pollfds_len);
 	if (err < 0) {
 		LOG_ERR("alsa: can't get poll descriptors: %i", err);
+		goto cleanup;
 	}
 
 	for (i = 0; i < pollfds_len; i++) {
@@ -129,12 +128,11 @@ widget_init (struct widget *widget) {
 		mixer_event.events = EPOLLIN | EPOLLET;
 		if (epoll_ctl(efd, EPOLL_CTL_ADD, mixer_fd, &mixer_event) == -1) {
 			LOG_ERR("failed to add fd to epoll instance: %s", strerror(errno));
-
-			return 0;
+			goto cleanup;
 		}
 	}
 
-	widget_update(widget, elem);
+	widget_update(widget, selem);
 	while (true) {
 		while ((nfds = epoll_wait(efd, events, MAX_EVENTS, -1)) > 0) {
 			for (i = 0; i < nfds; i++) {
@@ -143,7 +141,7 @@ widget_init (struct widget *widget) {
 				}
 			}
 			snd_mixer_handle_events(mixer);
-			widget_update(widget, elem);
+			widget_update(widget, selem);
 		}
 	}
 
