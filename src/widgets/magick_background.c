@@ -147,16 +147,14 @@ widget_main (struct widget *widget) {
 		free(blob);
 		if (status != MagickPass) {
 			LOG_ERR("could not read background from root window");
-
-			return 0;
+			goto cleanup;
 		}
 	}
 	else {
 		status = MagickReadImage(m_wand, config.image);
 		if (status != MagickPass) {
 			LOG_ERR("could not read image %s", config.image);
-
-			return 0;
+			goto cleanup;
 		}
 	}
 
