@@ -16,68 +16,6 @@ screen_of_display (xcb_connection_t *c, int screen) {
 	return NULL;
 }
 
-static unsigned char*
-rgb_to_bmp (uint8_t *rgb, int w, int h) {
-	/* blank bmp headers for 24-bit bitmaps */
-	unsigned char file[14] = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 40 + 14, 0, 0, 0 };
-	unsigned char info[40] = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-	int size_pad = (4 - w % 4) % 4;
-	int size_data = w * h * 3 + h * size_pad;
-	int size_all = size_data + sizeof(file) + sizeof(info);
-
-	unsigned char *ret = malloc(size_all);
-	unsigned int offset = 0;
-
-	file[2] = (unsigned char)(size_all);
-	file[3] = (unsigned char)(size_all >> 8);
-	file[4] = (unsigned char)(size_all >> 16);
-	file[5] = (unsigned char)(size_all >> 24);
-
-	info[4] = (unsigned char)(w);
-	info[5] = (unsigned char)(w >> 8);
-	info[6] = (unsigned char)(w >> 16);
-	info[7] = (unsigned char)(w >> 24);
-
-	info[8] = (unsigned char)(h);
-	info[9] = (unsigned char)(h >> 8);
-	info[10] = (unsigned char)(h >> 16);
-	info[11] = (unsigned char)(h >> 24);
-
-	info[24] = (unsigned char)(size_data);
-	info[25] = (unsigned char)(size_data >> 8);
-	info[26] = (unsigned char)(size_data >> 16);
-	info[27] = (unsigned char)(size_data >> 24);
-
-	memcpy(&ret[offset], file, LENGTH(file));
-	offset += LENGTH(file);
-	memcpy(&ret[offset], info, LENGTH(info));
-	offset += LENGTH(info);
-
-	int pos;
-	int line_len = (3 * (w + 1) / 4) * 4;
-	unsigned char *line = malloc(line_len);
-
-	for (int y = h - 1; y >= 0; y--) {
-		for (int x = 0; x < w; x++) {
-			pos = 4 * (w * y + x);
-
-			/* FIXME should check for endianness, the resulting bg
-			   image may look a bit wonky on big-endian systems */
-			line[3 * x] = rgb[pos];
-			line[3 * x + 1] = rgb[pos + 1];
-			line[3 * x + 2] = rgb[pos + 2];
-		}
-
-		memcpy(&ret[offset], line, line_len);
-		offset += line_len;
-	}
-
-	free(line);
-
-	return ret;
-}
-
 void*
 widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
@@ -87,18 +25,21 @@ widget_main (struct widget *widget) {
 	widget_init_config_integer(widget->config, "brightness", config.brightness);
 	widget_init_config_integer(widget->config, "saturation", config.saturation);
 
-	MagickWand *m_wand = NULL;
-	MagickPassFail status = MagickPass;
-	int width, height;
+	InitializeMagick(NULL);
+
 	xcb_connection_t *conn = NULL;
 	xcb_get_property_reply_t *pixmap_r = NULL;
 	xcb_intern_atom_reply_t *atom_r = NULL;
 	xcb_generic_error_t *err = NULL;
 	xcb_get_image_reply_t *im_r = NULL;
-	char *img_base64 = NULL;
 
-	InitializeMagick(NULL);
-	m_wand = NewMagickWand();
+	size_t img_len;
+	void *img_data;
+	char *img_base64 = NULL;
+	Image *img = NULL;
+	ImageInfo *img_info = CloneImageInfo(0);
+	ExceptionInfo exception;
+	GetExceptionInfo(&exception);
 
 	if (!strlen(config.image)) {
 		int screen_nbr = 0;
@@ -138,45 +79,41 @@ widget_main (struct widget *widget) {
 			goto cleanup;
 		}
 
-		size_t data_len = xcb_get_image_data_length(im_r);
 		uint8_t *data = xcb_get_image_data(im_r);
-		unsigned char *blob = rgb_to_bmp(data, widget->wkline->width, widget->wkline->height);
 
-		status = MagickReadImageBlob(m_wand, blob, data_len);
-
-		free(blob);
-		if (status != MagickPass) {
-			LOG_ERR("could not read background from root window");
+		img = ConstituteImage(widget->wkline->width, widget->wkline->height, "BGRA", CharPixel, data, &exception);
+		strncpy(img->magick, "png", MaxTextExtent - 1);
+		if (exception.severity != UndefinedException) {
+			LOG_ERR("could not read background from root window: %s", exception.reason);
 			goto cleanup;
 		}
 	}
 	else {
-		status = MagickReadImage(m_wand, config.image);
-		if (status != MagickPass) {
-			LOG_ERR("could not read image %s", config.image);
+		strncpy(img_info->filename, config.image, MaxTextExtent - 1);
+		RectangleInfo geom = { widget->wkline->width, widget->wkline->height, 0, 0 };
+		img = ReadImage(img_info, &exception);
+		if (exception.severity != UndefinedException) {
+			LOG_ERR("could not read image '%s': %s", config.image, exception.reason);
 			goto cleanup;
 		}
+		img = CropImage(img, &geom, &exception);
 	}
-
-	width = MagickGetImageWidth(m_wand);
-	height = widget->wkline->height;
-
-	/* modify image */
-	MagickCropImage(m_wand, width, height, 0, 0);
 
 	if (config.blur_radius != 0) {
-		MagickBlurImage(m_wand, config.blur_radius, config.blur_radius);
+		img = GaussianBlurImage(img, config.blur_radius, config.blur_radius, &exception);
 	}
 	if ((config.brightness != 100) || (config.saturation != 100)) {
-		MagickModulateImage(m_wand, config.brightness, config.saturation, 100);
+		char modulate_str[20];
+		snprintf(modulate_str, 19, "%i,%i,%i", config.brightness, config.saturation, 100);
+		ModulateImage(img, (const char*)&modulate_str);
 	}
 
-	/* get image jpg data and encode it to base64 */
-	MagickSetCompressionQuality(m_wand, 95);
-	MagickSetFormat(m_wand, "jpg");
+	img_data = ImageToBlob(img_info, img, &img_len, &exception);
+	if (exception.severity != UndefinedException) {
+		LOG_ERR("could not write image blob: %s", exception.reason);
+		goto cleanup;
+	}
 
-	size_t img_len;
-	unsigned char *img_data = MagickWriteImageBlob(m_wand, &img_len);
 	img_base64 = g_base64_encode(img_data, img_len);
 
 	widget_data_callback(widget,
@@ -185,9 +122,7 @@ widget_main (struct widget *widget) {
 
 cleanup:
 	g_free(img_base64);
-	DestroyMagickWand(m_wand);
 	DestroyMagick();
-
 	if (conn != NULL) {
 		xcb_disconnect(conn);
 	}
@@ -202,6 +137,12 @@ cleanup:
 	}
 	if (im_r != NULL) {
 		free(im_r);
+	}
+	if (img_data != NULL) {
+		free(img_data);
+	}
+	if (img != NULL) {
+		free(img);
 	}
 
 	return 0;
