@@ -165,9 +165,18 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *cont
 
 	LOG_DEBUG("starting %i widget threads", widgets_len);
 	json_array_foreach(widgets, index, widget) {
-		widget_threads[index] = spawn_widget(wkline,
-		                                     context,
-		                                     json_object_get(widget, "config"),
-		                                     json_string_value(json_object_get(widget, "module")));
+		json_t *js_target = json_object_get(widget, "target");
+		if (js_target == NULL) {
+			widget_threads[index] = spawn_widget(wkline,
+							context,
+							json_object_get(widget, "config"),
+							json_string_value(json_object_get(widget, "module")));
+		} else {
+			LOG_DEBUG("yup");
+			widget_threads[index] = spawn_widget(wkline,
+							context,
+							json_object_get(widget, "config"),
+							json_string_value(json_object_get(widget, "target")));
+		}
 	}
 }
