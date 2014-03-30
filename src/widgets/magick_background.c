@@ -92,6 +92,7 @@ widget_main (struct widget *widget) {
 		strncpy(img_info->filename, config.image, MaxTextExtent - 1);
 		RectangleInfo geom = { widget->wkline->width, widget->wkline->height, 0, 0 };
 		img = ReadImage(img_info, &exception);
+		strncpy(img->magick, "png", MaxTextExtent - 1);
 		if (exception.severity != UndefinedException) {
 			LOG_ERR("could not read image '%s': %s", config.image, exception.reason);
 			goto cleanup;
@@ -122,6 +123,7 @@ widget_main (struct widget *widget) {
 
 cleanup:
 	g_free(img_base64);
+	DestroyImageInfo(img_info);
 	DestroyMagick();
 	if (conn != NULL) {
 		xcb_disconnect(conn);
