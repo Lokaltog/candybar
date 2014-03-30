@@ -10,7 +10,7 @@ pthread_cond_t update_cond = PTHREAD_COND_INITIALIZER;
 static void
 init_widget_js_obj (void *context, struct widget *widget) {
 	char classname[64];
-	snprintf(classname, 64, "widget_%s", widget->name);
+	snprintf(classname, 64, "widget_%s", widget->type);
 	const JSClassDefinition widget_js_def = {
 		.className = classname,
 		.staticFunctions = widget->js_staticfuncs,
@@ -50,10 +50,6 @@ spawn_widget (struct wkline *wkline, void *context, json_t *config, const char *
 		goto error;
 	}
 
-	if (g_module_symbol(lib, "widget_type", (void*)&widget_type)) {
-		widget->type = widget_type();
-	}
-
 	JSStaticFunction *js_staticfuncs = calloc(1, sizeof(JSStaticFunction));
 	if (g_module_symbol(lib, "widget_js_staticfuncs", (void*)&js_staticfuncs)) {
 		widget->js_staticfuncs = js_staticfuncs;
@@ -65,6 +61,12 @@ spawn_widget (struct wkline *wkline, void *context, json_t *config, const char *
 	widget->wkline = wkline;
 	widget->config = config;
 	widget->name = strdup(name);
+
+	if (g_module_symbol(lib, "widget_type", (void*)&widget_type)) {
+		widget->type = widget_type();
+	} else {
+		widget->type = widget->name;
+	}
 
 	init_widget_js_obj(context, widget);
 
@@ -144,7 +146,7 @@ web_view_callback (struct js_callback_data *data) {
 	pthread_cond_signal(&update_cond);
 
 	if (!JSObjectIsFunction(data->widget->js_context, function)) {
-		LOG_DEBUG("onDataChanged callback for 'widget_%s' is not a function or is not set", data->widget->name);
+		LOG_DEBUG("onDataChanged callback for 'widget_%s' with type '%s' is not a function or is not set", data->widget->name, data->widget->type);
 
 		return false; /* only run once */
 	}
