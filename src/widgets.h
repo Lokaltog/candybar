@@ -33,6 +33,7 @@ struct js_callback_data {
 
 struct widget {
 	char *name;
+	char *type;
 	json_t *config;
 	char *data;
 	struct wkline *wkline;
@@ -42,6 +43,7 @@ struct widget {
 };
 
 typedef void (*widget_main_t)(void*);
+typedef char* (*widget_type_t)();
 
 pthread_mutex_t update_mutex;
 pthread_cond_t update_cond;

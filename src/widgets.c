@@ -30,6 +30,7 @@ init_widget_js_obj (void *context, struct widget *widget) {
 static pthread_t
 spawn_widget (struct wkline *wkline, void *context, json_t *config, const char *name) {
 	widget_main_t widget_main;
+	widget_type_t widget_type;
 	char libname[64];
 	snprintf(libname, 64, "libwidget_%s", name);
 	gchar *libpath = g_module_build_path(LIBDIR, libname);
@@ -47,6 +48,10 @@ spawn_widget (struct wkline *wkline, void *context, json_t *config, const char *
 		LOG_WARN("loading of '%s' (%s) failed: unable to load module symbol", libpath, name);
 
 		goto error;
+	}
+
+	if (g_module_symbol(lib, "widget_type", (void*)&widget_type)) {
+		widget->type = widget_type();
 	}
 
 	JSStaticFunction *js_staticfuncs = calloc(1, sizeof(JSStaticFunction));
