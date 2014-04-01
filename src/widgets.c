@@ -64,7 +64,8 @@ spawn_widget (struct wkline *wkline, void *context, json_t *config, const char *
 
 	if (g_module_symbol(lib, "widget_type", (void*)&widget_type)) {
 		widget->type = widget_type();
-	} else {
+	}
+	else {
 		widget->type = widget->name;
 	}
 

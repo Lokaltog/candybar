@@ -43,7 +43,7 @@ struct widget {
 };
 
 typedef void (*widget_main_t)(void*);
-typedef char* (*widget_type_t)();
+typedef char*(*widget_type_t)();
 
 pthread_mutex_t update_mutex;
 pthread_cond_t update_cond;
