@@ -2,7 +2,7 @@
 #include "magick_background.h"
 
 void*
-widget_init (struct widget *widget) {
+widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "image", config.image);
 	widget_init_config_string(widget->config, "css_gradient_overlay", config.css_gradient_overlay);
@@ -53,8 +53,8 @@ widget_init (struct widget *widget) {
 	char *img_base64 = g_base64_encode(img_data, img_len);
 
 	widget_data_callback(widget,
-	                     { kJSTypeString, .value.string = img_base64 },
-	                     { kJSTypeString, .value.string = config.css_gradient_overlay });
+	                     widget_data_arg_string(img_base64),
+	                     widget_data_arg_string(config.css_gradient_overlay));
 
 	g_free(img_base64);
 	DestroyMagickWand(m_wand);

@@ -10,11 +10,14 @@ pthread_cond_t update_cond = PTHREAD_COND_INITIALIZER;
 static void
 init_widget_js_obj (void *context, struct widget *widget) {
 	char classname[64];
-	snprintf(classname, 64, "widget_%s", widget->name);
-	const JSClassDefinition widget_js_def = { .className = classname };
+	snprintf(classname, 64, "widget_%s", widget->type);
+	const JSClassDefinition widget_js_def = {
+		.className = classname,
+		.staticFunctions = widget->js_staticfuncs,
+	};
 
 	JSClassRef class_def = JSClassCreate(&widget_js_def);
-	JSObjectRef class_obj = JSObjectMake(context, class_def, context);
+	JSObjectRef class_obj = JSObjectMake(context, class_def, widget);
 	JSObjectRef global_obj = JSContextGetGlobalObject(context);
 	JSStringRef str_name = JSStringCreateWithUTF8CString(classname);
 	JSObjectSetProperty(context, global_obj, str_name, class_obj, kJSPropertyAttributeNone, NULL);
@@ -26,38 +29,66 @@ init_widget_js_obj (void *context, struct widget *widget) {
 
 static pthread_t
 spawn_widget (struct wkline *wkline, void *context, json_t *config, const char *name) {
-	widget_init_func widget_init;
+	widget_main_t widget_main;
+	widget_type_t widget_type;
 	char libname[64];
 	snprintf(libname, 64, "libwidget_%s", name);
 	gchar *libpath = g_module_build_path(LIBDIR, libname);
 	GModule *lib = g_module_open(libpath, G_MODULE_BIND_LOCAL);
 	pthread_t return_thread;
+	struct widget *widget = calloc(1, sizeof(struct widget));
 
 	if (lib == NULL) {
 		LOG_WARN("loading of '%s' (%s) failed", libpath, name);
 
-		return 0;
+		goto error;
 	}
 
-	if (!g_module_symbol(lib, "widget_init", (void*)&widget_init)) {
+	if (!g_module_symbol(lib, "widget_main", (void*)&widget_main)) {
 		LOG_WARN("loading of '%s' (%s) failed: unable to load module symbol", libpath, name);
 
-		return 0;
+		goto error;
 	}
 
-	struct widget *widget = malloc(sizeof(struct widget));
+	JSStaticFunction *js_staticfuncs = calloc(1, sizeof(JSStaticFunction));
+	if (g_module_symbol(lib, "widget_js_staticfuncs", (void*)&js_staticfuncs)) {
+		widget->js_staticfuncs = js_staticfuncs;
+	}
+	else {
+		free(js_staticfuncs);
+	}
 
 	widget->wkline = wkline;
 	widget->config = config;
-	widget->name = strdup(name); /* don't forget to free this one */
+	widget->name = strdup(name);
+
+	if (g_module_symbol(lib, "widget_type", (void*)&widget_type)) {
+		widget->type = widget_type();
+	}
+	else {
+		widget->type = widget->name;
+	}
 
 	init_widget_js_obj(context, widget);
 
-	if (pthread_create(&return_thread, NULL, (void*(*)(void*))widget_init, widget) != 0) {
+	if (pthread_create(&return_thread, NULL, (void*(*)(void*))widget_main, widget) != 0) {
 		LOG_ERR("failed to start widget %s: %s", name, strerror(errno));
+
+		goto error;
 	}
 
 	return return_thread;
+
+error:
+	if (widget->name != NULL) {
+		free(widget->name);
+	}
+	if (widget->js_staticfuncs != NULL) {
+		free(widget->js_staticfuncs);
+	}
+	free(widget);
+
+	return 0;
 }
 
 void
@@ -83,17 +114,17 @@ web_view_callback (struct js_callback_data *data) {
 	JSValueRef js_args[data->args_len];
 	for (i = 0; i < data->args_len; i++) {
 		switch (data->args[i].type) {
-		case kJSTypeNumber:
-			js_args[i] = JSValueMakeNumber(data->widget->js_context, data->args[i].value.number);
-			break;
 		case kJSTypeBoolean:
 			js_args[i] = JSValueMakeBoolean(data->widget->js_context, data->args[i].value.boolean);
 			break;
-		case kJSTypeUndefined:
-			js_args[i] = JSValueMakeUndefined(data->widget->js_context);
-			break;
 		case kJSTypeNull:
 			js_args[i] = JSValueMakeNull(data->widget->js_context);
+			break;
+		case kJSTypeNumber:
+			js_args[i] = JSValueMakeNumber(data->widget->js_context, data->args[i].value.number);
+			break;
+		case kJSTypeObject:
+			js_args[i] = data->args[i].value.object;
 			break;
 		case kJSTypeString: {
 			JSStringRef str = JSStringCreateWithUTF8CString(data->args[i].value.string);
@@ -101,8 +132,7 @@ web_view_callback (struct js_callback_data *data) {
 			JSStringRelease(str);
 			break;
 		}
-		case kJSTypeObject:
-			LOG_WARN("invalid data type returned from widget");
+		case kJSTypeUndefined:
 			js_args[i] = JSValueMakeUndefined(data->widget->js_context);
 			break;
 		}
@@ -117,7 +147,7 @@ web_view_callback (struct js_callback_data *data) {
 	pthread_cond_signal(&update_cond);
 
 	if (!JSObjectIsFunction(data->widget->js_context, function)) {
-		LOG_DEBUG("onDataChanged callback for 'widget_%s' is not a function or is not set", data->widget->name);
+		LOG_DEBUG("onDataChanged callback for 'widget_%s' with type '%s' is not a function or is not set", data->widget->name, data->widget->type);
 
 		return false; /* only run once */
 	}

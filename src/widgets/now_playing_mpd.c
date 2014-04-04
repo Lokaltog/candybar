@@ -28,12 +28,12 @@ widget_update (struct widget *widget, struct mpd_connection *connection) {
 
 		while ((song = mpd_recv_song(connection)) != NULL) {
 			widget_data_callback(widget,
-			                     { kJSTypeString, .value.string = mpd_song_get_tag(song, MPD_TAG_TITLE, 0) },
-			                     { kJSTypeString, .value.string = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0) },
-			                     { kJSTypeString, .value.string = mpd_song_get_tag(song, MPD_TAG_ALBUM, 0) },
-			                     { kJSTypeNumber, .value.number = mpd_status_get_total_time(status) },
-			                     { kJSTypeNumber, .value.number = mpd_status_get_elapsed_time(status) },
-			                     { kJSTypeBoolean, .value.boolean = state == MPD_STATE_PLAY });
+			                     widget_data_arg_string(mpd_song_get_tag(song, MPD_TAG_TITLE, 0)),
+			                     widget_data_arg_string(mpd_song_get_tag(song, MPD_TAG_ARTIST, 0)),
+			                     widget_data_arg_string(mpd_song_get_tag(song, MPD_TAG_ALBUM, 0)),
+			                     widget_data_arg_number(mpd_status_get_total_time(status)),
+			                     widget_data_arg_number(mpd_status_get_elapsed_time(status)),
+			                     widget_data_arg_boolean(state == MPD_STATE_PLAY));
 
 			mpd_song_free(song);
 
@@ -45,8 +45,7 @@ widget_update (struct widget *widget, struct mpd_connection *connection) {
 		}
 	}
 	else {
-		widget_data_callback(widget,
-		                     { kJSTypeNull, .value.null = NULL });
+		widget_data_callback(widget, widget_data_arg_null());
 	}
 
 	mpd_status_free(status);
@@ -56,7 +55,7 @@ widget_update (struct widget *widget, struct mpd_connection *connection) {
 }
 
 void*
-widget_init (struct widget *widget) {
+widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "host", config.host);
 	widget_init_config_integer(widget->config, "port", config.port);

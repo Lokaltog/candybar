@@ -71,14 +71,14 @@ widget_update (struct widget *widget, struct widget_config config) {
 	free(data);
 
 	widget_data_callback(widget,
-	                     { kJSTypeNumber, .value.number = unread },
-	                     { kJSTypeString, .value.string = config.username });
+	                     widget_data_arg_number(unread),
+	                     widget_data_arg_string(config.username));
 
 	return 0;
 }
 
 void*
-widget_init (struct widget *widget) {
+widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "address", config.address);
 	widget_init_config_string(widget->config, "username", config.username);

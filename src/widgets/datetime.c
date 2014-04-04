@@ -20,14 +20,14 @@ widget_update (struct widget *widget, struct widget_config config) {
 	strftime(timestr, sizeof(timestr), config.time_format, tmp);
 
 	widget_data_callback(widget,
-	                     { kJSTypeString, .value.string = datestr },
-	                     { kJSTypeString, .value.string = timestr })
+	                     widget_data_arg_string(datestr),
+	                     widget_data_arg_string(timestr));
 
 	return 0;
 }
 
 void*
-widget_init (struct widget *widget) {
+widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "date_format", config.date_format);
 	widget_init_config_string(widget->config, "time_format", config.time_format);

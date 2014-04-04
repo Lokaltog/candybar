@@ -88,8 +88,7 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 	}
 
 	char *json_str = strdup(json_dumps(json_data_object, 0));
-	widget_data_callback(widget,
-	                     { kJSTypeString, .value.string = json_str });
+	widget_data_callback(widget, widget_data_arg_string(json_str));
 
 	json_decref(json_data_object);
 	free(json_str);
@@ -110,7 +109,7 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 }
 
 void*
-widget_init (struct widget *widget) {
+widget_main (struct widget *widget) {
 	unsigned short i;
 	int xcb_fd;
 	int screen_nbr = 0;
