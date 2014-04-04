@@ -44,93 +44,6 @@ wkline \- configuration file for customizing wkline
 .nr an-break-flag 1
 .br
 .ps +1
-\fBDefaults\fR
-.RS 4
-.PP
-\fInow_playing_mpd\fR
-.RS 4
-.TS
-tab(:);
-lt lt
-lt lt
-lt lt
-lt lt.
-T{
-host
-T}:T{
-localhost
-T}
-T{
-port
-T}:T{
-6600
-T}
-T{
-timeout
-T}:T{
-5000
-T}
-T{
-update_interval
-T}:T{
-1000
-T}
-.TE
-.sp 1
-.RE
-.PP
-\fIvolume\fR
-.RS 4
-.TS
-tab(:);
-lt lt
-lt lt.
-T{
-card
-T}:T{
-default
-T}
-T{
-selem
-T}:T{
-Master
-T}
-.TE
-.sp 1
-.RE
-.PP
-\fIweather\fR
-.RS 4
-.TS
-tab(:);
-lt lt
-lt lt
-lt lt.
-T{
-location
-T}:T{
-blank
-T}
-T{
-unit
-T}:T{
-c
-T}
-T{
-refresh_interval
-T}:T{
-1800
-T}
-.TE
-.sp 1
-.RE
-.RE
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
 \fBbattery\fR
 .RS 4
 .PP
@@ -138,11 +51,15 @@ T}
 .RS 4
 UPower name for the battery device
 .RE
+.sp
+default: BAT0
 .PP
 \fIrefresh_interval\fR
 .RS 4
 How quickly to check level in seconds
 .RE
+.sp
+default: 20
 .RE
 .sp
 .it 1 an-trap
@@ -152,30 +69,27 @@ How quickly to check level in seconds
 .ps +1
 \fBdatetime\fR
 .RS 4
-.TS
-tab(:);
-lt lt.
-T{
-.sp
+.PP
 \fIdate_format\fR
-T}:T{
-.sp
+.RS 4
 Date format\&. %Y, %m, %d are variables
-T}
-.TE
-.sp 1
+.RE
 .sp
 default: "%Y\-%m\-%d"
 .PP
 \fItime_format\fR
 .RS 4
-Time format\&. %H, %M, %S are variables default: "%H:%M:%S"
+Time format\&. %H, %M, %S are variables
 .RE
+.sp
+default: "%H:%M:%S"
 .PP
 \fIrefresh_interval\fR
 .RS 4
-How quickly to refresh in seconds default: 1
+How quickly to refresh in seconds
 .RE
+.sp
+default: 1
 .RE
 .sp
 .it 1 an-trap
@@ -185,50 +99,41 @@ How quickly to refresh in seconds default: 1
 .ps +1
 \fBemail_imap\fR
 .RS 4
-.TS
-tab(:);
-lt lt
-lt lt
-lt lt
-lt lt
-lt lt.
-T{
-.sp
+.PP
 \fIaddress\fR
-T}:T{
+.RS 4
+URL of IMAP server
+.RE
 .sp
-URL of IMAP server default: imaps://imap\&.gmail\&.com:993/INBOX
-T}
-T{
-.sp
+default: imaps://imap\&.gmail\&.com:993/INBOX
+.PP
 \fIusername\fR
-T}:T{
+.RS 4
+Username to authenticate
+.RE
 .sp
-Username to authenticate default: none
-T}
-T{
-.sp
+default: none
+.PP
 \fIpassword\fR
-T}:T{
+.RS 4
+Password to authenticate
+.RE
 .sp
-Password to authenticate default: none
-T}
-T{
-.sp
+default: none
+.PP
 \fIssl_verify\fR
-T}:T{
+.RS 4
+Use HTTPS certificate verification
+.RE
 .sp
-Use HTTPS certificate verification default: true
-T}
-T{
-.sp
+default: true
+.PP
 \fIrefresh_interval\fR
-T}:T{
+.RS 4
+How often to check for new mail in seconds
+.RE
 .sp
-How often to check for new mail in seconds default: 60
-T}
-.TE
-.sp 1
+default: 60
 .RE
 .sp
 .it 1 an-trap
@@ -238,26 +143,20 @@ T}
 .ps +1
 \fBexternal_ip\fR
 .RS 4
-.TS
-tab(:);
-lt lt
-lt lt.
-T{
-.sp
+.PP
 \fIaddress\fR
-T}:T{
+.RS 4
+URL to query for IP address
+.RE
 .sp
-URL to query for IP address default: http://ipv4\&.icanhazip\&.com
-T}
-T{
-.sp
+default: http://ipv4\&.icanhazip\&.com
+.PP
 \fIrefresh_interval\fR
-T}:T{
+.RS 4
+How often to check address in seconds
+.RE
 .sp
-How often to check address in seconds default: 3600
-T}
-.TE
-.sp 1
+default: 3600
 .RE
 .sp
 .it 1 an-trap
@@ -267,34 +166,27 @@ T}
 .ps +1
 \fBmagick_background\fR
 .RS 4
-.TS
-tab(:);
-lt lt
-lt lt
-lt lt.
-T{
-.sp
+.PP
 \fIblur_radius\fR
-T}:T{
+.RS 4
+How much blurring to apply
+.RE
 .sp
-How much blurring to apply default: 0
-T}
-T{
-.sp
+default: 0
+.PP
 \fIbrightness\fR
-T}:T{
+.RS 4
+Brightness level
+.RE
 .sp
-Brightness level default: 100
-T}
-T{
-.sp
+default: 100
+.PP
 \fIsaturation\fR
-T}:T{
+.RS 4
+Saturation level
+.RE
 .sp
-Saturation level default: 100
-T}
-.TE
-.sp 1
+default: 100
 .RE
 .sp
 .it 1 an-trap
@@ -304,42 +196,34 @@ T}
 .ps +1
 \fBnow_playing_mpd\fR
 .RS 4
-.TS
-tab(:);
-lt lt
-lt lt
-lt lt
-lt lt.
-T{
-.sp
+.PP
 \fIhost\fR
-T}:T{
-.sp
+.RS 4
 Hostname of mpd server
-T}
-T{
+.RE
 .sp
+default: localhost
+.PP
 \fIport\fR
-T}:T{
-.sp
+.RS 4
 Port of the server
-T}
-T{
+.RE
 .sp
+default: 6600
+.PP
 \fItimeout\fR
-T}:T{
-.sp
+.RS 4
 How to attempt connecting in ms
-T}
-T{
+.RE
 .sp
+default: 5000
+.PP
 \fIupdate_interval\fR
-T}:T{
-.sp
+.RS 4
 How often to update in ms
-T}
-.TE
-.sp 1
+.RE
+.sp
+default: 1000
 .RE
 .sp
 .it 1 an-trap
@@ -349,26 +233,20 @@ T}
 .ps +1
 \fBvolume\fR
 .RS 4
-.TS
-tab(:);
-lt lt
-lt lt.
-T{
-.sp
+.PP
 \fIcard\fR
-T}:T{
-.sp
+.RS 4
 ALSA sound card to use
-T}
-T{
+.RE
 .sp
+default: default
+.PP
 \fIselem\fR
-T}:T{
-.sp
+.RS 4
 Which ALSA control to adjust
-T}
-.TE
-.sp 1
+.RE
+.sp
+default: Master
 .RE
 .sp
 .it 1 an-trap
@@ -378,34 +256,27 @@ T}
 .ps +1
 \fBweather\fR
 .RS 4
-.TS
-tab(:);
-lt lt
-lt lt
-lt lt.
-T{
-.sp
+.PP
 \fIlocation\fR
-T}:T{
-.sp
+.RS 4
 ZIP code of requested location
-T}
-T{
+.RE
 .sp
+default: none
+.PP
 \fIunit\fR
-T}:T{
-.sp
+.RS 4
 Farenheit or Centigrade, c or f
-T}
-T{
+.RE
 .sp
+default: c
+.PP
 \fIrefresh_interval\fR
-T}:T{
-.sp
+.RS 4
 How often to check for updates in seconds
-T}
-.TE
-.sp 1
+.RE
+.sp
+default: 1800
 .RE
 .SH "FILES"
 .PP
