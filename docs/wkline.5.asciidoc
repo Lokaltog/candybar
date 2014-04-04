@@ -27,36 +27,6 @@ Configurable Widget Options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Defaults
 ^^^^^^^^
-'battery'::
-[horizontal]
-    name;; BAT0
-    refresh_interval;; 20
-
-'datetime'::
-[horizontal]
-    date_format;; "%Y-%m-%d"
-    time_format;; "%H:%M:%S"
-    refresh_interval;; 1
-
-'email_imap'::
-[horizontal]
-    address;; imaps://imap.gmail.com:993/INBOX
-    username;; blank
-    password;; blank
-    ssl_verify;; true
-    refresh_interval;; 60
-
-'external_ip'::
-[horizontal]
-    address;; http://ipv4.icanhazip.com
-    refresh_interval;; 3600
-
-'magick_background'::
-[horizontal]
-    blur_radius;; 0
-    brightness;; 100
-    saturation;; 100
-
 'now_playing_mpd'::
 [horizontal]
     host;; localhost
@@ -77,9 +47,9 @@ Defaults
 
 battery
 ^^^^^^^
-[horizontal]
 'name'::
     UPower name for the battery device
+
 'refresh_interval'::
     How quickly to check level in seconds
 
@@ -87,43 +57,58 @@ datetime
 ^^^^^^^^
 [horizontal]
 'date_format'::
-    Date format. %Y, %m, %d are variables 
+    Date format. %Y, %m, %d are variables
+
+default: "%Y-%m-%d"
+
 'time_format'::
     Time format. %H, %M, %S are variables
+default: "%H:%M:%S"
 'refresh_interval'::
     How quickly to refresh in seconds
+default: 1
 
 email_imap
 ^^^^^^^^^^
 [horizontal]
 'address'::
     URL of IMAP server
+default: imaps://imap.gmail.com:993/INBOX
 'username'::
     Username to authenticate
+default: none
 'password'::
     Password to authenticate
+default: none
 'ssl_verify'::
     Use HTTPS certificate verification
+default: true
 'refresh_interval'::
     How often to check for new mail in seconds
+default: 60
 
 external_ip
 ^^^^^^^^^^^
 [horizontal]
 'address'::
     URL to query for IP address
+default: http://ipv4.icanhazip.com 
 'refresh_interval'::
     How often to check address in seconds
+default: 3600
 
 magick_background
 ^^^^^^^^^^^^^^^^^
 [horizontal]
 'blur_radius'::
     How much blurring to apply
+default: 0
 'brightness'::
     Brightness level
+default: 100
 'saturation'::
     Saturation level
+default: 100
 
 now_playing_mpd
 ^^^^^^^^^^^^^^^

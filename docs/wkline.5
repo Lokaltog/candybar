@@ -2,12 +2,12 @@
 .\"     Title: wkline
 .\"    Author: [see the "Authors" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 03/20/2014
+.\"      Date: 04/04/2014
 .\"    Manual: Wkline Manual
 .\"    Source: wkline
 .\"  Language: English
 .\"
-.TH "WKLINE" "5" "03/20/2014" "wkline" "Wkline Manual"
+.TH "WKLINE" "5" "04/04/2014" "wkline" "Wkline Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -46,136 +46,6 @@ wkline \- configuration file for customizing wkline
 .ps +1
 \fBDefaults\fR
 .RS 4
-.PP
-\fIbattery\fR
-.RS 4
-.TS
-tab(:);
-lt lt
-lt lt.
-T{
-name
-T}:T{
-BAT0
-T}
-T{
-refresh_interval
-T}:T{
-20
-T}
-.TE
-.sp 1
-.RE
-.PP
-\fIdatetime\fR
-.RS 4
-.TS
-tab(:);
-lt lt
-lt lt
-lt lt.
-T{
-date_format
-T}:T{
-"%Y\-%m\-%d"
-T}
-T{
-time_format
-T}:T{
-"%H:%M:%S"
-T}
-T{
-refresh_interval
-T}:T{
-1
-T}
-.TE
-.sp 1
-.RE
-.PP
-\fIemail_imap\fR
-.RS 4
-.TS
-tab(:);
-lt lt
-lt lt
-lt lt
-lt lt
-lt lt.
-T{
-address
-T}:T{
-imaps://imap\&.gmail\&.com:993/INBOX
-T}
-T{
-username
-T}:T{
-blank
-T}
-T{
-password
-T}:T{
-blank
-T}
-T{
-ssl_verify
-T}:T{
-true
-T}
-T{
-refresh_interval
-T}:T{
-60
-T}
-.TE
-.sp 1
-.RE
-.PP
-\fIexternal_ip\fR
-.RS 4
-.TS
-tab(:);
-lt lt
-lt lt.
-T{
-address
-T}:T{
-http://ipv4\&.icanhazip\&.com
-T}
-T{
-refresh_interval
-T}:T{
-3600
-T}
-.TE
-.sp 1
-.RE
-.PP
-\fImagick_background\fR
-.RS 4
-.TS
-tab(:);
-lt lt
-lt lt
-lt lt.
-T{
-blur_radius
-T}:T{
-0
-T}
-T{
-brightness
-T}:T{
-100
-T}
-T{
-saturation
-T}:T{
-100
-T}
-.TE
-.sp 1
-.RE
 .PP
 \fInow_playing_mpd\fR
 .RS 4
@@ -263,26 +133,16 @@ T}
 .ps +1
 \fBbattery\fR
 .RS 4
-.TS
-tab(:);
-lt lt
-lt lt.
-T{
-.sp
+.PP
 \fIname\fR
-T}:T{
-.sp
+.RS 4
 UPower name for the battery device
-T}
-T{
-.sp
+.RE
+.PP
 \fIrefresh_interval\fR
-T}:T{
-.sp
+.RS 4
 How quickly to check level in seconds
-T}
-.TE
-.sp 1
+.RE
 .RE
 .sp
 .it 1 an-trap
@@ -294,8 +154,6 @@ T}
 .RS 4
 .TS
 tab(:);
-lt lt
-lt lt
 lt lt.
 T{
 .sp
@@ -304,22 +162,20 @@ T}:T{
 .sp
 Date format\&. %Y, %m, %d are variables
 T}
-T{
-.sp
-\fItime_format\fR
-T}:T{
-.sp
-Time format\&. %H, %M, %S are variables
-T}
-T{
-.sp
-\fIrefresh_interval\fR
-T}:T{
-.sp
-How quickly to refresh in seconds
-T}
 .TE
 .sp 1
+.sp
+default: "%Y\-%m\-%d"
+.PP
+\fItime_format\fR
+.RS 4
+Time format\&. %H, %M, %S are variables default: "%H:%M:%S"
+.RE
+.PP
+\fIrefresh_interval\fR
+.RS 4
+How quickly to refresh in seconds default: 1
+.RE
 .RE
 .sp
 .it 1 an-trap
@@ -341,35 +197,35 @@ T{
 \fIaddress\fR
 T}:T{
 .sp
-URL of IMAP server
+URL of IMAP server default: imaps://imap\&.gmail\&.com:993/INBOX
 T}
 T{
 .sp
 \fIusername\fR
 T}:T{
 .sp
-Username to authenticate
+Username to authenticate default: none
 T}
 T{
 .sp
 \fIpassword\fR
 T}:T{
 .sp
-Password to authenticate
+Password to authenticate default: none
 T}
 T{
 .sp
 \fIssl_verify\fR
 T}:T{
 .sp
-Use HTTPS certificate verification
+Use HTTPS certificate verification default: true
 T}
 T{
 .sp
 \fIrefresh_interval\fR
 T}:T{
 .sp
-How often to check for new mail in seconds
+How often to check for new mail in seconds default: 60
 T}
 .TE
 .sp 1
@@ -391,14 +247,14 @@ T{
 \fIaddress\fR
 T}:T{
 .sp
-URL to query for IP address
+URL to query for IP address default: http://ipv4\&.icanhazip\&.com
 T}
 T{
 .sp
 \fIrefresh_interval\fR
 T}:T{
 .sp
-How often to check address in seconds
+How often to check address in seconds default: 3600
 T}
 .TE
 .sp 1
@@ -421,21 +277,21 @@ T{
 \fIblur_radius\fR
 T}:T{
 .sp
-How much blurring to apply
+How much blurring to apply default: 0
 T}
 T{
 .sp
 \fIbrightness\fR
 T}:T{
 .sp
-Brightness level
+Brightness level default: 100
 T}
 T{
 .sp
 \fIsaturation\fR
 T}:T{
 .sp
-Saturation level
+Saturation level default: 100
 T}
 .TE
 .sp 1
