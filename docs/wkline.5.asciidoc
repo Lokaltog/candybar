@@ -23,7 +23,143 @@ Description
 *config.json* is a JSON file that defines the appearance, enabled widgets and widget
 options for *wkline*(1).
 
-[TODO] add widgets and config options
+Configurable Widget Options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+battery
+^^^^^^^
+'name'::
+    UPower name for the battery device
+
+default: BAT0
+
+'refresh_interval'::
+    How often to check level in seconds
+
+default: 20
+
+datetime
+^^^^^^^^
+'date_format'::
+    Date format, see *strftime*(3) for syntax
+
+default: "%Y-%m-%d"
+
+'time_format'::
+    Time format, see *strftime*(3) for syntax
+
+default: "%H:%M:%S"
+
+'refresh_interval'::
+    How often to refresh in seconds
+
+default: 1
+
+email_imap
+^^^^^^^^^^
+'address'::
+    URL of IMAP server
+
+default: imaps://imap.gmail.com:993/INBOX
+
+'username'::
+    Username to authenticate
+
+default: none
+
+'password'::
+    Password to authenticate
+
+default: none
+
+'ssl_verify'::
+    Use SSL certificate verification
+
+default: true
+
+'refresh_interval'::
+    How often to check for new mail in seconds
+
+default: 60
+
+external_ip
+^^^^^^^^^^^
+'address'::
+    URL to query for IP address, the URL should return only the IP address as plain text
+
+default: http://ipv4.icanhazip.com
+
+'refresh_interval'::
+    How often to refresh address in seconds
+
+default: 3600
+
+magick_background
+^^^^^^^^^^^^^^^^^
+'blur_radius'::
+    How much blurring to apply
+
+default: 0
+
+'brightness'::
+    Brightness level
+
+default: 100
+
+'saturation'::
+    Saturation level
+
+default: 100
+
+now_playing_mpd
+^^^^^^^^^^^^^^^
+'host'::
+    Hostname of mpd server
+
+default: localhost
+
+'port'::
+    Port number of mpd server
+
+default: 6600
+
+'timeout'::
+    Connection timeout in ms
+
+default: 5000
+
+'update_interval'::
+    How often to update in ms
+
+default: 1000
+
+volume
+^^^^^^
+'card'::
+    ALSA sound card to use
+
+default: default
+
+'selem'::
+    Which ALSA control to read and adjust
+
+default: Master
+
+weather
+^^^^^^^
+'location'::
+    ZIP code or location query (e.g. "Oslo, Norway")
+
+default: none
+
+'unit'::
+    Farenheit or Centigrade, c or f
+
+default: c
+
+'refresh_interval'::
+    How often to check for updates in seconds
+
+default: 1800
 
 Files
 -----

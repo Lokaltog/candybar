@@ -2,12 +2,12 @@
 .\"     Title: wkline
 .\"    Author: [see the "Authors" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 03/19/2014
+.\"      Date: 04/10/2014
 .\"    Manual: Wkline Manual
 .\"    Source: wkline
 .\"  Language: English
 .\"
-.TH "WKLINE" "5" "03/19/2014" "wkline" "Wkline Manual"
+.TH "WKLINE" "5" "04/10/2014" "wkline" "Wkline Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,8 +37,249 @@ wkline \- configuration file for customizing wkline
 .SH "DESCRIPTION"
 .sp
 \fBconfig\&.json\fR is a JSON file that defines the appearance, enabled widgets and widget options for \fBwkline\fR(1)\&.
+.SS "Configurable Widget Options"
 .sp
-[TODO] add widgets and config options
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBbattery\fR
+.RS 4
+.PP
+\fIname\fR
+.RS 4
+UPower name for the battery device
+.RE
+.sp
+default: BAT0
+.PP
+\fIrefresh_interval\fR
+.RS 4
+How often to check level in seconds
+.RE
+.sp
+default: 20
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBdatetime\fR
+.RS 4
+.PP
+\fIdate_format\fR
+.RS 4
+Date format, see
+\fBstrftime\fR(3) for syntax
+.RE
+.sp
+default: "%Y\-%m\-%d"
+.PP
+\fItime_format\fR
+.RS 4
+Time format, see
+\fBstrftime\fR(3) for syntax
+.RE
+.sp
+default: "%H:%M:%S"
+.PP
+\fIrefresh_interval\fR
+.RS 4
+How often to refresh in seconds
+.RE
+.sp
+default: 1
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBemail_imap\fR
+.RS 4
+.PP
+\fIaddress\fR
+.RS 4
+URL of IMAP server
+.RE
+.sp
+default: imaps://imap\&.gmail\&.com:993/INBOX
+.PP
+\fIusername\fR
+.RS 4
+Username to authenticate
+.RE
+.sp
+default: none
+.PP
+\fIpassword\fR
+.RS 4
+Password to authenticate
+.RE
+.sp
+default: none
+.PP
+\fIssl_verify\fR
+.RS 4
+Use SSL certificate verification
+.RE
+.sp
+default: true
+.PP
+\fIrefresh_interval\fR
+.RS 4
+How often to check for new mail in seconds
+.RE
+.sp
+default: 60
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBexternal_ip\fR
+.RS 4
+.PP
+\fIaddress\fR
+.RS 4
+URL to query for IP address, the URL should return only the IP address as plain text
+.RE
+.sp
+default: http://ipv4\&.icanhazip\&.com
+.PP
+\fIrefresh_interval\fR
+.RS 4
+How often to refresh address in seconds
+.RE
+.sp
+default: 3600
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBmagick_background\fR
+.RS 4
+.PP
+\fIblur_radius\fR
+.RS 4
+How much blurring to apply
+.RE
+.sp
+default: 0
+.PP
+\fIbrightness\fR
+.RS 4
+Brightness level
+.RE
+.sp
+default: 100
+.PP
+\fIsaturation\fR
+.RS 4
+Saturation level
+.RE
+.sp
+default: 100
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBnow_playing_mpd\fR
+.RS 4
+.PP
+\fIhost\fR
+.RS 4
+Hostname of mpd server
+.RE
+.sp
+default: localhost
+.PP
+\fIport\fR
+.RS 4
+Port number of mpd server
+.RE
+.sp
+default: 6600
+.PP
+\fItimeout\fR
+.RS 4
+Connection timeout in ms
+.RE
+.sp
+default: 5000
+.PP
+\fIupdate_interval\fR
+.RS 4
+How often to update in ms
+.RE
+.sp
+default: 1000
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBvolume\fR
+.RS 4
+.PP
+\fIcard\fR
+.RS 4
+ALSA sound card to use
+.RE
+.sp
+default: default
+.PP
+\fIselem\fR
+.RS 4
+Which ALSA control to read and adjust
+.RE
+.sp
+default: Master
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBweather\fR
+.RS 4
+.PP
+\fIlocation\fR
+.RS 4
+ZIP code or location query (e\&.g\&. "Oslo, Norway")
+.RE
+.sp
+default: none
+.PP
+\fIunit\fR
+.RS 4
+Farenheit or Centigrade, c or f
+.RE
+.sp
+default: c
+.PP
+\fIrefresh_interval\fR
+.RS 4
+How often to check for updates in seconds
+.RE
+.sp
+default: 1800
+.RE
 .SH "FILES"
 .PP
 \fI~/\&.config/wkline/config\&.json\fR
