@@ -33,24 +33,24 @@ battery
 default: BAT0
 
 'refresh_interval'::
-    How quickly to check level in seconds
+    How often to check level in seconds
 
 default: 20
 
 datetime
 ^^^^^^^^
 'date_format'::
-    Date format. %Y, %m, %d are variables
+    Date format, see *strftime*(3) for syntax
 
 default: "%Y-%m-%d"
 
 'time_format'::
-    Time format. %H, %M, %S are variables
+    Time format, see *strftime*(3) for syntax
 
 default: "%H:%M:%S"
 
 'refresh_interval'::
-    How quickly to refresh in seconds
+    How often to refresh in seconds
 
 default: 1
 
@@ -72,7 +72,7 @@ default: none
 default: none
 
 'ssl_verify'::
-    Use HTTPS certificate verification
+    Use SSL certificate verification
 
 default: true
 
@@ -84,12 +84,12 @@ default: 60
 external_ip
 ^^^^^^^^^^^
 'address'::
-    URL to query for IP address
+    URL to query for IP address, the URL should return only the IP address as plain text
 
-default: http://ipv4.icanhazip.com 
+default: http://ipv4.icanhazip.com
 
 'refresh_interval'::
-    How often to check address in seconds
+    How often to refresh address in seconds
 
 default: 3600
 
@@ -118,12 +118,12 @@ now_playing_mpd
 default: localhost
 
 'port'::
-    Port of the server
+    Port number of mpd server
 
 default: 6600
 
 'timeout'::
-    How to attempt connecting in ms
+    Connection timeout in ms
 
 default: 5000
 
@@ -140,14 +140,14 @@ volume
 default: default
 
 'selem'::
-    Which ALSA control to adjust
+    Which ALSA control to read and adjust
 
 default: Master
 
 weather
 ^^^^^^^
 'location'::
-    ZIP code of requested location
+    ZIP code or location query (e.g. "Oslo, Norway")
 
 default: none
 

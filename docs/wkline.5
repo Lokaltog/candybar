@@ -2,12 +2,12 @@
 .\"     Title: wkline
 .\"    Author: [see the "Authors" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/04/2014
+.\"      Date: 04/10/2014
 .\"    Manual: Wkline Manual
 .\"    Source: wkline
 .\"  Language: English
 .\"
-.TH "WKLINE" "5" "04/04/2014" "wkline" "Wkline Manual"
+.TH "WKLINE" "5" "04/10/2014" "wkline" "Wkline Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -56,7 +56,7 @@ default: BAT0
 .PP
 \fIrefresh_interval\fR
 .RS 4
-How quickly to check level in seconds
+How often to check level in seconds
 .RE
 .sp
 default: 20
@@ -72,21 +72,23 @@ default: 20
 .PP
 \fIdate_format\fR
 .RS 4
-Date format\&. %Y, %m, %d are variables
+Date format, see
+\fBstrftime\fR(3) for syntax
 .RE
 .sp
 default: "%Y\-%m\-%d"
 .PP
 \fItime_format\fR
 .RS 4
-Time format\&. %H, %M, %S are variables
+Time format, see
+\fBstrftime\fR(3) for syntax
 .RE
 .sp
 default: "%H:%M:%S"
 .PP
 \fIrefresh_interval\fR
 .RS 4
-How quickly to refresh in seconds
+How often to refresh in seconds
 .RE
 .sp
 default: 1
@@ -123,7 +125,7 @@ default: none
 .PP
 \fIssl_verify\fR
 .RS 4
-Use HTTPS certificate verification
+Use SSL certificate verification
 .RE
 .sp
 default: true
@@ -146,14 +148,14 @@ default: 60
 .PP
 \fIaddress\fR
 .RS 4
-URL to query for IP address
+URL to query for IP address, the URL should return only the IP address as plain text
 .RE
 .sp
 default: http://ipv4\&.icanhazip\&.com
 .PP
 \fIrefresh_interval\fR
 .RS 4
-How often to check address in seconds
+How often to refresh address in seconds
 .RE
 .sp
 default: 3600
@@ -206,14 +208,14 @@ default: localhost
 .PP
 \fIport\fR
 .RS 4
-Port of the server
+Port number of mpd server
 .RE
 .sp
 default: 6600
 .PP
 \fItimeout\fR
 .RS 4
-How to attempt connecting in ms
+Connection timeout in ms
 .RE
 .sp
 default: 5000
@@ -243,7 +245,7 @@ default: default
 .PP
 \fIselem\fR
 .RS 4
-Which ALSA control to adjust
+Which ALSA control to read and adjust
 .RE
 .sp
 default: Master
@@ -259,7 +261,7 @@ default: Master
 .PP
 \fIlocation\fR
 .RS 4
-ZIP code of requested location
+ZIP code or location query (e\&.g\&. "Oslo, Norway")
 .RE
 .sp
 default: none
