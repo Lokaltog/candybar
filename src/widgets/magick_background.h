@@ -1,4 +1,6 @@
 #include <wand/magick_wand.h>
+#include <xcb/xcb.h>
+#include <xcb/xcb_atom.h>
 
 static struct widget_config {
 	const char *image;
