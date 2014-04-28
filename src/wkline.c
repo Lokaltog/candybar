@@ -77,7 +77,7 @@ wk_realize_handler (GtkWidget *window, gpointer user_data) {
 	gdk_property_change(gdkw, net_wm_strut_partial_atom, cardinal_atom,
 	                    32, GDK_PROP_MODE_REPLACE, (guchar*)strut_partial, LENGTH(strut_partial));
 
-	if (!supports_net_wm_strut || !supports_net_wm_strut_partial) {
+	if (!supports_net_wm_strut && !supports_net_wm_strut_partial) {
 		/* only set override redirect if we're unable to reserve space
 		   with _NET_WM_STRUT or _NET_WM_STRUT_PARTIAL */
 		gdk_window_set_override_redirect(gdkw, TRUE);
