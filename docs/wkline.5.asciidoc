@@ -27,10 +27,10 @@ Configurable Widget Options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 battery
 ^^^^^^^
-'name'::
-    UPower name for the battery device
+'dbus_path'::
+    Full dbus path to the battery or power device
 
-default: BAT0
+default: "/org/freedesktop/UPower/devices/battery_BAT0"
 
 'refresh_interval'::
     How often to check level in seconds

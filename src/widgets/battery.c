@@ -24,29 +24,22 @@ widget_update (struct widget *widget, DBusGProxy *properties_proxy, char *dbus_p
 void*
 widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
-	widget_init_config_string(widget->config, "name", config.name);
+	widget_init_config_string(widget->config, "dbus_path", config.dbus_path);
 	widget_init_config_integer(widget->config, "refresh_interval", config.refresh_interval);
 
 	DBusGConnection *conn = NULL;
 	DBusGProxy *proxy = NULL;
 	DBusGProxy *properties_proxy = NULL;
-	char *dbus_path = NULL;
-	char *dbus_path_template = "/org/freedesktop/UPower/devices/battery_%s";
-	int dbus_path_length = 0;
 	GError *error = NULL;
 
 	conn = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
-
-	dbus_path_length = snprintf(NULL, 0, dbus_path_template, config.name);
-	dbus_path = malloc(dbus_path_length + 1);
-	snprintf(dbus_path, dbus_path_length + 1, dbus_path_template, config.name);
 
 	if (conn == NULL) {
 		LOG_ERR("dbus: failed to open connection to bus: %s\n", error->message);
 		goto cleanup;
 	}
 
-	proxy = dbus_g_proxy_new_for_name(conn, "org.freedesktop.UPower", dbus_path,
+	proxy = dbus_g_proxy_new_for_name(conn, "org.freedesktop.UPower", (char*)config.dbus_path,
 	                                  "org.freedesktop.UPower.Device.Properties");
 	if (proxy == NULL) {
 		LOG_ERR("dbus: failed to create proxy object");
@@ -60,7 +53,7 @@ widget_main (struct widget *widget) {
 	}
 
 	unsigned int state;
-	if (!proxy_uint_value(&state, properties_proxy, dbus_path, "State")) {
+	if (!proxy_uint_value(&state, properties_proxy, (char*)config.dbus_path, "State")) {
 		LOG_ERR("dbus: invalid battery");
 		if (proxy != NULL) {
 			g_object_unref(proxy);
@@ -73,7 +66,7 @@ widget_main (struct widget *widget) {
 
 	widget_epoll_init(widget);
 	while (true) {
-		widget_update(widget, properties_proxy, dbus_path);
+		widget_update(widget, properties_proxy, (char*)config.dbus_path);
 		widget_epoll_wait_goto(widget, config.refresh_interval, cleanup);
 	}
 
@@ -86,9 +79,6 @@ cleanup:
 	}
 	if (properties_proxy != NULL) {
 		g_object_unref(properties_proxy);
-	}
-	if (dbus_path != NULL) {
-		free(dbus_path);
 	}
 
 	return 0;
