@@ -49,11 +49,12 @@ parse_args (int argc, char *argv[], char **config_filename) {
 
 static void
 wk_realize_handler (GtkWidget *window, gpointer user_data) {
-	GdkAtom net_wm_strut_atom = gdk_atom_intern("_NET_WM_STRUT", FALSE);
-	GdkAtom net_wm_strut_partial_atom = gdk_atom_intern("_NET_WM_STRUT_PARTIAL", FALSE);
+	GdkAtom net_wm_strut_atom = gdk_atom_intern_static_string("_NET_WM_STRUT");
+	GdkAtom net_wm_strut_partial_atom = gdk_atom_intern_static_string("_NET_WM_STRUT_PARTIAL");
+	GdkAtom cardinal_atom = gdk_atom_intern_static_string("CARDINAL");
 	GdkWindow *gdkw = gtk_widget_get_window(GTK_WIDGET(window));
-	int strut[4] = { 0 };
-	int strut_partial[12] = { 0 };
+	gulong strut[4] = { 0 };
+	gulong strut_partial[12] = { 0 };
 
 	bool supports_net_wm_strut = g_list_find(gdk_get_net_supported(),
 	                                         net_wm_strut_atom) != NULL;
@@ -71,17 +72,14 @@ wk_realize_handler (GtkWidget *window, gpointer user_data) {
 		strut_partial[11] = wkline->width;
 	}
 
-	if (supports_net_wm_strut) {
-		gdk_property_change(gdkw, net_wm_strut_atom, gdk_atom_intern("CARDINAL", FALSE),
-		                    32, GDK_PROP_MODE_REPLACE, (guchar*)strut, LENGTH(strut));
-	}
-	else if (supports_net_wm_strut_partial) {
-		gdk_property_change(gdkw, net_wm_strut_partial_atom, gdk_atom_intern("CARDINAL", FALSE),
-		                    32, GDK_PROP_MODE_REPLACE, (guchar*)strut_partial, LENGTH(strut_partial));
-	}
-	else {
+	gdk_property_change(gdkw, net_wm_strut_atom, cardinal_atom,
+	                    32, GDK_PROP_MODE_REPLACE, (guchar*)strut, LENGTH(strut));
+	gdk_property_change(gdkw, net_wm_strut_partial_atom, cardinal_atom,
+	                    32, GDK_PROP_MODE_REPLACE, (guchar*)strut_partial, LENGTH(strut_partial));
+
+	if (!supports_net_wm_strut || !supports_net_wm_strut_partial) {
 		/* only set override redirect if we're unable to reserve space
-		   with _NET_WM_STRUT */
+		   with _NET_WM_STRUT or _NET_WM_STRUT_PARTIAL */
 		gdk_window_set_override_redirect(gdkw, TRUE);
 	}
 }
