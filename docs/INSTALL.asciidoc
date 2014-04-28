@@ -60,7 +60,7 @@ doesn't have to be installed system-wide for widgets to work.
 
 [source,sh]
 ----
-./waf clean configure build install \  # <1>
+./waf configure build install \        # <1>
       --debug \                        # <2>
       --prefix=/ \                     # <3>
       --libdir=`pwd`/out/lib/wkline \  # <4>
