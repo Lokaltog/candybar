@@ -1,36 +1,36 @@
-:man source:   wkline
+:man source:   candybar
 :man version:  {revnumber}
-:man manual:   Wkline Manual
+:man manual:   Candybar Manual
 
-wkline(1)
-=========
+candybar(1)
+===========
 
 Name
 ----
 
-wkline - WebKit-based statusline utility for tiling window managers
+candybar - WebKit-based status bar for tiling window managers
 
 Synopsis
 --------
 
-*wkline* [*-c* _config-file_ | *-h* _height_ | *-m* _monitor_ | *-p* _position_ |
+*candybar* [*-c* _config-file_ | *-h* _height_ | *-m* _monitor_ | *-p* _position_ |
  *-t* _theme-uri_]
 
 Description
 -----------
 
-*wkline* displays a HTML-based statusline in a WebKit web view. It provides a smooth
-looking statusline with CSS transitions and effects, and the possibility of having a
-transparent background with effects without a desktop compositor running.
+*candybar* displays a HTML-based statusline in a WebKit web view. It provides a
+smooth looking statusline with CSS transitions and effects, and the possibility of
+having a transparent background with effects without a desktop compositor running.
 
 Screenshots are available on the
-https://github.com/Lokaltog/wkline/wiki/Screenshots[wkline wiki].
+https://github.com/Lokaltog/candybar/wiki/Screenshots[candybar wiki].
 
 Options
 -------
 
 *-c* _config-file_:: Read configuration options from the specified
-_config-file_. config-file overrides _WKLINE_CONFIG_PATH_ and any system-wide and
+_config-file_. config-file overrides _CANDYBAR_CONFIG_PATH_ and any system-wide and
 per-user configuration files. The file must exist and be valid JSON.
 
 *-h* _height_:: Set the height of the statusline in pixels.
@@ -49,7 +49,7 @@ Window manager support
 config top_padding 24_.
 
 *dwm*:: supported; requires the dwm built-in bar to be enabled and set to the same
-position and height as wkline, wkline will be placed on top of the dwm bar.
+position and height as candybar, candybar will be placed on top of the dwm bar.
 
 *i3*:: supported
 
@@ -61,16 +61,16 @@ was implemented in qtile revision 02fd471.
 Files
 -----
 
-_~/.config/wkline/config.json_:: Per-user configuration file. See *wkline*(5) for
+_~/.config/candybar/config.json_:: Per-user configuration file. See *candybar*(5) for
 further details.
 
-_/etc/xdg/wkline/config.json_:: System-wide configuration file. See *wkline*(5) for
-further details.
+_/etc/xdg/candybar/config.json_:: System-wide configuration file. See *candybar*(5)
+for further details.
 
 Environment
 -----------
 
-_WKLINE_CONFIG_PATH_:: Full path of an alternate _config.json_ file. This variable
+_CANDYBAR_CONFIG_PATH_:: Full path of an alternate _config.json_ file. This variable
 overrides any system-wide and per-user configuration files, but does not override the
 *-c* command-line argument. The file must exist and be valid JSON.
 
@@ -79,10 +79,10 @@ Authors
 
 Kim Silkebækken <kim.silkebaekken@gmail.com>
 
-See https://github.com/Lokaltog/wkline/graphs/contributors for a list of all
+See https://github.com/Lokaltog/candybar/graphs/contributors for a list of all
 contributors.
 
 See also
 --------
 
-*wkline*(5)
+*candybar*(5)
