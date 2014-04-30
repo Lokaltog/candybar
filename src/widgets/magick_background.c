@@ -34,7 +34,7 @@ widget_main (struct widget *widget) {
 	xcb_get_image_reply_t *im_r = NULL;
 
 	size_t img_len;
-	void *img_data;
+	void *img_data = NULL;
 	char *img_base64 = NULL;
 	Image *img = NULL;
 	ImageInfo *img_info = CloneImageInfo(0);
