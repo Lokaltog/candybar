@@ -9,7 +9,7 @@ get_config_json (char *config_override_filename) {
 	json_error_t err;
 
 	override_path = config_override_filename != NULL
-	                ? config_override_filename : getenv("WKLINE_CONFIG_PATH");
+	                ? config_override_filename : getenv("CANDYBAR_CONFIG_PATH");
 	if (override_path != NULL) {
 		config_filename = g_build_filename(override_path, NULL);
 

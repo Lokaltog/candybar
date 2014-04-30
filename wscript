@@ -6,8 +6,8 @@ import time
 
 from waflib import Utils
 
-PACKAGE = 'wkline'
-LIBDIR = '${PREFIX}/lib/wkline'
+PACKAGE = 'candybar'
+LIBDIR = '${PREFIX}/lib/candybar'
 
 def get_version():
 	'''Attempt to fetch the current version number from git.'''
@@ -20,7 +20,7 @@ def get_version():
 
 def options(opt):
 	opt.load('compiler_c')
-	opt.add_option('--confdir', dest='confdir', default='/etc/xdg/wkline', help='directory to store wkline global configuration files [default: %default]')
+	opt.add_option('--confdir', dest='confdir', default='/etc/xdg/candybar', help='directory to store candybar global configuration files [default: %default]')
 	opt.add_option('--libdir', dest='libdir', default=LIBDIR, help='shared library search path override (useful for development) [default: %default]')
 	opt.add_option('--debug', dest='debug', default=False, action='store_true', help='build debug version')
 
@@ -61,7 +61,7 @@ def build(bld):
 	basedeps = ['GTK', 'GLIB', 'WEBKITGTK', 'JANSSON']
 
 	# add build version/time defines
-	wkline_defines = [
+	candybar_defines = [
 		'VERSION="{0}"'.format(get_version()),
 	]
 
@@ -96,5 +96,5 @@ def build(bld):
 		bld.shlib(source='src/widgets/window_title.c', target='widget_window_title', use=basedeps + ['util_copy_prop', 'XCB'], install_path=LIBDIR)
 
 	bld.objects(source='src/widgets.c', target='widgets', use=['baseutils'] + basedeps)
-	bld.program(source='src/wkline.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps, defines=wkline_defines)
+	bld.program(source='src/candybar.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps, defines=candybar_defines)
 	bld.install_files(bld.options.confdir, ['config.json'])
