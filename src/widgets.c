@@ -28,7 +28,7 @@ init_widget_js_obj (void *context, struct widget *widget) {
 }
 
 static pthread_t
-spawn_widget (struct candybar *candybar, void *context, json_t *config, const char *name) {
+spawn_widget (struct bar *bar, void *context, json_t *config, const char *name) {
 	widget_main_t widget_main;
 	widget_type_t widget_type;
 	char libname[64];
@@ -58,7 +58,7 @@ spawn_widget (struct candybar *candybar, void *context, json_t *config, const ch
 		free(js_staticfuncs);
 	}
 
-	widget->candybar = candybar;
+	widget->bar = bar;
 	widget->config = config;
 	widget->name = strdup(name);
 
@@ -92,10 +92,10 @@ error:
 }
 
 void
-join_widget_threads (struct candybar *candybar) {
+join_widget_threads (struct bar *bar) {
 	unsigned short i;
 	if (widget_threads && (widgets_len > 0)) {
-		eventfd_write(candybar->efd, 1);
+		eventfd_write(bar->efd, 1);
 		LOG_DEBUG("gracefully shutting down widget threads...");
 		for (i = 0; i < widgets_len; i++) {
 			if (widget_threads[i]) {
@@ -160,20 +160,20 @@ web_view_callback (struct js_callback_data *data) {
 void
 window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *context, void *window_object, void *user_data) {
 	LOG_DEBUG("webkit: window object cleared");
-	struct candybar *candybar = user_data;
+	struct bar *bar = user_data;
 
 	json_t *widget;
-	json_t *widgets = json_object_get(candybar->config, "widgets");
+	json_t *widgets = json_object_get(bar->config, "widgets");
 	size_t index;
 
-	join_widget_threads(candybar);
+	join_widget_threads(bar);
 
 	widgets_len = json_array_size(widgets);
 	widget_threads = malloc(widgets_len * sizeof(pthread_t));
 
 	LOG_DEBUG("starting %i widget threads", widgets_len);
 	json_array_foreach(widgets, index, widget) {
-		widget_threads[index] = spawn_widget(candybar,
+		widget_threads[index] = spawn_widget(bar,
 		                                     context,
 		                                     json_object_get(widget, "config"),
 		                                     json_string_value(json_object_get(widget, "module")));

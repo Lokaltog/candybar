@@ -72,7 +72,7 @@ widget_main (struct widget *widget) {
 		}
 
 		im_c = xcb_get_image(conn, XCB_IMAGE_FORMAT_Z_PIXMAP, root_pixmap,
-		                     0, 0, widget->candybar->width, widget->candybar->height, 0xffffffff);
+		                     0, 0, widget->bar->width, widget->bar->height, 0xffffffff);
 		im_r = xcb_get_image_reply(conn, im_c, &err);
 		if (err != NULL) {
 			LOG_ERR("could not get background image");
@@ -81,7 +81,7 @@ widget_main (struct widget *widget) {
 
 		uint8_t *data = xcb_get_image_data(im_r);
 
-		img = ConstituteImage(widget->candybar->width, widget->candybar->height, "BGRA", CharPixel, data, &exception);
+		img = ConstituteImage(widget->bar->width, widget->bar->height, "BGRA", CharPixel, data, &exception);
 		strncpy(img->magick, "png", MaxTextExtent - 1);
 		if (exception.severity != UndefinedException) {
 			LOG_ERR("could not read background from root window: %s", exception.reason);
@@ -90,7 +90,7 @@ widget_main (struct widget *widget) {
 	}
 	else {
 		strncpy(img_info->filename, config.image, MaxTextExtent - 1);
-		RectangleInfo geom = { widget->candybar->width, widget->candybar->height, 0, 0 };
+		RectangleInfo geom = { widget->bar->width, widget->bar->height, 0, 0 };
 		img = ReadImage(img_info, &exception);
 		strncpy(img->magick, "png", MaxTextExtent - 1);
 		if (exception.severity != UndefinedException) {

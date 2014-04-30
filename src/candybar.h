@@ -16,14 +16,14 @@
 #include "util/log.h"
 
 typedef enum {
-	CANDYBAR_POSITION_UNKNOWN,
-	CANDYBAR_POSITION_TOP,
-	CANDYBAR_POSITION_BOTTOM,
-} candybar_position_t;
+	BAR_POSITION_UNKNOWN,
+	BAR_POSITION_TOP,
+	BAR_POSITION_BOTTOM,
+} bar_position_t;
 
-struct candybar {
+struct bar {
 	WebKitWebView *web_view;
-	candybar_position_t position;
+	bar_position_t position;
 	int width;
 	int height;
 	int monitor;

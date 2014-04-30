@@ -36,7 +36,7 @@ struct widget {
 	char *type;
 	json_t *config;
 	char *data;
-	struct candybar *candybar;
+	struct bar *bar;
 	JSContextRef js_context;
 	JSObjectRef js_object;
 	JSStaticFunction *js_staticfuncs;
@@ -85,9 +85,9 @@ void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void 
 	int efd, nfds; \
 	struct epoll_event event, events[MAX_EVENTS]; \
 	if ((efd = epoll_create1(0)) == -1) { LOG_ERR("failed to create epoll instance: %s", strerror(errno)); return 0; } \
-	event.data.fd = WIDGET->candybar->efd; event.events = EPOLLIN | EPOLLET; \
-	if (epoll_ctl(efd, EPOLL_CTL_ADD, WIDGET->candybar->efd, &event) == -1) { LOG_ERR("failed to add fd to epoll instance: %s", strerror(errno)); return 0; }
+	event.data.fd = WIDGET->bar->efd; event.events = EPOLLIN | EPOLLET; \
+	if (epoll_ctl(efd, EPOLL_CTL_ADD, WIDGET->bar->efd, &event) == -1) { LOG_ERR("failed to add fd to epoll instance: %s", strerror(errno)); return 0; }
 #define widget_epoll_wait_goto(WIDGET, TIMEOUT_SECONDS, GOTO_LABEL) nfds = epoll_wait(efd, events, MAX_EVENTS, TIMEOUT_SECONDS * 1000); \
-	if (nfds && (events[0].data.fd == WIDGET->candybar->efd)) { goto GOTO_LABEL; }
+	if (nfds && (events[0].data.fd == WIDGET->bar->efd)) { goto GOTO_LABEL; }
 
 #endif
