@@ -1,4 +1,4 @@
-#include "wkline.h"
+#include "candybar.h"
 
 json_t* get_config_json (char *config_override_filename);
 json_t* get_config_option (json_t *config_object, const char *key, bool silent);

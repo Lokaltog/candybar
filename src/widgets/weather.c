@@ -6,7 +6,7 @@ get_geoip_location (struct location *location) {
 	json_t *location_data, *geoip_city, *geoip_country_code;
 	json_error_t error;
 
-	char *geoip_raw_json = wkline_curl_request("http://freegeoip.net/json/");
+	char *geoip_raw_json = candybar_curl_request("http://freegeoip.net/json/");
 	location_data = json_loads(geoip_raw_json, 0, &error);
 
 	if (!location_data) {
@@ -70,7 +70,7 @@ get_weather_information (struct location *location) {
 	request_uri = malloc(request_uri_len + 1);
 	snprintf(request_uri, request_uri_len + 1, request_uri_template, query_str_escaped);
 
-	char *weather_raw_json = wkline_curl_request(request_uri);
+	char *weather_raw_json = candybar_curl_request(request_uri);
 	weather_data = json_loads(weather_raw_json, 0, &error);
 
 	free(query_str);
