@@ -56,6 +56,7 @@ def configure(ctx):
 	ctx.check_cfg(package='GraphicsMagickWand', uselib_store='MAGICK', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='libmpdclient', uselib_store='LIBMPDCLIENT', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='xcb-util xcb-ewmh xcb-icccm', uselib_store='XCB', args=['--cflags', '--libs'], mandatory=False)
+	ctx.check_cfg(package='i3ipc-glib-1.0', uselib_store='I3IPC', args=['--cflags', '--libs'], mandatory=False)
 
 def build(bld):
 	basedeps = ['GTK', 'GLIB', 'WEBKITGTK', 'JANSSON']
@@ -94,6 +95,9 @@ def build(bld):
 	if bld.is_defined('HAVE_XCB'):
 		bld.shlib(source='src/widgets/desktops.c', target='widget_desktops', use=basedeps + ['XCB'], install_path=LIBDIR)
 		bld.shlib(source='src/widgets/window_title.c', target='widget_window_title', use=basedeps + ['util_copy_prop', 'XCB'], install_path=LIBDIR)
+
+	if bld.is_defined('HAVE_I3IPC'):
+		bld.shlib(source='src/widgets/desktops_i3.c', target='widget_desktops_i3', use=basedeps + ['I3IPC'], install_path=LIBDIR)
 
 	bld.objects(source='src/widgets.c', target='widgets', use=['baseutils'] + basedeps)
 	bld.program(source='src/wkline.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps, defines=wkline_defines)
