@@ -1,7 +1,7 @@
 #include "curl.h"
 
 size_t
-wkline_curl_write_response (void *ptr, size_t size, size_t nmemb, void *stream) {
+candybar_curl_write_response (void *ptr, size_t size, size_t nmemb, void *stream) {
 	write_result_t *result = (write_result_t*)stream;
 
 	if (result->pos + size * nmemb >= CURL_BUF_SIZE - 1) {
@@ -17,7 +17,7 @@ wkline_curl_write_response (void *ptr, size_t size, size_t nmemb, void *stream) 
 }
 
 char*
-wkline_curl_request (const char *url) {
+candybar_curl_request (const char *url) {
 	CURL *curl;
 	CURLcode status;
 	char *data;
@@ -35,7 +35,7 @@ wkline_curl_request (const char *url) {
 	};
 
 	curl_easy_setopt(curl, CURLOPT_URL, url);
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, wkline_curl_write_response);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, candybar_curl_write_response);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &write_result);
 
 	status = curl_easy_perform(curl);

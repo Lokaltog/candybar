@@ -44,37 +44,37 @@
 
 [source,sh]
 ----
-git clone https://github.com/Lokaltog/wkline.git
-cd wkline
+git clone https://github.com/Lokaltog/candybar.git
+cd candybar
 
 ./waf configure build
 ./waf install
 
-wkline
+candybar
 ----
 
 === Debug/development build
 
-This is useful for development as it uses a relative library search path, so wkline
+This is useful for development as it uses a relative library search path, so candybar
 doesn't have to be installed system-wide for widgets to work.
 
 [source,sh]
 ----
-./waf configure build install \        # <1>
-      --debug \                        # <2>
-      --prefix=/ \                     # <3>
-      --libdir=`pwd`/out/lib/wkline \  # <4>
-      --destdir=out/                   # <5>
+./waf configure build install \          # <1>
+      --debug \                          # <2>
+      --prefix=/ \                       # <3>
+      --libdir=`pwd`/out/lib/candybar \  # <4>
+      --destdir=out/                     # <5>
 
-out/bin/wkline
+out/bin/candybar
 ----
 <1> the +clean+ and +configure+ actions are optional after the initial build
 <2> enable debug build (disable optimizations, enable debug logging)
 <3> disable prefixing the destination directory with +/usr/+
-<4> tell +wkline+ to search for widget libraries in the +out/lib/+ directory
+<4> tell +candybar+ to search for widget libraries in the +out/lib/+ directory
 <5> installs into +out/+, remember to change +--libdir+ if you change this directory
 
 == Packages
 
 * Arch Linux
-** https://aur.archlinux.org/packages/wkline-git/[wkline-git]
+** https://aur.archlinux.org/packages/candybar-git/[candybar-git]

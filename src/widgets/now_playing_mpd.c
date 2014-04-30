@@ -89,7 +89,7 @@ widget_main (struct widget *widget) {
 	while (true) {
 		while ((nfds = epoll_wait(efd, events, MAX_EVENTS, -1)) > 0) {
 			for (i = 0; i < nfds; i++) {
-				if (events[i].data.fd == widget->wkline->efd) {
+				if (events[i].data.fd == widget->bar->efd) {
 					goto cleanup;
 				}
 				else if (events[i].data.fd == mpd_fd) {
