@@ -19,8 +19,8 @@ Synopsis
 Description
 -----------
 
-*candybar* displays a HTML-based statusline in a WebKit web view. It provides a
-smooth looking statusline with CSS transitions and effects, and the possibility of
+*candybar* displays a HTML-based status bar in a WebKit web view. It provides a
+smooth looking status bar with CSS transitions and effects, and the possibility of
 having a transparent background with effects without a desktop compositor running.
 
 Screenshots are available on the
@@ -33,11 +33,11 @@ Options
 _config-file_. config-file overrides _CANDYBAR_CONFIG_PATH_ and any system-wide and
 per-user configuration files. The file must exist and be valid JSON.
 
-*-h* _height_:: Set the height of the statusline in pixels.
+*-h* _height_:: Set the height of the status bar in pixels.
 
-*-m* _monitor_:: Define which monitor the statusline appears on.
+*-m* _monitor_:: Define which monitor the status bar appears on.
 
-*-p* _position_:: Set the statusline position. Valid options are _top_ and _bottom_.
+*-p* _position_:: Set the status bar position. Valid options are _top_ and _bottom_.
 
 *-t* _theme-uri_:: Set the URI for a theme HTML file. Must be a valid URI, i.e. local
 files must be prefixed with _file://_.
