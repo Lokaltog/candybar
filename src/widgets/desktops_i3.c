@@ -36,7 +36,7 @@ format_workspaces (i3ipcConnection *conn) {
 
 void
 workspace_callback (i3ipcConnection *conn, i3ipcWorkspaceEvent *event, gpointer user_data) {
-	struct widget *widget = (struct widget *)user_data;
+	struct widget *widget = (struct widget*)user_data;
 	json_t *json_data_object = format_workspaces(conn);
 	char *json_str = strdup(json_dumps(json_data_object, 0));
 	widget_data_callback(widget, widget_data_arg_string(json_str));
@@ -52,7 +52,7 @@ widget_main (struct widget *widget) {
 	widget_data_callback(widget, widget_data_arg_string(json_str));
 	free(json_str);
 
-	void (*callback) (i3ipcConnection *, i3ipcWorkspaceEvent *, gpointer);
+	void (*callback)(i3ipcConnection*, i3ipcWorkspaceEvent*, gpointer);
 	callback = workspace_callback;
 
 	GClosure *closure = g_cclosure_new(G_CALLBACK(callback), widget, NULL);
