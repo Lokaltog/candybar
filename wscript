@@ -48,6 +48,7 @@ def configure(ctx):
 	ctx.check_cfg(package='glib-2.0 gmodule-2.0', uselib_store='GLIB', args=['--cflags', '--libs'])
 	ctx.check_cfg(package='webkitgtk-3.0', uselib_store='WEBKITGTK', args=['--cflags', '--libs'])
 	ctx.check_cfg(package='jansson', uselib_store='JANSSON', args=['--cflags', '--libs'])
+	ctx.check_cfg(package='playerctl-1.0', uselib_store='PLAYERCTL', args=['--cflags', '--libs'])
 
 	# optdeps
 	ctx.check_cfg(package='alsa', uselib_store='ALSA', args=['--cflags', '--libs'], mandatory=False)
@@ -58,7 +59,7 @@ def configure(ctx):
 	ctx.check_cfg(package='xcb-util xcb-ewmh xcb-icccm', uselib_store='XCB', args=['--cflags', '--libs'], mandatory=False)
 
 def build(bld):
-	basedeps = ['GTK', 'GLIB', 'WEBKITGTK', 'JANSSON']
+	basedeps = ['GTK', 'GLIB', 'WEBKITGTK', 'JANSSON', 'PLAYERCTL']
 
 	# add build version/time defines
 	candybar_defines = [
@@ -69,6 +70,7 @@ def build(bld):
 
 	# widgets
 	bld.shlib(source='src/widgets/datetime.c', target='widget_datetime', use=basedeps, install_path=LIBDIR)
+	bld.shlib(source='src/widgets/now_playing_mpris.c', target='widget_now_playing_mpris', use=basedeps, install_path=LIBDIR)
 
 	if bld.is_defined('HAVE_ALSA'):
 		bld.shlib(source='src/widgets/volume.c', target='widget_volume', use=basedeps + ['ALSA'], install_path=LIBDIR)
