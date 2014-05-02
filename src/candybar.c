@@ -1,7 +1,7 @@
-#include "wkline.h"
+#include "candybar.h"
 #include "widgets.h"
 
-static struct wkline *wkline = NULL;
+static struct bar *bar = NULL;
 
 static gboolean
 wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
@@ -26,11 +26,11 @@ parse_args (int argc, char *argv[], char **config_filename) {
 				LOG_ERR("invalid value for 'height': %s", optarg);
 				exit(EXIT_FAILURE);
 			}
-			wkline->height = int_arg;
+			bar->height = int_arg;
 			break;
 		case 'p':
-			wkline->position = !strcmp(optarg, "bottom")
-			                   ? WKLINE_POSITION_BOTTOM : WKLINE_POSITION_TOP;
+			bar->position = !strcmp(optarg, "bottom")
+			                ? BAR_POSITION_BOTTOM : BAR_POSITION_TOP;
 			break;
 		case 'm':
 			int_arg = strtol(optarg, &end, 10);
@@ -38,10 +38,10 @@ parse_args (int argc, char *argv[], char **config_filename) {
 				LOG_ERR("invalid value for 'monitor': %s", optarg);
 				exit(EXIT_FAILURE);
 			}
-			wkline->monitor = int_arg;
+			bar->monitor = int_arg;
 			break;
 		case 't':
-			wkline->theme_uri = optarg;
+			bar->theme_uri = optarg;
 			break;
 		}
 	}
@@ -49,39 +49,37 @@ parse_args (int argc, char *argv[], char **config_filename) {
 
 static void
 wk_realize_handler (GtkWidget *window, gpointer user_data) {
-	GdkAtom net_wm_strut_atom = gdk_atom_intern("_NET_WM_STRUT", FALSE);
-	GdkAtom net_wm_strut_partial_atom = gdk_atom_intern("_NET_WM_STRUT_PARTIAL", FALSE);
+	GdkAtom net_wm_strut_atom = gdk_atom_intern_static_string("_NET_WM_STRUT");
+	GdkAtom net_wm_strut_partial_atom = gdk_atom_intern_static_string("_NET_WM_STRUT_PARTIAL");
+	GdkAtom cardinal_atom = gdk_atom_intern_static_string("CARDINAL");
 	GdkWindow *gdkw = gtk_widget_get_window(GTK_WIDGET(window));
-	int strut[4] = { 0 };
-	int strut_partial[12] = { 0 };
+	gulong strut[4] = { 0 };
+	gulong strut_partial[12] = { 0 };
 
 	bool supports_net_wm_strut = g_list_find(gdk_get_net_supported(),
 	                                         net_wm_strut_atom) != NULL;
 	bool supports_net_wm_strut_partial = g_list_find(gdk_get_net_supported(),
 	                                                 net_wm_strut_partial_atom) != NULL;
 
-	if (wkline->position == WKLINE_POSITION_TOP) {
-		strut[2] = wkline->height;
-		strut_partial[2] = wkline->height;
-		strut_partial[9] = wkline->width;
+	if (bar->position == BAR_POSITION_TOP) {
+		strut[2] = bar->height;
+		strut_partial[2] = bar->height;
+		strut_partial[9] = bar->width;
 	}
-	else if (wkline->position == WKLINE_POSITION_BOTTOM) {
-		strut[3] = wkline->height;
-		strut_partial[3] = wkline->height;
-		strut_partial[11] = wkline->width;
+	else if (bar->position == BAR_POSITION_BOTTOM) {
+		strut[3] = bar->height;
+		strut_partial[3] = bar->height;
+		strut_partial[11] = bar->width;
 	}
 
-	if (supports_net_wm_strut) {
-		gdk_property_change(gdkw, net_wm_strut_atom, gdk_atom_intern("CARDINAL", FALSE),
-		                    32, GDK_PROP_MODE_REPLACE, (guchar*)strut, LENGTH(strut));
-	}
-	else if (supports_net_wm_strut_partial) {
-		gdk_property_change(gdkw, net_wm_strut_partial_atom, gdk_atom_intern("CARDINAL", FALSE),
-		                    32, GDK_PROP_MODE_REPLACE, (guchar*)strut_partial, LENGTH(strut_partial));
-	}
-	else {
+	gdk_property_change(gdkw, net_wm_strut_atom, cardinal_atom,
+	                    32, GDK_PROP_MODE_REPLACE, (guchar*)strut, LENGTH(strut));
+	gdk_property_change(gdkw, net_wm_strut_partial_atom, cardinal_atom,
+	                    32, GDK_PROP_MODE_REPLACE, (guchar*)strut_partial, LENGTH(strut_partial));
+
+	if (!supports_net_wm_strut && !supports_net_wm_strut_partial) {
 		/* only set override redirect if we're unable to reserve space
-		   with _NET_WM_STRUT */
+		   with _NET_WM_STRUT or _NET_WM_STRUT_PARTIAL */
 		gdk_window_set_override_redirect(gdkw, TRUE);
 	}
 }
@@ -108,7 +106,6 @@ web_view_init () {
 	web_view_settings = webkit_web_settings_new();
 	g_object_set(G_OBJECT(web_view_settings),
 	             "enable-accelerated-compositing", FALSE,
-	             "enable-css-shaders", FALSE,
 	             "enable-dns-prefetching", FALSE,
 	             "enable-java-applet", FALSE,
 	             "enable-plugins", FALSE,
@@ -126,12 +123,12 @@ web_view_init () {
 static void
 signal_handler (int signal) {
 	if ((signal == SIGTERM) || (signal == SIGINT) || (signal == SIGHUP)) {
-		join_widget_threads(wkline);
+		join_widget_threads(bar);
 		gtk_main_quit();
 	}
 	if (signal == SIGUSR1) {
 		LOG_DEBUG("reloading theme");
-		webkit_web_view_reload_bypass_cache(wkline->web_view);
+		webkit_web_view_reload_bypass_cache(bar->web_view);
 	}
 }
 
@@ -165,89 +162,89 @@ main (int argc, char *argv[]) {
 	layout = GTK_LAYOUT(gtk_layout_new(NULL, NULL));
 	web_view = web_view_init();
 
-	/* init wkline configuration */
-	wkline = calloc(1, sizeof(struct wkline));
-	wkline->height = -1; /* default value */
-	wkline->monitor = -1; /* default value */
-	wkline->web_view = web_view;
-	wkline->efd = eventfd(0, 0);
-	if (wkline->efd == -1) {
+	/* init bar configuration */
+	bar = calloc(1, sizeof(struct bar));
+	bar->height = -1; /* default value */
+	bar->monitor = -1; /* default value */
+	bar->web_view = web_view;
+	bar->efd = eventfd(0, 0);
+	if (bar->efd == -1) {
 		LOG_ERR("could not create event file descriptor: %s", strerror(errno));
 		goto config_err;
 	}
 
 	parse_args(argc, argv, &config_filename);
 
-	wkline->config = get_config_json(config_filename);
-	if (!wkline->config) {
+	bar->config = get_config_json(config_filename);
+	if (!bar->config) {
 		LOG_ERR("an error occured while loading the config file, aborting");
 		goto config_err;
 	}
 
-	if (wkline->position == WKLINE_POSITION_UNKNOWN) {
-		wkline->position = !strcmp(get_config_option_string(wkline->config, "position"), "bottom")
-		                   ? WKLINE_POSITION_BOTTOM : WKLINE_POSITION_TOP;
+	if (bar->position == BAR_POSITION_UNKNOWN) {
+		bar->position = !strcmp(get_config_option_string(bar->config, "position"), "bottom")
+		                ? BAR_POSITION_BOTTOM : BAR_POSITION_TOP;
 	}
-	if (wkline->monitor == -1) {
-		wkline->monitor = get_config_option_integer(wkline->config, "monitor");
+	if (bar->monitor == -1) {
+		bar->monitor = get_config_option_integer(bar->config, "monitor");
 	}
 
-	json_t *theme_config = get_config_option(wkline->config, "theme", false);
-	wkline->theme_config = get_config_option(theme_config, "config", true);
-	if (wkline->theme_uri == NULL) {
-		wkline->theme_uri = get_config_option_string(theme_config, "uri");
+	json_t *theme_config = get_config_option(bar->config, "theme", false);
+	bar->theme_config = get_config_option(theme_config, "config", true);
+	if (bar->theme_uri == NULL) {
+		bar->theme_uri = get_config_option_string(theme_config, "uri");
 	}
 
 	/* get window size */
 	screen = gtk_window_get_screen(window);
 	monitors_num = gdk_screen_get_n_monitors(screen);
-	if (monitors_num - 1 < wkline->monitor) {
-		LOG_ERR("invalid monitor index '%i'", wkline->monitor);
+	if (monitors_num - 1 < bar->monitor) {
+		LOG_ERR("invalid monitor index '%i'", bar->monitor);
 		goto config_err;
 	}
-	gdk_screen_get_monitor_geometry(screen, wkline->monitor, &dest);
+	gdk_screen_get_monitor_geometry(screen, bar->monitor, &dest);
 
-	wkline->width = dest.width;
-	if (wkline->height == -1) {
-		wkline->height = get_config_option_integer(wkline->config, "height");
+	bar->width = dest.width;
+	if (bar->height == -1) {
+		bar->height = get_config_option_integer(bar->config, "height");
 	}
 
 	/* set window properties */
-	gtk_window_set_default_size(window, wkline->width, wkline->height);
+	gtk_window_set_default_size(window, bar->width, bar->height);
 	gtk_window_stick(window);
 	gtk_window_set_decorated(window, FALSE);
 	gtk_window_set_skip_pager_hint(window, TRUE);
 	gtk_window_set_skip_taskbar_hint(window, TRUE);
 	gtk_window_set_gravity(window, GDK_GRAVITY_STATIC);
 	gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DOCK);
-	gtk_widget_set_size_request(GTK_WIDGET(web_view), wkline->width, wkline->height);
+	gtk_widget_set_size_request(GTK_WIDGET(web_view), bar->width, bar->height);
 
 	gtk_container_add(GTK_CONTAINER(layout), GTK_WIDGET(web_view));
 	gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(layout));
 
-	if (wkline->position == WKLINE_POSITION_TOP) {
-		gtk_window_move(window, dest.x, 0);
+	if (bar->position == BAR_POSITION_TOP) {
+		gtk_window_move(window, 0, 0);
 	}
-	else if (wkline->position == WKLINE_POSITION_BOTTOM) {
-		gtk_window_move(window, dest.x, dest.y - wkline->height);
+	else if (bar->position == BAR_POSITION_BOTTOM) {
+		gtk_window_move(window, 0, dest.height - bar->height);
 	}
 
 	g_signal_connect(web_view, "context-menu", G_CALLBACK(wk_context_menu_cb), NULL);
-	g_signal_connect(web_view, "window-object-cleared", G_CALLBACK(window_object_cleared_cb), wkline);
+	g_signal_connect(web_view, "window-object-cleared", G_CALLBACK(window_object_cleared_cb), bar);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-	g_signal_connect(window, "realize", G_CALLBACK(wk_realize_handler), wkline);
+	g_signal_connect(window, "realize", G_CALLBACK(wk_realize_handler), bar);
 
-	LOG_INFO("loading theme '%s'", wkline->theme_uri);
-	webkit_web_view_load_uri(web_view, wkline->theme_uri);
+	LOG_INFO("loading theme '%s'", bar->theme_uri);
+	webkit_web_view_load_uri(web_view, bar->theme_uri);
 
 	gtk_widget_show_all(GTK_WIDGET(window));
 
 	gtk_main();
 
-	json_decref(wkline->config);
+	json_decref(bar->config);
 	json_decref(theme_config);
 config_err:
-	free(wkline);
+	free(bar);
 
 	return 0;
 }

@@ -10,7 +10,7 @@ widget_main (struct widget *widget) {
 
 	widget_epoll_init(widget);
 	while (true) {
-		external_ip = wkline_curl_request(config.address);
+		external_ip = candybar_curl_request(config.address);
 		widget_data_callback(widget, widget_data_arg_string(external_ip));
 		free(external_ip);
 

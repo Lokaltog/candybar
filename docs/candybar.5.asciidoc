@@ -1,36 +1,36 @@
-:man source:   wkline
+:man source:   candybar
 :man version:  {revnumber}
-:man manual:   Wkline Manual
+:man manual:   Candybar Manual
 
-wkline(5)
-=========
+candybar(5)
+===========
 
 Name
 ----
 
-wkline - configuration file for customizing wkline
+candybar - configuration file for customizing candybar
 
 Synopsis
 --------
 
-_~/.config/wkline/config.json_
+_~/.config/candybar/config.json_
 
-_/etc/xdg/wkline/config.json_
+_/etc/xdg/candybar/config.json_
 
 Description
 -----------
 
 *config.json* is a JSON file that defines the appearance, enabled widgets and widget
-options for *wkline*(1).
+options for *candybar*(1).
 
 Configurable Widget Options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 battery
 ^^^^^^^
-'name'::
-    UPower name for the battery device
+'dbus_path'::
+    Full dbus path to the battery or power device
 
-default: BAT0
+default: "/org/freedesktop/UPower/devices/battery_BAT0"
 
 'refresh_interval'::
     How often to check level in seconds
@@ -164,10 +164,10 @@ default: 1800
 Files
 -----
 
-_~/.config/wkline/config.json_:: Per-user configuration file. See *wkline*(5) for
+_~/.config/candybar/config.json_:: Per-user configuration file. See *candybar*(5) for
 further details.
 
-_/etc/xdg/wkline/config.json_:: System-wide configuration file. See *wkline*(5) for
+_/etc/xdg/candybar/config.json_:: System-wide configuration file. See *candybar*(5) for
 further details.
 
 Authors
@@ -175,10 +175,10 @@ Authors
 
 Kim Silkebækken <kim.silkebaekken@gmail.com>
 
-See https://github.com/Lokaltog/wkline/graphs/contributors for a list of all
+See https://github.com/Lokaltog/candybar/graphs/contributors for a list of all
 contributors.
 
 See also
 --------
 
-*wkline*(1)
+*candybar*(1)

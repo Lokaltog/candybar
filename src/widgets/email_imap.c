@@ -25,7 +25,7 @@ widget_update (struct widget *widget, struct widget_config config) {
 	curl_easy_setopt(curl, CURLOPT_URL, config.address);
 	curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "SEARCH UNSEEN");
 
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, wkline_curl_write_response);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, candybar_curl_write_response);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &write_result);
 
 	if (config.ssl_verify) {

@@ -1,13 +1,13 @@
 '\" t
-.\"     Title: wkline
+.\"     Title: candybar
 .\"    Author: [see the "Authors" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 03/19/2014
-.\"    Manual: Wkline Manual
-.\"    Source: wkline
+.\"      Date: 04/30/2014
+.\"    Manual: Candybar Manual
+.\"    Source: candybar
 .\"  Language: English
 .\"
-.TH "WKLINE" "1" "03/19/2014" "wkline" "Wkline Manual"
+.TH "CANDYBAR" "1" "04/30/2014" "candybar" "Candybar Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -28,38 +28,38 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-wkline \- WebKit\-based statusline utility for tiling window managers
+candybar \- WebKit\-based status bar for tiling window managers
 .SH "SYNOPSIS"
 .sp
-\fBwkline\fR [\fB\-c\fR \fIconfig\-file\fR | \fB\-h\fR \fIheight\fR | \fB\-m\fR \fImonitor\fR | \fB\-p\fR \fIposition\fR | \fB\-t\fR \fItheme\-uri\fR]
+\fBcandybar\fR [\fB\-c\fR \fIconfig\-file\fR | \fB\-h\fR \fIheight\fR | \fB\-m\fR \fImonitor\fR | \fB\-p\fR \fIposition\fR | \fB\-t\fR \fItheme\-uri\fR]
 .SH "DESCRIPTION"
 .sp
-\fBwkline\fR displays a HTML\-based statusline in a WebKit web view\&. It provides a smooth looking statusline with CSS transitions and effects, and the possibility of having a transparent background with effects without a desktop compositor running\&.
+\fBcandybar\fR displays a HTML\-based status bar in a WebKit web view\&. It provides a smooth looking status bar with CSS transitions and effects, and the possibility of having a transparent background with effects without a desktop compositor running\&.
 .sp
-Screenshots are available on the wkline wiki\&.
+Screenshots are available on the candybar wiki\&.
 .SH "OPTIONS"
 .PP
 \fB\-c\fR \fIconfig\-file\fR
 .RS 4
 Read configuration options from the specified
 \fIconfig\-file\fR\&. config\-file overrides
-\fIWKLINE_CONFIG_PATH\fR
+\fICANDYBAR_CONFIG_PATH\fR
 and any system\-wide and per\-user configuration files\&. The file must exist and be valid JSON\&.
 .RE
 .PP
 \fB\-h\fR \fIheight\fR
 .RS 4
-Set the height of the statusline in pixels\&.
+Set the height of the status bar in pixels\&.
 .RE
 .PP
 \fB\-m\fR \fImonitor\fR
 .RS 4
-Define which monitor the statusline appears on\&.
+Define which monitor the status bar appears on\&.
 .RE
 .PP
 \fB\-p\fR \fIposition\fR
 .RS 4
-Set the statusline position\&. Valid options are
+Set the status bar position\&. Valid options are
 \fItop\fR
 and
 \fIbottom\fR\&.
@@ -80,7 +80,7 @@ supported; requires bspwm to be configured to reserve space with
 .PP
 \fBdwm\fR
 .RS 4
-supported; requires the dwm built\-in bar to be enabled and set to the same position and height as wkline, wkline will be placed on top of the dwm bar\&.
+supported; requires the dwm built\-in bar to be enabled and set to the same position and height as candybar, candybar will be placed on top of the dwm bar\&.
 .RE
 .PP
 \fBi3\fR
@@ -99,20 +99,20 @@ supported; requires a recent version, support for desktop EWMH properties was im
 .RE
 .SH "FILES"
 .PP
-\fI~/\&.config/wkline/config\&.json\fR
+\fI~/\&.config/candybar/config\&.json\fR
 .RS 4
 Per\-user configuration file\&. See
-\fBwkline\fR(5) for further details\&.
+\fBcandybar\fR(5) for further details\&.
 .RE
 .PP
-\fI/etc/xdg/wkline/config\&.json\fR
+\fI/etc/xdg/candybar/config\&.json\fR
 .RS 4
 System\-wide configuration file\&. See
-\fBwkline\fR(5) for further details\&.
+\fBcandybar\fR(5) for further details\&.
 .RE
 .SH "ENVIRONMENT"
 .PP
-\fIWKLINE_CONFIG_PATH\fR
+\fICANDYBAR_CONFIG_PATH\fR
 .RS 4
 Full path of an alternate
 \fIconfig\&.json\fR
@@ -124,7 +124,7 @@ command\-line argument\&. The file must exist and be valid JSON\&.
 .sp
 Kim Silkebækken <kim\&.silkebaekken@gmail\&.com>
 .sp
-See https://github\&.com/Lokaltog/wkline/graphs/contributors for a list of all contributors\&.
+See https://github\&.com/Lokaltog/candybar/graphs/contributors for a list of all contributors\&.
 .SH "SEE ALSO"
 .sp
-\fBwkline\fR(5)
+\fBcandybar\fR(5)

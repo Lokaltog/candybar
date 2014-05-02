@@ -1,7 +1,7 @@
 #include "widgets.h"
 #include "notifications.h"
 
-static char *server_info[] = { "wkline", "Lokaltog", "0.1", "1.2", NULL };
+static char *server_info[] = { "candybar", "Lokaltog", "0.1", "1.2", NULL };
 static char *server_capabilities[] = { "body", NULL };
 
 static void

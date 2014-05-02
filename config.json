@@ -3,7 +3,7 @@
 	"position": "top",
 	"monitor": 0,
 	"theme": {
-		"uri": "http://lokaltog.github.io/wkline-theme-default/",
+		"uri": "http://lokaltog.github.io/candybar-theme-default/",
 		"config": {}
 	},
 	"widgets": [

@@ -1,1 +1,1 @@
-docs/wkline.1.asciidoc
+docs/candybar.1.asciidoc

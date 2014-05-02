@@ -1,5 +1,5 @@
-#ifndef WKLINE_H
-#define WKLINE_H
+#ifndef CANDYBAR_H
+#define CANDYBAR_H
 
 #include <errno.h>
 #include <gdk/gdkx.h>
@@ -16,14 +16,14 @@
 #include "util/log.h"
 
 typedef enum {
-	WKLINE_POSITION_UNKNOWN,
-	WKLINE_POSITION_TOP,
-	WKLINE_POSITION_BOTTOM,
-} wkline_position_t;
+	BAR_POSITION_UNKNOWN,
+	BAR_POSITION_TOP,
+	BAR_POSITION_BOTTOM,
+} bar_position_t;
 
-struct wkline {
+struct bar {
 	WebKitWebView *web_view;
-	wkline_position_t position;
+	bar_position_t position;
 	int width;
 	int height;
 	int monitor;

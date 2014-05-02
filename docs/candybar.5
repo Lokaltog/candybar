@@ -1,13 +1,13 @@
 '\" t
-.\"     Title: wkline
+.\"     Title: candybar
 .\"    Author: [see the "Authors" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/10/2014
-.\"    Manual: Wkline Manual
-.\"    Source: wkline
+.\"      Date: 04/30/2014
+.\"    Manual: Candybar Manual
+.\"    Source: candybar
 .\"  Language: English
 .\"
-.TH "WKLINE" "5" "04/10/2014" "wkline" "Wkline Manual"
+.TH "CANDYBAR" "5" "04/30/2014" "candybar" "Candybar Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -28,15 +28,15 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-wkline \- configuration file for customizing wkline
+candybar \- configuration file for customizing candybar
 .SH "SYNOPSIS"
 .sp
-\fI~/\&.config/wkline/config\&.json\fR
+\fI~/\&.config/candybar/config\&.json\fR
 .sp
-\fI/etc/xdg/wkline/config\&.json\fR
+\fI/etc/xdg/candybar/config\&.json\fR
 .SH "DESCRIPTION"
 .sp
-\fBconfig\&.json\fR is a JSON file that defines the appearance, enabled widgets and widget options for \fBwkline\fR(1)\&.
+\fBconfig\&.json\fR is a JSON file that defines the appearance, enabled widgets and widget options for \fBcandybar\fR(1)\&.
 .SS "Configurable Widget Options"
 .sp
 .it 1 an-trap
@@ -47,12 +47,12 @@ wkline \- configuration file for customizing wkline
 \fBbattery\fR
 .RS 4
 .PP
-\fIname\fR
+\fIdbus_path\fR
 .RS 4
-UPower name for the battery device
+Full dbus path to the battery or power device
 .RE
 .sp
-default: BAT0
+default: "/org/freedesktop/UPower/devices/battery_BAT0"
 .PP
 \fIrefresh_interval\fR
 .RS 4
@@ -282,22 +282,22 @@ default: 1800
 .RE
 .SH "FILES"
 .PP
-\fI~/\&.config/wkline/config\&.json\fR
+\fI~/\&.config/candybar/config\&.json\fR
 .RS 4
 Per\-user configuration file\&. See
-\fBwkline\fR(5) for further details\&.
+\fBcandybar\fR(5) for further details\&.
 .RE
 .PP
-\fI/etc/xdg/wkline/config\&.json\fR
+\fI/etc/xdg/candybar/config\&.json\fR
 .RS 4
 System\-wide configuration file\&. See
-\fBwkline\fR(5) for further details\&.
+\fBcandybar\fR(5) for further details\&.
 .RE
 .SH "AUTHORS"
 .sp
 Kim Silkebækken <kim\&.silkebaekken@gmail\&.com>
 .sp
-See https://github\&.com/Lokaltog/wkline/graphs/contributors for a list of all contributors\&.
+See https://github\&.com/Lokaltog/candybar/graphs/contributors for a list of all contributors\&.
 .SH "SEE ALSO"
 .sp
-\fBwkline\fR(1)
+\fBcandybar\fR(1)

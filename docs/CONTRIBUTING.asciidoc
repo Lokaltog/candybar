@@ -1,0 +1,69 @@
+= Contributing
+
+== Requirements
+
+A basic knowledge of C is required for contributing to the core or for creating
+widgets.
+
+Knowledge of HTML, CSS and JS is required for contributing to candybar themes - see
+the https://github.com/Lokaltog/candybar-theme-default[default candybar theme] for
+details.
+
+== Making changes
+
+You need to be comfortable with git. The project uses the
+http://nvie.com/posts/a-successful-git-branching-model/[git flow] branching model.
+
+Create a topic branch from where you want to base your work. Most contributions
+should be based off the +develop+ branch. Prefix your branch with +feature/+ if
+you're working on a new feature.
+
+Submit a pull request to
+https://github.com/Lokaltog/candybar/pulls[Lokaltog/candybar]. Please write good,
+descriptive commit messages, and prefix your changes with the part the commit applies
+to, e.g. +widgets/weather: Fix errors when compiling with optimizations+. See
+http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html[Tim Pope's guide
+to commit messages].
+
+=== Coding style
+
+The project uses a slightly modified BSD KNF coding style. It's recommended that you
+run +uncrustify+ with the config file provided in the project root on any modified or
+added C files before submitting a pull request.
+
+== Project layout
+
+All C source is located in +src/+. Every widget is located in a separate C file in
++src/widgets/+. Common utility functions for logging, config loading, etc. are
+located in +src/util/+.
+
++src/candybar.c+:: Loads user config, initializes the web view, sets window
+    properties, etc.
+
++src/widgets.c+:: Handles widget threads and JSCore extensions and callbacks.
+
+== Debug/development build
+
+This is useful for development as it uses a relative library search path, so candybar
+doesn't have to be installed system-wide for widgets to work.
+
+[source,sh]
+----
+./waf configure build install \          # <1>
+      --debug \                          # <2>
+      --prefix=/ \                       # <3>
+      --libdir=`pwd`/out/lib/candybar \  # <4>
+      --destdir=out/                     # <5>
+
+out/bin/candybar
+
+# ...
+
+./waf build install                      # <6>
+----
+<1> the +configure+ action is optional after the initial build
+<2> enable debug build (disable optimizations, enable debug logging)
+<3> disable prefixing the destination directory with +/usr/+
+<4> tell +candybar+ to search for widget libraries in the +out/lib/+ directory
+<5> installs into +out/+, remember to change +--libdir+ if you change this directory
+<5> rebuild project, this command only recompiles changed files and is very fast
