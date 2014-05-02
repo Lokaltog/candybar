@@ -2,12 +2,12 @@
 
 import subprocess
 import os
-import time
 
 from waflib import Utils
 
 PACKAGE = 'candybar'
 LIBDIR = '${PREFIX}/lib/candybar'
+
 
 def get_version():
 	'''Attempt to fetch the current version number from git.'''
@@ -18,11 +18,13 @@ def get_version():
 	version += '.' + subprocess.Popen('git rev-parse --short HEAD', shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8').strip()
 	return version
 
+
 def options(opt):
 	opt.load('compiler_c')
 	opt.add_option('--confdir', dest='confdir', default='/etc/xdg/candybar', help='directory to store candybar global configuration files [default: %default]')
 	opt.add_option('--libdir', dest='libdir', default=LIBDIR, help='shared library search path override (useful for development) [default: %default]')
 	opt.add_option('--debug', dest='debug', default=False, action='store_true', help='build debug version')
+
 
 def configure(ctx):
 	ctx.load('compiler_c')
@@ -57,6 +59,7 @@ def configure(ctx):
 	ctx.check_cfg(package='libmpdclient', uselib_store='LIBMPDCLIENT', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='playerctl-1.0', uselib_store='PLAYERCTL', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='xcb-util xcb-ewmh xcb-icccm', uselib_store='XCB', args=['--cflags', '--libs'], mandatory=False)
+
 
 def build(bld):
 	basedeps = ['GTK', 'GLIB', 'WEBKITGTK', 'JANSSON']
