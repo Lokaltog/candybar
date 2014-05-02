@@ -132,6 +132,11 @@ default: 5000
 
 default: 1000
 
+now_playing_mpris
+^^^^^^^^^^^^^^^^^
+'player_name'::
+    MPRIS player name (e.g. "spotify")
+
 volume
 ^^^^^^
 'card'::
