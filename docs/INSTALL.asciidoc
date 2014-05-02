@@ -30,6 +30,9 @@
 |+now_playing_mpd+
 |+libmpdclient+
 
+|+now_playing_mpris+
+|+playerctl+
+
 |+volume+
 |+alsa+
 

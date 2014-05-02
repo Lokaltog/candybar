@@ -55,6 +55,7 @@ def configure(ctx):
 	ctx.check_cfg(package='dbus-1 dbus-glib-1', uselib_store='DBUS', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='GraphicsMagickWand', uselib_store='MAGICK', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='libmpdclient', uselib_store='LIBMPDCLIENT', args=['--cflags', '--libs'], mandatory=False)
+	ctx.check_cfg(package='playerctl-1.0', uselib_store='PLAYERCTL', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='xcb-util xcb-ewmh xcb-icccm', uselib_store='XCB', args=['--cflags', '--libs'], mandatory=False)
 
 def build(bld):
@@ -88,8 +89,12 @@ def build(bld):
 
 	if bld.is_defined('HAVE_MAGICK'):
 		bld.shlib(source='src/widgets/magick_background.c', target='widget_magick_background', use=basedeps + ['MAGICK'], install_path=LIBDIR)
+
 	if bld.is_defined('HAVE_LIBMPDCLIENT'):
 		bld.shlib(source='src/widgets/now_playing_mpd.c', target='widget_now_playing_mpd', use=basedeps + ['LIBMPDCLIENT'], install_path=LIBDIR)
+
+	if bld.is_defined('HAVE_PLAYERCTL'):
+		bld.shlib(source='src/widgets/now_playing_mpris.c', target='widget_now_playing_mpris', use=basedeps + ['PLAYERCTL'], install_path=LIBDIR)
 
 	if bld.is_defined('HAVE_XCB'):
 		bld.shlib(source='src/widgets/desktops.c', target='widget_desktops', use=basedeps + ['XCB'], install_path=LIBDIR)
