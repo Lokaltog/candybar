@@ -9,6 +9,22 @@ widget_type () {
 	return "desktops";
 }
 
+gint
+workspace_comparator (gconstpointer pointer_a, gconstpointer pointer_b) {
+	i3ipcWorkspaceReply *a = (i3ipcWorkspaceReply*)pointer_a;
+	i3ipcWorkspaceReply *b = (i3ipcWorkspaceReply*)pointer_b;
+
+	if (a->num < b->num) {
+		return -1;
+	}
+	else if (a->num > b->num) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
 json_t*
 format_workspaces (i3ipcConnection *conn) {
 	json_t *json_data_object = json_object();
@@ -16,6 +32,7 @@ format_workspaces (i3ipcConnection *conn) {
 	json_object_set_new(json_data_object, "desktops", json_desktops_array);
 
 	GSList *workspaces = i3ipc_connection_get_workspaces(conn, NULL);
+	workspaces = g_slist_sort(workspaces, (GCompareFunc)workspace_comparator);
 	for (unsigned char i = 0; i < g_slist_length(workspaces); i++) {
 		GSList *workspace = g_slist_nth(workspaces, i);
 		i3ipcWorkspaceReply *data = workspace->data;
