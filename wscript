@@ -3,7 +3,13 @@
 import subprocess
 import os
 
-from waflib import Utils
+from waflib import Utils, TaskGen
+
+TaskGen.declare_chain(
+	rule='${A2X} --doctype manpage --format manpage ${SRC}',
+	ext_in='.asciidoc',
+	ext_out='',
+)
 
 PACKAGE = 'candybar'
 LIBDIR = '${PREFIX}/lib/candybar'
@@ -44,6 +50,9 @@ def configure(ctx):
 	ctx.define('PACKAGE', PACKAGE)
 	ctx.define('CONFDIR', ctx.options.confdir)
 	ctx.define('LIBDIR', Utils.subst_vars(ctx.options.libdir, ctx.env))
+
+	# man page deps (asciidoc converter)
+	ctx.find_program('a2x', var='A2X', mandatory=False)
 
 	# deps
 	ctx.check_cfg(package='gtk+-3.0', uselib_store='GTK', args=['--cflags', '--libs'])
@@ -109,4 +118,11 @@ def build(bld):
 
 	bld.objects(source='src/widgets.c', target='widgets', use=['baseutils'] + basedeps)
 	bld.program(source='src/candybar.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps, defines=candybar_defines)
+
+	# man pages
+	if bld.env.A2X:
+		for manpage in [1, 5]:
+			bld(source='docs/candybar.{}.asciidoc'.format(manpage))
+			bld.install_files('${{PREFIX}}/man/man{}'.format(manpage), 'docs/candybar.{}'.format(manpage))
+
 	bld.install_files(bld.options.confdir, ['config.json'])
