@@ -162,7 +162,7 @@ def build(bld):
 
 		bld.install_files(
 			bld.options.themedir,
-			theme_dir.ant_glob('**'),
+			theme_dir.find_resource('index.html')
 		)
 
 		use_remote_theme = False
