@@ -56,7 +56,9 @@ workspace_callback (i3ipcConnection *conn, i3ipcWorkspaceEvent *event, gpointer 
 	struct widget *widget = (struct widget*)user_data;
 	json_t *json_data_object = format_workspaces(conn);
 	char *json_str = strdup(json_dumps(json_data_object, 0));
-	widget_data_callback(widget, widget_data_arg_string(json_str));
+	struct js_callback_arg arg = widget_data_arg_string(json_str);
+	struct js_callback_data data = { .widget = widget, .args = &arg, 1 };
+	web_view_callback(&data);
 	free(json_str);
 }
 
