@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import subprocess
 import os
+import subprocess
 
 from waflib import Utils, TaskGen
 
@@ -28,8 +28,10 @@ def get_version():
 def options(opt):
 	opt.load('compiler_c')
 	opt.add_option('--confdir', dest='confdir', default='/etc/xdg/{}'.format(PACKAGE), help='directory to store {} global configuration files [default: %default]'.format(PACKAGE))
-	opt.add_option('--libdir', dest='libdir', default=LIBDIR, help='shared library search path override (useful for development) [default: %default]')
 	opt.add_option('--debug', dest='debug', default=False, action='store_true', help='build debug version')
+	opt.add_option('--libdir', dest='libdir', default=LIBDIR, help='shared library search path override (useful for development) [default: %default]')
+	opt.add_option('--theme', dest='theme', default='https://github.com/Lokaltog/{}-theme-default/archive/gh-pages.tar.gz'.format(PACKAGE), help='default theme to install locally [default: %default]')
+	opt.add_option('--themedir', dest='themedir', default='${{PREFIX}}/share/{}/theme-default'.format(PACKAGE), help='destination directory for default theme [default: %default]')
 
 
 def configure(ctx):
@@ -51,8 +53,10 @@ def configure(ctx):
 	ctx.define('CONFDIR', ctx.options.confdir)
 	ctx.define('LIBDIR', Utils.subst_vars(ctx.options.libdir, ctx.env))
 
-	# man page deps (asciidoc converter)
+	# various build deps
 	ctx.find_program('a2x', var='A2X', mandatory=False)
+	ctx.find_program('wget', var='WGET', mandatory=False)
+	ctx.find_program('tar', var='TAR', mandatory=False)
 
 	# deps
 	ctx.check_cfg(package='gtk+-3.0', uselib_store='GTK', args=['--cflags', '--libs'])
@@ -127,4 +131,55 @@ def build(bld):
 		else:
 			bld.install_files('${{PREFIX}}/share/doc/{}'.format(PACKAGE), 'docs/{}.{}.asciidoc'.format(PACKAGE, manpage))
 
+	# default theme
+	use_remote_theme = True
+	if bld.env.WGET and bld.env.TAR:
+		bld(
+			name='download_theme',
+			rule='${{WGET}} {} -q -O ${{TGT}}'.format(bld.options.theme),
+			target='theme.tar.gz',
+		)
+		bld(
+			name='extract_theme',
+			after='download_theme',
+			rule='mkdir -p ${TGT} && ${TAR} -xz --strip-components 1 -C ${TGT} -f ${SRC}',
+			source='theme.tar.gz',
+			target='theme',
+		)
+
+		theme_dir = bld.path.get_bld().make_node('theme')
+
+		def read_theme_files(task):
+			# update theme file signatures
+			for f in theme_dir.ant_glob('**'):
+				f.sig = Utils.h_file(f.abspath())
+
+		bld(
+			after='extract_theme',
+			rule=read_theme_files,
+			always=True,
+		)
+
+		bld.install_files(
+			bld.options.themedir,
+			theme_dir.ant_glob('**'),
+		)
+
+		use_remote_theme = False
+
+	def subst_theme_uri(task, text):
+		return text.replace(
+			'@THEME_URI@',
+			'http://lokaltog.github.io/candybar-theme-default/' if use_remote_theme
+			else Utils.subst_vars(os.path.join(bld.options.themedir, 'index.html'), bld.env)
+		)
+
+	bld(
+		features='subst',
+		subst_fun=subst_theme_uri,
+		source='src/config.json',
+		target='config.json',
+	)
+
+	# install default config
 	bld.install_files(bld.options.confdir, ['config.json'])
