@@ -12,7 +12,7 @@ TaskGen.declare_chain(
 )
 
 PACKAGE = 'candybar'
-LIBDIR = '${PREFIX}/lib/candybar'
+LIBDIR = '${{PREFIX}}/lib/{}'.format(PACKAGE)
 
 
 def get_version():
@@ -27,7 +27,7 @@ def get_version():
 
 def options(opt):
 	opt.load('compiler_c')
-	opt.add_option('--confdir', dest='confdir', default='/etc/xdg/candybar', help='directory to store candybar global configuration files [default: %default]')
+	opt.add_option('--confdir', dest='confdir', default='/etc/xdg/{}'.format(PACKAGE), help='directory to store {} global configuration files [default: %default]'.format(PACKAGE))
 	opt.add_option('--libdir', dest='libdir', default=LIBDIR, help='shared library search path override (useful for development) [default: %default]')
 	opt.add_option('--debug', dest='debug', default=False, action='store_true', help='build debug version')
 
@@ -75,7 +75,7 @@ def build(bld):
 	basedeps = ['GTK', 'GLIB', 'WEBKITGTK', 'JANSSON']
 
 	# add build version/time defines
-	candybar_defines = [
+	package_defines = [
 		'VERSION="{0}"'.format(get_version()),
 	]
 
@@ -117,14 +117,14 @@ def build(bld):
 		bld.shlib(source='src/widgets/desktops_i3.c', target='widget_desktops_i3', use=basedeps + ['I3IPC'], install_path=LIBDIR)
 
 	bld.objects(source='src/widgets.c', target='widgets', use=['baseutils'] + basedeps)
-	bld.program(source='src/candybar.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps, defines=candybar_defines)
+	bld.program(source='src/{}.c'.format(PACKAGE), target=PACKAGE, use=['baseutils', 'widgets'] + basedeps, defines=package_defines)
 
 	# man pages
 	for manpage in [1, 5]:
 		if bld.env.A2X:
-			bld(source='docs/candybar.{}.asciidoc'.format(manpage))
-			bld.install_files('${{PREFIX}}/man/man{}'.format(manpage), 'docs/candybar.{}'.format(manpage))
+			bld(source='docs/{}.{}.asciidoc'.format(PACKAGE, manpage))
+			bld.install_files('${{PREFIX}}/man/man{}'.format(manpage), 'docs/{}.{}'.format(PACKAGE, manpage))
 		else:
-			bld.install_files('${PREFIX}/share/doc/candybar', 'docs/candybar.{}.asciidoc'.format(manpage))
+			bld.install_files('${{PREFIX}}/share/doc/{}'.format(PACKAGE), 'docs/{}.{}.asciidoc'.format(PACKAGE, manpage))
 
 	bld.install_files(bld.options.confdir, ['config.json'])
