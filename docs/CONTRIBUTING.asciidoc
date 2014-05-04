@@ -49,10 +49,10 @@ doesn't have to be installed system-wide for widgets to work.
 
 [source,sh]
 ----
-./waf configure build install \          # <1>
+./waf configure clean build install \    # <1>
       --debug \                          # <2>
       --prefix=/ \                       # <3>
-      --libdir=`pwd`/out/lib/candybar \  # <4>
+      --rootdir=`pwd`/out \              # <4>
       --destdir=out/                     # <5>
 
 out/bin/candybar
@@ -61,9 +61,9 @@ out/bin/candybar
 
 ./waf build install                      # <6>
 ----
-<1> the +configure+ action is optional after the initial build
+<1> the +configure+ and +clean+ actions are optional after the initial build
 <2> enable debug build (disable optimizations, enable debug logging)
 <3> disable prefixing the destination directory with +/usr/+
-<4> tell +candybar+ to search for widget libraries in the +out/lib/+ directory
+<4> tell +candybar+ to search for the default theme and widget libraries in the +out/+ directory
 <5> installs into +out/+, remember to change +--libdir+ if you change this directory
 <5> rebuild project, this command only recompiles changed files and is very fast

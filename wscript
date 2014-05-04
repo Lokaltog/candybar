@@ -29,7 +29,7 @@ def options(opt):
 	opt.load('compiler_c')
 	opt.add_option('--confdir', dest='confdir', default='/etc/xdg/{}'.format(PACKAGE), help='directory to store {} global configuration files [default: %default]'.format(PACKAGE))
 	opt.add_option('--debug', dest='debug', default=False, action='store_true', help='build debug version')
-	opt.add_option('--libdir', dest='libdir', default=LIBDIR, help='shared library search path override (useful for development) [default: %default]')
+	opt.add_option('--rootdir', dest='rootdir', default='/', help='root directory override (useful for development) [default: %default]')
 	opt.add_option('--theme', dest='theme', default='https://github.com/Lokaltog/{}-theme-default/archive/gh-pages.tar.gz'.format(PACKAGE), help='default theme to install locally [default: %default]')
 	opt.add_option('--themedir', dest='themedir', default='${{PREFIX}}/share/{}/theme-default'.format(PACKAGE), help='destination directory for default theme [default: %default]')
 
@@ -51,7 +51,7 @@ def configure(ctx):
 	# defines
 	ctx.define('PACKAGE', PACKAGE)
 	ctx.define('CONFDIR', ctx.options.confdir)
-	ctx.define('LIBDIR', Utils.subst_vars(ctx.options.libdir, ctx.env))
+	ctx.define('LIBDIR', Utils.subst_vars(os.path.join(ctx.options.rootdir, LIBDIR), ctx.env))
 
 	# various build deps
 	ctx.find_program('a2x', var='A2X', mandatory=False)
@@ -171,7 +171,7 @@ def build(bld):
 		return text.replace(
 			'@THEME_URI@',
 			'http://lokaltog.github.io/candybar-theme-default/' if use_remote_theme
-			else Utils.subst_vars(os.path.join(bld.options.themedir, 'index.html'), bld.env)
+			else 'file://' + Utils.subst_vars(os.path.join(bld.options.rootdir, bld.options.themedir, 'index.html'), bld.env)
 		)
 
 	bld(
