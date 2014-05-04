@@ -39,12 +39,12 @@ format_workspaces (i3ipcConnection *conn) {
 
 		json_t *json_desktop = json_object();
 		json_object_set_new(json_desktop, "name", json_string(data->name));
-		json_object_set_new(json_desktop, "clients_len", json_integer(data->num - 1));
+		json_object_set_new(json_desktop, "clients_len", json_integer(i));
 		json_object_set_new(json_desktop, "is_urgent", json_boolean(data->urgent));
 		json_array_append_new(json_desktops_array, json_desktop);
 
 		if (data->focused) {
-			json_object_set_new(json_data_object, "current_desktop", json_integer(data->num - 1));
+			json_object_set_new(json_data_object, "current_desktop", json_integer(i));
 		}
 	}
 
