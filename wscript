@@ -120,9 +120,11 @@ def build(bld):
 	bld.program(source='src/candybar.c', target=PACKAGE, use=['baseutils', 'widgets'] + basedeps, defines=candybar_defines)
 
 	# man pages
-	if bld.env.A2X:
-		for manpage in [1, 5]:
+	for manpage in [1, 5]:
+		if bld.env.A2X:
 			bld(source='docs/candybar.{}.asciidoc'.format(manpage))
 			bld.install_files('${{PREFIX}}/man/man{}'.format(manpage), 'docs/candybar.{}'.format(manpage))
+		else:
+			bld.install_files('${PREFIX}/share/doc/candybar', 'docs/candybar.{}.asciidoc'.format(manpage))
 
 	bld.install_files(bld.options.confdir, ['config.json'])
