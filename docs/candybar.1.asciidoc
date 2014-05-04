@@ -51,7 +51,8 @@ config top_padding 24_.
 *dwm*:: supported; requires the dwm built-in bar to be enabled and set to the same
 position and height as candybar, candybar will be placed on top of the dwm bar.
 
-*i3*:: supported
+*i3*:: supported; desktop support requires the _desktops_i3_ widget to be enabled
+instead of the default _desktops_ widget for desktop list support.
 
 *monsterwm*:: supported
 
