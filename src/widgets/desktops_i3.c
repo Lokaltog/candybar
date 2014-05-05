@@ -76,7 +76,7 @@ widget_main (struct widget *widget) {
 
 	widget_epoll_init(widget);
 	while (true) {
-		widget_epoll_wait_goto(widget, 0, cleanup);
+		widget_epoll_wait_goto(widget, 1000, cleanup);
 	}
 
 cleanup:
