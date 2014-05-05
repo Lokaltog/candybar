@@ -105,7 +105,7 @@ widget_main (struct widget *widget) {
 	}
 	if ((config.brightness != 100) || (config.saturation != 100)) {
 		char modulate_str[20];
-		snprintf(modulate_str, 19, "%i,%i,%i", config.brightness, config.saturation, 100);
+		snprintf(modulate_str, 19, "%i,%i,%i", config.brightness, 0, config.saturation);
 		ModulateImage(img, (const char*)&modulate_str);
 	}
 
