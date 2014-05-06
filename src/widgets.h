@@ -86,6 +86,9 @@ void wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, vo
 	if ((efd = epoll_create1(0)) == -1) { LOG_ERR("failed to create epoll instance: %s", strerror(errno)); return 0; } \
 	event.data.fd = WIDGET->bar->efd; event.events = EPOLLIN | EPOLLET; \
 	if (epoll_ctl(efd, EPOLL_CTL_ADD, WIDGET->bar->efd, &event) == -1) { LOG_ERR("failed to add fd to epoll instance: %s", strerror(errno)); return 0; }
+#define widget_epoll_cleanup(WIDGET) \
+	if (epoll_ctl(efd, EPOLL_CTL_DEL, WIDGET->bar->efd, &event) == -1) { LOG_ERR("failed to remove fd from epoll instance: %s", strerror(errno)); return 0; } \
+	if (close(efd) != 0) { LOG_ERR("failed to close epoll file descriptor: %s", strerror(errno)); return 0; }
 #define widget_epoll_wait_goto(WIDGET, TIMEOUT_SECONDS, GOTO_LABEL) \
 	while ((nfds = epoll_wait(efd, events, MAX_EVENTS, TIMEOUT_SECONDS * 1000)) > 0) { \
 		for (unsigned short i = 0; i < nfds; i++) { \
