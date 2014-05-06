@@ -158,7 +158,7 @@ web_view_callback (struct js_callback_data *data) {
 }
 
 void
-window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *context, void *window_object, void *user_data) {
+wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *context, void *window_object, void *user_data) {
 	LOG_DEBUG("webkit: window object cleared");
 	struct bar *bar = user_data;
 

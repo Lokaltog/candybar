@@ -50,8 +50,7 @@ pthread_cond_t update_cond;
 
 void join_widget_threads ();
 bool web_view_callback (struct js_callback_data *data);
-void document_load_finished_cb (WebKitWebView *web_view, WebKitWebFrame *web_frame, void *user_data);
-void window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *context, void *window_object, void *user_data);
+void wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *context, void *window_object, void *user_data);
 
 #define widget_init_config_string(WIDGET, KEY, TARGET) \
 	{ json_t *CONF = get_config_option(WIDGET, KEY, true); \
