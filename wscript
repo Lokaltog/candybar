@@ -127,7 +127,7 @@ def build(bld):
 	for manpage in [1, 5]:
 		if bld.env.A2X:
 			bld(source='docs/{}.{}.asciidoc'.format(PACKAGE, manpage))
-			bld.install_files('${{PREFIX}}/man/man{}'.format(manpage), 'docs/{}.{}'.format(PACKAGE, manpage))
+			bld.install_files('${{PREFIX}}/share/man/man{}'.format(manpage), 'docs/{}.{}'.format(PACKAGE, manpage))
 		else:
 			bld.install_files('${{PREFIX}}/share/doc/{}'.format(PACKAGE), 'docs/{}.{}.asciidoc'.format(PACKAGE, manpage))
 
