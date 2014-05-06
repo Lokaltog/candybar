@@ -98,12 +98,12 @@ join_widget_threads (struct bar *bar) {
 		eventfd_write(bar->efd, 1);
 		LOG_DEBUG("gracefully shutting down widget threads...");
 		for (i = 0; i < widgets_len; i++) {
-			if (widget_threads[i]) {
-				/* this call may fail if the thread never
-				   entered the main thread loop */
-				pthread_join(widget_threads[i], NULL);
-			}
+			pthread_join(widget_threads[i], NULL);
 		}
+		free(widget_threads);
+	}
+	else {
+		LOG_DEBUG("no widget threads have been spawned");
 	}
 }
 
@@ -165,8 +165,6 @@ window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *cont
 	json_t *widget;
 	json_t *widgets = json_object_get(bar->config, "widgets");
 	size_t index;
-
-	join_widget_threads(bar);
 
 	widgets_len = json_array_size(widgets);
 	widget_threads = malloc(widgets_len * sizeof(pthread_t));

@@ -2,6 +2,7 @@
 #include "widgets.h"
 
 static struct bar *bar = NULL;
+static pthread_mutex_t widget_thread_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static gboolean
 wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
@@ -127,8 +128,16 @@ signal_handler (int signal) {
 		gtk_main_quit();
 	}
 	if (signal == SIGUSR1) {
-		LOG_DEBUG("reloading theme");
-		webkit_web_view_reload_bypass_cache(bar->web_view);
+		if (pthread_mutex_trylock(&widget_thread_mutex) == 0) {
+			LOG_DEBUG("acquired widget thread lock, joining widgets");
+			join_widget_threads(bar);
+			LOG_DEBUG("all widgets joined, reloading theme");
+			webkit_web_view_reload_bypass_cache(bar->web_view);
+			pthread_mutex_unlock(&widget_thread_mutex);
+		}
+		else {
+			LOG_DEBUG("still waiting for widget threads!");
+		}
 	}
 }
 
