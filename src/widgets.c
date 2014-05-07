@@ -98,12 +98,15 @@ join_widget_threads (struct bar *bar) {
 		eventfd_write(bar->efd, 1);
 		LOG_DEBUG("gracefully shutting down widget threads...");
 		for (i = 0; i < widgets_len; i++) {
-			if (widget_threads[i]) {
-				/* this call may fail if the thread never
-				   entered the main thread loop */
-				pthread_join(widget_threads[i], NULL);
-			}
+			pthread_join(widget_threads[i], NULL);
 		}
+
+		/* read any data from the efd so it blocks on epoll_wait */
+		eventfd_read(bar->efd, NULL);
+		free(widget_threads);
+	}
+	else {
+		LOG_DEBUG("no widget threads have been spawned");
 	}
 }
 
@@ -138,6 +141,12 @@ web_view_callback (struct js_callback_data *data) {
 		}
 	}
 
+	if (!data->widget->js_context || !data->widget->js_object) {
+		LOG_ERR("missing JS context or object!");
+
+		return false;
+	}
+
 	JSStringRef str_ondatachanged = JSStringCreateWithUTF8CString("onDataChanged");
 	JSValueRef func = JSObjectGetProperty(data->widget->js_context, data->widget->js_object, str_ondatachanged, NULL);
 	JSObjectRef function = JSValueToObject(data->widget->js_context, func, NULL);
@@ -158,15 +167,13 @@ web_view_callback (struct js_callback_data *data) {
 }
 
 void
-window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *context, void *window_object, void *user_data) {
+wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *context, void *window_object, void *user_data) {
 	LOG_DEBUG("webkit: window object cleared");
 	struct bar *bar = user_data;
 
 	json_t *widget;
 	json_t *widgets = json_object_get(bar->config, "widgets");
 	size_t index;
-
-	join_widget_threads(bar);
 
 	widgets_len = json_array_size(widgets);
 	widget_threads = malloc(widgets_len * sizeof(pthread_t));

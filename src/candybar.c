@@ -2,12 +2,7 @@
 #include "widgets.h"
 
 static struct bar *bar = NULL;
-
-static gboolean
-wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
-	/* Disable context menu */
-	return TRUE;
-}
+static pthread_mutex_t widget_thread_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void
 parse_args (int argc, char *argv[], char **config_filename) {
@@ -45,6 +40,12 @@ parse_args (int argc, char *argv[], char **config_filename) {
 			break;
 		}
 	}
+}
+
+static gboolean
+wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
+	/* Disable context menu */
+	return TRUE;
 }
 
 static void
@@ -127,8 +128,16 @@ signal_handler (int signal) {
 		gtk_main_quit();
 	}
 	if (signal == SIGUSR1) {
-		LOG_DEBUG("reloading theme");
-		webkit_web_view_reload_bypass_cache(bar->web_view);
+		if (pthread_mutex_trylock(&widget_thread_mutex) == 0) {
+			LOG_DEBUG("acquired widget thread lock, joining widgets");
+			join_widget_threads(bar);
+			LOG_DEBUG("all widgets joined, reloading theme");
+			webkit_web_view_reload_bypass_cache(bar->web_view);
+			pthread_mutex_unlock(&widget_thread_mutex);
+		}
+		else {
+			LOG_DEBUG("still waiting for widget threads!");
+		}
 	}
 }
 
@@ -230,7 +239,7 @@ main (int argc, char *argv[]) {
 	}
 
 	g_signal_connect(web_view, "context-menu", G_CALLBACK(wk_context_menu_cb), NULL);
-	g_signal_connect(web_view, "window-object-cleared", G_CALLBACK(window_object_cleared_cb), bar);
+	g_signal_connect(web_view, "window-object-cleared", G_CALLBACK(wk_window_object_cleared_cb), bar);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	g_signal_connect(window, "realize", G_CALLBACK(wk_realize_handler), bar);
 
