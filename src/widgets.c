@@ -141,6 +141,12 @@ web_view_callback (struct js_callback_data *data) {
 		}
 	}
 
+	if (!data->widget->js_context || !data->widget->js_object) {
+		LOG_ERR("missing JS context or object!");
+
+		return false;
+	}
+
 	JSStringRef str_ondatachanged = JSStringCreateWithUTF8CString("onDataChanged");
 	JSValueRef func = JSObjectGetProperty(data->widget->js_context, data->widget->js_object, str_ondatachanged, NULL);
 	JSObjectRef function = JSValueToObject(data->widget->js_context, func, NULL);
