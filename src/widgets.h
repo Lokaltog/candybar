@@ -50,6 +50,7 @@ pthread_cond_t update_cond;
 
 void join_widget_threads ();
 bool web_view_callback (struct js_callback_data *data);
+void wk_load_status_cb (GObject *object, GParamSpec *pspec, gpointer data);
 void wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *context, void *window_object, void *user_data);
 
 #define widget_init_config_string(WIDGET, KEY, TARGET) \
