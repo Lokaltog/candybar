@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <sys/epoll.h>
+#include <sys/time.h>
 #include <webkit/webkit.h>
 
 #include "util/config.h"

@@ -100,16 +100,39 @@ error:
 void
 join_widget_threads (struct bar *bar) {
 	unsigned short i;
-	if (widget_threads && (widgets_len > 0)) {
-		eventfd_write(bar->efd, 1);
+	struct timespec timeout;
+
+	if (widgets_active && (widgets_len > 0)) {
 		LOG_DEBUG("gracefully shutting down widget threads...");
 		for (i = 0; i < widgets_len; i++) {
-			pthread_join(widget_threads[i], NULL);
+			/* make all threads wait until we're ready to receive
+			   the cond signal below */
+			pthread_mutex_lock(&widgets_active[i]->exit_mutex);
+		}
+
+		/* send exit signal */
+		eventfd_write(bar->efd, 1);
+		for (i = 0; i < widgets_len; i++) {
+			/* update cond timeout */
+			clock_gettime(CLOCK_REALTIME, &timeout);
+			timeout.tv_sec += 2;
+
+			/* wait until thread times out or sends an exit
+			   confirmation signal */
+			int ret = pthread_cond_timedwait(&widgets_active[i]->exit_cond, &widgets_active[i]->exit_mutex, &timeout);
+
+			if (ret == ETIMEDOUT) {
+				LOG_WARN("timed out waiting for widget %s to exit", widgets_active[i]->name);
+				pthread_cancel(widgets_active[i]->thread);
+			}
+			else {
+				pthread_join(widgets_active[i]->thread, NULL);
+			}
 		}
 
 		/* read any data from the efd so it blocks on epoll_wait */
 		eventfd_read(bar->efd, NULL);
-		free(widget_threads);
+		free(widgets_active);
 	}
 	else {
 		LOG_DEBUG("no widget threads have been spawned");
