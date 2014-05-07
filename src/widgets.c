@@ -100,6 +100,9 @@ join_widget_threads (struct bar *bar) {
 		for (i = 0; i < widgets_len; i++) {
 			pthread_join(widget_threads[i], NULL);
 		}
+
+		/* read any data from the efd so it blocks on epoll_wait */
+		eventfd_read(bar->efd, NULL);
 		free(widget_threads);
 	}
 	else {

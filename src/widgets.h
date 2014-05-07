@@ -86,7 +86,11 @@ void wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, vo
 	if ((efd = epoll_create1(0)) == -1) { LOG_ERR("failed to create epoll instance: %s", strerror(errno)); return 0; } \
 	event.data.fd = WIDGET->bar->efd; event.events = EPOLLIN | EPOLLET; \
 	if (epoll_ctl(efd, EPOLL_CTL_ADD, WIDGET->bar->efd, &event) == -1) { LOG_ERR("failed to add fd to epoll instance: %s", strerror(errno)); return 0; }
-#define widget_epoll_wait_goto(WIDGET, TIMEOUT_SECONDS, GOTO_LABEL) nfds = epoll_wait(efd, events, MAX_EVENTS, TIMEOUT_SECONDS * 1000); \
-	if (nfds && (events[0].data.fd == WIDGET->bar->efd)) { goto GOTO_LABEL; }
+#define widget_epoll_wait_goto(WIDGET, TIMEOUT_SECONDS, GOTO_LABEL) \
+	while ((nfds = epoll_wait(efd, events, MAX_EVENTS, TIMEOUT_SECONDS * 1000)) > 0) { \
+		for (unsigned short i = 0; i < nfds; i++) { \
+			if (events[i].data.fd == widget->bar->efd) { \
+				goto GOTO_LABEL; \
+			} } }
 
 #endif
