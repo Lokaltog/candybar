@@ -3,8 +3,8 @@
 
 static struct widget **widgets_active = NULL;
 static size_t widgets_len = 0;
-static pthread_mutex_t web_view_ready_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+pthread_mutex_t web_view_ready_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t update_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t update_cond = PTHREAD_COND_INITIALIZER;
 
@@ -118,12 +118,6 @@ join_widget_threads (struct bar *bar) {
 
 bool
 web_view_callback (struct js_callback_data *data) {
-	/* wait until web view has loaded completely, the load-status callback
-	   unlocks the mutex when the web view has loaded. this has to be done
-	   to ensure that JS callbacks are available. */
-	pthread_mutex_lock(&web_view_ready_mutex);
-	pthread_mutex_unlock(&web_view_ready_mutex);
-
 	unsigned short i;
 
 	JSValueRef js_args[data->args_len];
