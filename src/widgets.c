@@ -175,8 +175,9 @@ web_view_callback (struct js_callback_data *data) {
 void
 wk_load_status_cb (GObject *object, GParamSpec *pspec, gpointer data) {
 	WebKitWebView *web_view = WEBKIT_WEB_VIEW(object);
+	WebKitLoadStatus status = webkit_web_view_get_load_status(web_view);
 
-	if (webkit_web_view_get_load_status(web_view) == WEBKIT_LOAD_FINISHED) {
+	if (status == WEBKIT_LOAD_FINISHED) {
 		LOG_DEBUG("webkit: load finished");
 		pthread_mutex_unlock(&web_view_ready_mutex);
 	}
