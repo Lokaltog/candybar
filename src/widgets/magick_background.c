@@ -147,5 +147,5 @@ cleanup:
 		free(img);
 	}
 
-	return 0;
+	pthread_exit(0);
 }

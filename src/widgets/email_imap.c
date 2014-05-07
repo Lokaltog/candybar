@@ -100,5 +100,6 @@ widget_main (struct widget *widget) {
 
 cleanup:
 
-	return 0;
+	widget_epoll_cleanup(widget);
+	pthread_exit(0);
 }

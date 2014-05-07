@@ -82,5 +82,6 @@ widget_main (struct widget *widget) {
 cleanup:
 	g_object_unref(conn);
 
-	return 0;
+	widget_epoll_cleanup(widget);
+	pthread_exit(0);
 }

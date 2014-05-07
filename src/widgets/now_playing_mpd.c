@@ -108,5 +108,6 @@ widget_main (struct widget *widget) {
 cleanup:
 	mpd_connection_free(conn);
 
-	return 0;
+	widget_epoll_cleanup(widget);
+	pthread_exit(0);
 }
