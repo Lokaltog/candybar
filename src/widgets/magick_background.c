@@ -147,5 +147,5 @@ cleanup:
 		free(img);
 	}
 
-	pthread_exit(0);
+	widget_clean_exit(widget);
 }

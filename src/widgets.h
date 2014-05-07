@@ -105,5 +105,10 @@ void wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, vo
 			if (events[i].data.fd == widget->bar->efd) { \
 				goto GOTO_LABEL; \
 			} } }
+#define widget_clean_exit(WIDGET) \
+	pthread_mutex_lock(&WIDGET->exit_mutex); \
+	pthread_cond_signal(&WIDGET->exit_cond); \
+	pthread_mutex_unlock(&WIDGET->exit_mutex); \
+	pthread_exit(0);
 
 #endif

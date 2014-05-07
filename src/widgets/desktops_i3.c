@@ -83,5 +83,5 @@ cleanup:
 	g_object_unref(conn);
 
 	widget_epoll_cleanup(widget);
-	pthread_exit(0);
+	widget_clean_exit(widget);
 }
