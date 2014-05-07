@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <sys/epoll.h>
+#include <sys/time.h>
 #include <webkit/webkit.h>
 
 #include "util/config.h"
@@ -40,11 +41,15 @@ struct widget {
 	JSContextRef js_context;
 	JSObjectRef js_object;
 	JSStaticFunction *js_staticfuncs;
+	pthread_t thread;
+	pthread_mutex_t exit_mutex;
+	pthread_cond_t exit_cond;
 };
 
 typedef void (*widget_main_t)(void*);
 typedef char*(*widget_type_t)();
 
+pthread_mutex_t web_view_ready_mutex;
 pthread_mutex_t update_mutex;
 pthread_cond_t update_cond;
 
@@ -66,10 +71,15 @@ void wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, vo
 	{ json_t *CONF = get_config_option(WIDGET, KEY, true); \
 	  if (CONF != NULL) { TARGET = json_is_true(CONF); } }
 
+/* this macro waits until web view has loaded completely, the load-status
+   callback unlocks the web_view_ready_mutex when the web view has loaded. this
+   has to be done to ensure that JS callbacks are available. */
 #define widget_data_callback(WIDGET, ...) \
 	{ struct js_callback_arg args[] = { __VA_ARGS__ }; \
 	  struct js_callback_data data = { .widget = WIDGET, .args = args, .args_len = LENGTH(args) }; \
-	  pthread_mutex_lock(&update_mutex); \
+	  pthread_mutex_lock(&web_view_ready_mutex); /* wait for web view */ \
+	  pthread_mutex_unlock(&web_view_ready_mutex); \
+	  pthread_mutex_lock(&update_mutex); /* lock while updating web view */ \
 	  g_idle_add((GSourceFunc)web_view_callback, &data); \
 	  pthread_cond_wait(&update_cond, &update_mutex); \
 	  pthread_mutex_unlock(&update_mutex); }
@@ -96,5 +106,10 @@ void wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, vo
 			if (events[i].data.fd == widget->bar->efd) { \
 				goto GOTO_LABEL; \
 			} } }
+#define widget_clean_exit(WIDGET) \
+	pthread_mutex_lock(&WIDGET->exit_mutex); \
+	pthread_cond_signal(&WIDGET->exit_cond); \
+	pthread_mutex_unlock(&WIDGET->exit_mutex); \
+	pthread_exit(0);
 
 #endif

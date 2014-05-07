@@ -155,5 +155,5 @@ cleanup:
 		dbus_connection_unref(connection);
 	}
 
-	pthread_exit(0);
+	widget_clean_exit(widget);
 }

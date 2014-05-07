@@ -1,10 +1,10 @@
 #include "widgets.h"
 #include "candybar.h"
 
-static pthread_t *widget_threads = NULL;
+static struct widget **widgets_active = NULL;
 static size_t widgets_len = 0;
-static pthread_mutex_t web_view_ready_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+pthread_mutex_t web_view_ready_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t update_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t update_cond = PTHREAD_COND_INITIALIZER;
 
@@ -28,7 +28,7 @@ init_widget_js_obj (void *context, struct widget *widget) {
 	widget->js_object = class_obj;
 }
 
-static pthread_t
+static struct widget*
 spawn_widget (struct bar *bar, void *context, json_t *config, const char *name) {
 	widget_main_t widget_main;
 	widget_type_t widget_type;
@@ -63,6 +63,9 @@ spawn_widget (struct bar *bar, void *context, json_t *config, const char *name) 
 	widget->config = config;
 	widget->name = strdup(name);
 
+	pthread_mutex_init(&widget->exit_mutex, NULL);
+	pthread_cond_init(&widget->exit_cond, NULL);
+
 	if (g_module_symbol(lib, "widget_type", (void*)&widget_type)) {
 		widget->type = widget_type();
 	}
@@ -78,7 +81,9 @@ spawn_widget (struct bar *bar, void *context, json_t *config, const char *name) 
 		goto error;
 	}
 
-	return return_thread;
+	widget->thread = return_thread;
+
+	return widget;
 
 error:
 	if (widget->name != NULL) {
@@ -95,16 +100,39 @@ error:
 void
 join_widget_threads (struct bar *bar) {
 	unsigned short i;
-	if (widget_threads && (widgets_len > 0)) {
-		eventfd_write(bar->efd, 1);
+	struct timespec timeout;
+
+	if (widgets_active && (widgets_len > 0)) {
 		LOG_DEBUG("gracefully shutting down widget threads...");
 		for (i = 0; i < widgets_len; i++) {
-			pthread_join(widget_threads[i], NULL);
+			/* make all threads wait until we're ready to receive
+			   the cond signal below */
+			pthread_mutex_lock(&widgets_active[i]->exit_mutex);
+		}
+
+		/* send exit signal */
+		eventfd_write(bar->efd, 1);
+		for (i = 0; i < widgets_len; i++) {
+			/* update cond timeout */
+			clock_gettime(CLOCK_REALTIME, &timeout);
+			timeout.tv_sec += 2;
+
+			/* wait until thread times out or sends an exit
+			   confirmation signal */
+			int ret = pthread_cond_timedwait(&widgets_active[i]->exit_cond, &widgets_active[i]->exit_mutex, &timeout);
+
+			if (ret == ETIMEDOUT) {
+				LOG_WARN("timed out waiting for widget %s to exit", widgets_active[i]->name);
+				pthread_cancel(widgets_active[i]->thread);
+			}
+			else {
+				pthread_join(widgets_active[i]->thread, NULL);
+			}
 		}
 
 		/* read any data from the efd so it blocks on epoll_wait */
 		eventfd_read(bar->efd, NULL);
-		free(widget_threads);
+		free(widgets_active);
 	}
 	else {
 		LOG_DEBUG("no widget threads have been spawned");
@@ -113,12 +141,6 @@ join_widget_threads (struct bar *bar) {
 
 bool
 web_view_callback (struct js_callback_data *data) {
-	/* wait until web view has loaded completely, the load-status callback
-	   unlocks the mutex when the web view has loaded. this has to be done
-	   to ensure that JS callbacks are available. */
-	pthread_mutex_lock(&web_view_ready_mutex);
-	pthread_mutex_unlock(&web_view_ready_mutex);
-
 	unsigned short i;
 
 	JSValueRef js_args[data->args_len];
@@ -176,8 +198,9 @@ web_view_callback (struct js_callback_data *data) {
 void
 wk_load_status_cb (GObject *object, GParamSpec *pspec, gpointer data) {
 	WebKitWebView *web_view = WEBKIT_WEB_VIEW(object);
+	WebKitLoadStatus status = webkit_web_view_get_load_status(web_view);
 
-	if (webkit_web_view_get_load_status(web_view) == WEBKIT_LOAD_FINISHED) {
+	if (status == WEBKIT_LOAD_FINISHED) {
 		LOG_DEBUG("webkit: load finished");
 		pthread_mutex_unlock(&web_view_ready_mutex);
 	}
@@ -193,11 +216,11 @@ wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *c
 	size_t index;
 
 	widgets_len = json_array_size(widgets);
-	widget_threads = malloc(widgets_len * sizeof(pthread_t));
+	widgets_active = calloc(widgets_len, sizeof(struct widget));
 
 	LOG_DEBUG("starting %i widget threads", widgets_len);
 	json_array_foreach(widgets, index, widget) {
-		widget_threads[index] = spawn_widget(bar,
+		widgets_active[index] = spawn_widget(bar,
 		                                     context,
 		                                     json_object_get(widget, "config"),
 		                                     json_string_value(json_object_get(widget, "module")));

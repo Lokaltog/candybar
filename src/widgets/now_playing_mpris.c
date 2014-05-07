@@ -58,5 +58,5 @@ cleanup:
 	g_object_unref(player);
 
 	widget_epoll_cleanup(widget);
-	pthread_exit(0);
+	widget_clean_exit(widget);
 }

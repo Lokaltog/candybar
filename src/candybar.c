@@ -123,21 +123,20 @@ web_view_init () {
 
 static void
 signal_handler (int signal) {
-	if ((signal == SIGTERM) || (signal == SIGINT) || (signal == SIGHUP)) {
-		join_widget_threads(bar);
-		gtk_main_quit();
-	}
-	if (signal == SIGUSR1) {
-		if (pthread_mutex_trylock(&widget_thread_mutex) == 0) {
-			LOG_DEBUG("acquired widget thread lock, joining widgets");
+	if (pthread_mutex_trylock(&widget_thread_mutex) == 0) {
+		if ((signal == SIGTERM) || (signal == SIGINT) || (signal == SIGHUP)) {
+			join_widget_threads(bar);
+			gtk_main_quit();
+		}
+		if (signal == SIGUSR1) {
 			join_widget_threads(bar);
 			LOG_DEBUG("all widgets joined, reloading theme");
 			webkit_web_view_reload_bypass_cache(bar->web_view);
 			pthread_mutex_unlock(&widget_thread_mutex);
 		}
-		else {
-			LOG_DEBUG("still waiting for widget threads!");
-		}
+	}
+	else {
+		LOG_DEBUG("still waiting for widget threads!");
 	}
 }
 
