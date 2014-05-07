@@ -1,7 +1,7 @@
 #include "widgets.h"
 #include "candybar.h"
 
-static pthread_t *widget_threads = NULL;
+static struct widget **widgets_active = NULL;
 static size_t widgets_len = 0;
 static pthread_mutex_t web_view_ready_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -28,7 +28,7 @@ init_widget_js_obj (void *context, struct widget *widget) {
 	widget->js_object = class_obj;
 }
 
-static pthread_t
+static struct widget*
 spawn_widget (struct bar *bar, void *context, json_t *config, const char *name) {
 	widget_main_t widget_main;
 	widget_type_t widget_type;
@@ -63,6 +63,9 @@ spawn_widget (struct bar *bar, void *context, json_t *config, const char *name) 
 	widget->config = config;
 	widget->name = strdup(name);
 
+	pthread_mutex_init(&widget->exit_mutex, NULL);
+	pthread_cond_init(&widget->exit_cond, NULL);
+
 	if (g_module_symbol(lib, "widget_type", (void*)&widget_type)) {
 		widget->type = widget_type();
 	}
@@ -78,7 +81,9 @@ spawn_widget (struct bar *bar, void *context, json_t *config, const char *name) 
 		goto error;
 	}
 
-	return return_thread;
+	widget->thread = return_thread;
+
+	return widget;
 
 error:
 	if (widget->name != NULL) {
@@ -193,11 +198,11 @@ wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *c
 	size_t index;
 
 	widgets_len = json_array_size(widgets);
-	widget_threads = malloc(widgets_len * sizeof(pthread_t));
+	widgets_active = calloc(widgets_len, sizeof(struct widget));
 
 	LOG_DEBUG("starting %i widget threads", widgets_len);
 	json_array_foreach(widgets, index, widget) {
-		widget_threads[index] = spawn_widget(bar,
+		widgets_active[index] = spawn_widget(bar,
 		                                     context,
 		                                     json_object_get(widget, "config"),
 		                                     json_string_value(json_object_get(widget, "module")));

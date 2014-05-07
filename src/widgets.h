@@ -40,6 +40,9 @@ struct widget {
 	JSContextRef js_context;
 	JSObjectRef js_object;
 	JSStaticFunction *js_staticfuncs;
+	pthread_t thread;
+	pthread_mutex_t exit_mutex;
+	pthread_cond_t exit_cond;
 };
 
 typedef void (*widget_main_t)(void*);
