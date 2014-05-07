@@ -81,5 +81,6 @@ cleanup:
 		g_object_unref(properties_proxy);
 	}
 
-	return 0;
+	widget_epoll_cleanup(widget);
+	pthread_exit(0);
 }

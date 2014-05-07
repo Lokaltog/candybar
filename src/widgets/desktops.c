@@ -187,5 +187,6 @@ cleanup:
 		xcb_disconnect(conn);
 	}
 
-	return 0;
+	widget_epoll_cleanup(widget);
+	pthread_exit(0);
 }

@@ -95,5 +95,6 @@ cleanup:
 		snd_mixer_close(mixer);
 	}
 
-	return 0;
+	widget_epoll_cleanup(widget);
+	pthread_exit(0);
 }
