@@ -240,6 +240,7 @@ main (int argc, char *argv[]) {
 
 	g_signal_connect(web_view, "context-menu", G_CALLBACK(wk_context_menu_cb), NULL);
 	g_signal_connect(web_view, "window-object-cleared", G_CALLBACK(wk_window_object_cleared_cb), bar);
+	g_signal_connect(web_view, "notify::load-status", G_CALLBACK(wk_load_status_cb), NULL);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	g_signal_connect(window, "realize", G_CALLBACK(wk_realize_handler), bar);
 

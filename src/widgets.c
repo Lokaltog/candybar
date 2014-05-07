@@ -3,6 +3,7 @@
 
 static pthread_t *widget_threads = NULL;
 static size_t widgets_len = 0;
+static pthread_mutex_t web_view_ready_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_mutex_t update_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t update_cond = PTHREAD_COND_INITIALIZER;
@@ -112,6 +113,12 @@ join_widget_threads (struct bar *bar) {
 
 bool
 web_view_callback (struct js_callback_data *data) {
+	/* wait until web view has loaded completely, the load-status callback
+	   unlocks the mutex when the web view has loaded. this has to be done
+	   to ensure that JS callbacks are available. */
+	pthread_mutex_lock(&web_view_ready_mutex);
+	pthread_mutex_unlock(&web_view_ready_mutex);
+
 	unsigned short i;
 
 	JSValueRef js_args[data->args_len];
@@ -167,6 +174,16 @@ web_view_callback (struct js_callback_data *data) {
 }
 
 void
+wk_load_status_cb (GObject *object, GParamSpec *pspec, gpointer data) {
+	WebKitWebView *web_view = WEBKIT_WEB_VIEW(object);
+
+	if (webkit_web_view_get_load_status(web_view) == WEBKIT_LOAD_FINISHED) {
+		LOG_DEBUG("webkit: load finished");
+		pthread_mutex_unlock(&web_view_ready_mutex);
+	}
+}
+
+void
 wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *context, void *window_object, void *user_data) {
 	LOG_DEBUG("webkit: window object cleared");
 	struct bar *bar = user_data;
@@ -185,4 +202,7 @@ wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, void *c
 		                                     json_object_get(widget, "config"),
 		                                     json_string_value(json_object_get(widget, "module")));
 	}
+
+	/* lock mutex until the web page has been loaded completely */
+	pthread_mutex_lock(&web_view_ready_mutex);
 }
