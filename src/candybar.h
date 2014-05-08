@@ -24,6 +24,8 @@ typedef enum {
 struct bar {
 	WebKitWebView *web_view;
 	bar_position_t position;
+	int pos_x;
+	int pos_y;
 	int width;
 	int height;
 	int monitor;

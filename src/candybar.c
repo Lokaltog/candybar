@@ -231,10 +231,14 @@ main (int argc, char *argv[]) {
 	gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(layout));
 
 	if (bar->position == BAR_POSITION_TOP) {
-		gtk_window_move(window, dest.x, 0);
+		bar->pos_x = dest.x;
+		bar->pos_y = 0;
+		gtk_window_move(window, bar->pos_x, bar->pos_y);
 	}
 	else if (bar->position == BAR_POSITION_BOTTOM) {
-		gtk_window_move(window, dest.x, dest.height - bar->height);
+		bar->pos_x = dest.x;
+		bar->pos_y = dest.height - bar->height;
+		gtk_window_move(window, bar->pos_x, bar->pos_y);
 	}
 
 	g_signal_connect(web_view, "context-menu", G_CALLBACK(wk_context_menu_cb), NULL);
