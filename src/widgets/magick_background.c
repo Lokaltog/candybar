@@ -72,7 +72,11 @@ widget_main (struct widget *widget) {
 		}
 
 		im_c = xcb_get_image(conn, XCB_IMAGE_FORMAT_Z_PIXMAP, root_pixmap,
-		                     0, 0, widget->bar->width, widget->bar->height, 0xffffffff);
+		                     widget->bar->pos_x,
+		                     widget->bar->pos_y,
+		                     widget->bar->width,
+		                     widget->bar->height,
+		                     0xffffffff);
 		im_r = xcb_get_image_reply(conn, im_c, &err);
 		if (err != NULL) {
 			LOG_ERR("could not get background image");
