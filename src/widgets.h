@@ -92,7 +92,7 @@ void wk_window_object_cleared_cb (WebKitWebView *web_view, GParamSpec *pspec, vo
 
 #define MAX_EVENTS 10
 #define widget_epoll_init(WIDGET) \
-	int efd, nfds; \
+	int efd = 0, nfds = 0; \
 	struct epoll_event event, events[MAX_EVENTS]; \
 	if ((efd = epoll_create1(0)) == -1) { LOG_ERR("failed to create epoll instance: %s", strerror(errno)); return 0; } \
 	event.data.fd = WIDGET->bar->efd; event.events = EPOLLIN | EPOLLET; \

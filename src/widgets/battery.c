@@ -26,6 +26,7 @@ widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
 	widget_init_config_string(widget->config, "dbus_path", config.dbus_path);
 	widget_init_config_integer(widget->config, "refresh_interval", config.refresh_interval);
+	widget_epoll_init(widget);
 
 	DBusGConnection *conn = NULL;
 	DBusGProxy *proxy = NULL;
@@ -64,7 +65,6 @@ widget_main (struct widget *widget) {
 		goto cleanup;
 	}
 
-	widget_epoll_init(widget);
 	while (true) {
 		widget_update(widget, properties_proxy, (char*)config.dbus_path);
 		widget_epoll_wait_goto(widget, config.refresh_interval, cleanup);

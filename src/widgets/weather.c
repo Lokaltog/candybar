@@ -174,6 +174,7 @@ widget_main (struct widget *widget) {
 	widget_init_config_string(widget->config, "location", config.location);
 	widget_init_config_string(widget->config, "unit", config.unit);
 	widget_init_config_integer(widget->config, "refresh_interval", config.refresh_interval);
+	widget_epoll_init(widget);
 
 	struct location *location = calloc(1, sizeof(location));
 
@@ -189,7 +190,6 @@ widget_main (struct widget *widget) {
 		goto cleanup;
 	}
 
-	widget_epoll_init(widget);
 	while (true) {
 		widget_update(widget, location, config);
 		widget_epoll_wait_goto(widget, config.refresh_interval, cleanup);

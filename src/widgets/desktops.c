@@ -117,6 +117,8 @@ widget_main (struct widget *widget) {
 	xcb_ewmh_connection_t *ewmh = malloc(sizeof(xcb_ewmh_connection_t));
 	struct epoll_event xcb_event;
 
+	widget_epoll_init(widget);
+
 	if (xcb_connection_has_error(conn)) {
 		LOG_ERR("could not connect to display %s", getenv("DISPLAY"));
 		goto cleanup;
@@ -138,7 +140,6 @@ widget_main (struct widget *widget) {
 		goto cleanup;
 	}
 
-	widget_epoll_init(widget);
 	xcb_fd = xcb_get_file_descriptor(ewmh->connection);
 	xcb_event.data.fd = xcb_fd;
 	xcb_event.events = EPOLLIN | EPOLLET;
