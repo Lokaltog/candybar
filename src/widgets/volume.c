@@ -55,6 +55,11 @@ widget_main (struct widget *widget) {
 	snd_mixer_selem_id_set_name(sid, config.selem);
 	snd_mixer_elem_t *elem = snd_mixer_find_selem(mixer, sid);
 
+	if (!elem) {
+		LOG_ERR("could not find selem '%s'", config.selem);
+		goto cleanup;
+	}
+
 	int pollfds_len = snd_mixer_poll_descriptors_count(mixer);
 	pollfds = calloc(pollfds_len, sizeof(*pollfds));
 	err = snd_mixer_poll_descriptors(mixer, &pollfds[0], pollfds_len);
