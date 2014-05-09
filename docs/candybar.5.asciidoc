@@ -25,144 +25,179 @@ options for *candybar*(1).
 
 Configurable Widget Options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 battery
 ^^^^^^^
+
+Display battery and charging status.
+
 'dbus_path'::
-    Full dbus path to the battery or power device
+    Full dbus path to the battery or power device.
 
 default: "/org/freedesktop/UPower/devices/battery_BAT0"
 
 'refresh_interval'::
-    How often to check level in seconds
+    How often to check level (in seconds).
 
 default: 20
 
 datetime
 ^^^^^^^^
+
+Display date and time.
+
 'date_format'::
-    Date format, see *strftime*(3) for syntax
+    Date format, see *strftime*(3) for syntax.
 
 default: "%Y-%m-%d"
 
 'time_format'::
-    Time format, see *strftime*(3) for syntax
+    Time format, see *strftime*(3) for syntax.
 
-default: "%H:%M:%S"
+default: "%H:%M"
 
 'refresh_interval'::
-    How often to refresh in seconds
+    How often to refresh the status bar (in seconds).
 
-default: 1
+default: 10
 
 email_imap
 ^^^^^^^^^^
-'address'::
-    URL of IMAP server
 
-default: imaps://imap.gmail.com:993/INBOX
+Display unread e-mail count on an IMAP e-mail server.
+
+'address'::
+    URI of IMAP server.
+
+default: "imaps://imap.gmail.com:993/INBOX"
 
 'username'::
-    Username to authenticate
+    IMAP server user name. For GMail, an application-specific password is
+    recommended.
 
 default: none
 
 'password'::
-    Password to authenticate
+    IMAP server password.
 
 default: none
 
 'ssl_verify'::
-    Use SSL certificate verification
+    Verify SSL certificate chain.
 
 default: true
 
 'refresh_interval'::
-    How often to check for new mail in seconds
+    How often to check for new mail (in seconds).
 
 default: 60
 
 external_ip
 ^^^^^^^^^^^
-'address'::
-    URL to query for IP address, the URL should return only the IP address as plain text
 
-default: http://ipv4.icanhazip.com
+Display your external IP address.
+
+'address'::
+    URI to query for IP address. The URI should return only the IP address as plain
+    text. Recommended servers are "http://icanhazip.com", "http://ipv4.icanhazip.com"
+    and "http://ipv6.icanhazip.com".
+
+default: "http://ipv4.icanhazip.com"
 
 'refresh_interval'::
-    How often to refresh address in seconds
+    How often to refresh IP address (in seconds).
 
 default: 3600
 
 magick_background
 ^^^^^^^^^^^^^^^^^
+
+Make the status bar background transparent, and optionally applies effects like
+blurring, brightness adjustment and desaturation.
+
 'blur_radius'::
-    How much blurring to apply
+    Gaussian blur radius. Recommended values are in the 0-10 range.
 
 default: 0
 
 'brightness'::
-    Brightness level
+    Brightness level. 100 is the default brightness level, <100 darkens the image,
+    >100 brightens the image.
 
 default: 100
 
 'saturation'::
-    Saturation level
+    Saturation level. 100 is the default saturation level, <100 decreases the
+    saturation level, >100 increases the saturation level.
 
 default: 100
 
 now_playing_mpd
 ^^^^^^^^^^^^^^^
+
+Display the currently playing song on an MPD server.
+
 'host'::
-    Hostname of mpd server
+    MPD server host.
 
 default: localhost
 
 'port'::
-    Port number of mpd server
+    MPD server port.
 
 default: 6600
 
 'timeout'::
-    Connection timeout in ms
+    MPD server connection timeout (in milliseconds).
 
 default: 5000
 
-'update_interval'::
-    How often to update in ms
-
-default: 1000
-
 now_playing_mpris
 ^^^^^^^^^^^^^^^^^
+
+Display the currently playing song on an MPRIS-compatible media player. Some
+compatible players include clementine-player, XMMS2, Spotify. Plugins are also
+available for mopidy and VLC.
+
 'player_name'::
-    MPRIS player name (e.g. "spotify")
+    MPRIS player name (e.g. "Spotify").
 
 volume
 ^^^^^^
-'card'::
-    ALSA sound card to use
 
-default: default
+Display the current ALSA volume level and mute status.
+
+'card'::
+    Sound card name. Run 'aplay -L' to receive a list of valid sound cards.
+
+default: "default"
 
 'selem'::
-    Which ALSA control to read and adjust
+    Which simple mixer control to read and adjust. Run 'amixer scontrols' to receive
+    a list of valid simple mixer controls.
 
-default: Master
+default: "Master"
 
 weather
 ^^^^^^^
+
+Display the current weather and temperature. Your location is detected automatically
+using a GeoIP lookup, but setting it manually is recommended if you're behind a
+proxy, and to avoid an extra request when updating the weather. The widget uses
+Yahoo! Weather for weather lookups.
+
 'location'::
-    ZIP code or location query (e.g. "Oslo, Norway")
+    ZIP code or location query (e.g. "Oslo, Norway").
 
 default: none
 
 'unit'::
-    Farenheit or Centigrade, c or f
+    Farenheit ("f") or Celsius ("c").
 
-default: c
+default: "c"
 
 'refresh_interval'::
-    How often to check for updates in seconds
+    How often to check for updates (in seconds).
 
 default: 1800
 
