@@ -70,7 +70,7 @@ def configure(ctx):
 	ctx.check_cfg(package='dbus-1 dbus-glib-1', uselib_store='DBUS', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='GraphicsMagickWand', uselib_store='MAGICK', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='libmpdclient', uselib_store='LIBMPDCLIENT', args=['--cflags', '--libs'], mandatory=False)
-	ctx.check_cfg(package='playerctl-1.0', uselib_store='PLAYERCTL', args=['--cflags', '--libs'], mandatory=False)
+	ctx.check_cfg(package='playerctl-1.0 >= 0.3.0', uselib_store='PLAYERCTL', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='xcb-util xcb-ewmh xcb-icccm', uselib_store='XCB', args=['--cflags', '--libs'], mandatory=False)
 	ctx.check_cfg(package='i3ipc-glib-1.0', uselib_store='I3IPC', args=['--cflags', '--libs'], mandatory=False)
 
