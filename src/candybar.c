@@ -45,7 +45,7 @@ parse_args (int argc, char *argv[], char **config_filename) {
 static gboolean
 wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
 	/* Disable context menu */
-	return TRUE;
+	return FALSE;
 }
 
 static void
@@ -86,6 +86,29 @@ wk_realize_handler (GtkWidget *window, gpointer user_data) {
 }
 
 static WebKitWebView*
+wk_inspect_web_view_cb (WebKitWebInspector *web_inspector,
+			WebKitWebView *web_view,
+			gpointer user_data) {
+
+	return NULL;
+}
+
+static gboolean
+wk_show_window_cb (WebKitWebInspector *web_inspector, gpointer user_data) {
+	webkit_web_inspector_show(web_inspector);
+	return TRUE;
+}
+
+static WebKitWebInspector*
+inspector_init (WebKitWebView *web_view) {
+	WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(web_view));
+	g_signal_connect(G_OBJECT(inspector), "inspect-web-view", G_CALLBACK(wk_inspect_web_view_cb), NULL);
+	g_signal_connect(G_OBJECT(inspector), "show-window", G_CALLBACK(wk_show_window_cb), NULL);
+
+	return inspector;
+}
+
+static WebKitWebView*
 web_view_init () {
 	WebKitWebView *web_view;
 	WebKitWebSettings *web_view_settings;
@@ -106,6 +129,7 @@ web_view_init () {
 	/* set webview settings */
 	web_view_settings = webkit_web_settings_new();
 	g_object_set(G_OBJECT(web_view_settings),
+	             "enable-developer-extras", TRUE,
 	             "enable-accelerated-compositing", FALSE,
 	             "enable-dns-prefetching", FALSE,
 	             "enable-java-applet", FALSE,
@@ -149,6 +173,7 @@ main (int argc, char *argv[]) {
 	int monitors_num;
 	GdkRectangle dest;
 	WebKitWebView *web_view;
+	WebKitWebInspector *inspector;
 	struct sigaction sa;
 
 	gtk_init(&argc, &argv);
@@ -169,6 +194,8 @@ main (int argc, char *argv[]) {
 	window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 	layout = GTK_LAYOUT(gtk_layout_new(NULL, NULL));
 	web_view = web_view_init();
+	inspector = inspector_init(web_view);
+
 
 	/* init bar configuration */
 	bar = calloc(1, sizeof(struct bar));
