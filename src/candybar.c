@@ -87,15 +87,25 @@ wk_realize_handler (GtkWidget *window, gpointer user_data) {
 
 static WebKitWebView*
 wk_inspect_web_view_cb (WebKitWebInspector *web_inspector,
-			WebKitWebView *web_view,
-			gpointer user_data) {
+                        WebKitWebView *web_view,
+                        gpointer user_data) {
+	GtkWidget *window;
+	GtkWidget *view;
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(window), "Inspector");
+	view = webkit_web_view_new();
+	gtk_container_add(GTK_CONTAINER(window), view);
+	g_object_set_data(G_OBJECT(web_view), "inspector-window", window);
 
-	return NULL;
+	return WEBKIT_WEB_VIEW(view);
 }
 
 static gboolean
-wk_show_window_cb (WebKitWebInspector *web_inspector, gpointer user_data) {
-	webkit_web_inspector_show(web_inspector);
+wk_show_window_cb (WebKitWebInspector *web_inspector, GtkWidget *web_view) {
+	GtkWidget *window;
+	window = g_object_get_data(G_OBJECT(web_view), "inspector-window");
+	gtk_widget_show_all(window);
+
 	return TRUE;
 }
 
@@ -103,7 +113,7 @@ static WebKitWebInspector*
 inspector_init (WebKitWebView *web_view) {
 	WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(web_view));
 	g_signal_connect(G_OBJECT(inspector), "inspect-web-view", G_CALLBACK(wk_inspect_web_view_cb), NULL);
-	g_signal_connect(G_OBJECT(inspector), "show-window", G_CALLBACK(wk_show_window_cb), NULL);
+	g_signal_connect(G_OBJECT(inspector), "show-window", G_CALLBACK(wk_show_window_cb), web_view);
 
 	return inspector;
 }
@@ -195,7 +205,6 @@ main (int argc, char *argv[]) {
 	layout = GTK_LAYOUT(gtk_layout_new(NULL, NULL));
 	web_view = web_view_init();
 	inspector = inspector_init(web_view);
-
 
 	/* init bar configuration */
 	bar = calloc(1, sizeof(struct bar));
