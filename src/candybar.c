@@ -10,7 +10,7 @@ parse_args (int argc, char *argv[], char **config_filename) {
 	int int_arg;
 	char *end;
 
-	while ((opt = getopt(argc, argv, "c:h:m:p:t:")) != -1) {
+	while ((opt = getopt(argc, argv, "c:h:m:p:t:d")) != -1) {
 		switch (opt) {
 		case 'c':
 			*config_filename = optarg;
@@ -38,13 +38,22 @@ parse_args (int argc, char *argv[], char **config_filename) {
 		case 't':
 			bar->theme_uri = optarg;
 			break;
+		case 'd':
+			bar->debug = true;
+			break;
 		}
 	}
 }
 
 static gboolean
-wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
+wk_disable_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
 	/* Disable context menu */
+	return TRUE;
+}
+
+static gboolean
+wk_enable_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
+	/* Enable context menu */
 	return FALSE;
 }
 
@@ -109,13 +118,13 @@ wk_show_window_cb (WebKitWebInspector *web_inspector, GtkWidget *web_view) {
 	return TRUE;
 }
 
-static WebKitWebInspector*
+static void*
 inspector_init (WebKitWebView *web_view) {
 	WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(web_view));
 	g_signal_connect(G_OBJECT(inspector), "inspect-web-view", G_CALLBACK(wk_inspect_web_view_cb), NULL);
 	g_signal_connect(G_OBJECT(inspector), "show-window", G_CALLBACK(wk_show_window_cb), web_view);
 
-	return inspector;
+	return 0;
 }
 
 static WebKitWebView*
@@ -183,7 +192,6 @@ main (int argc, char *argv[]) {
 	int monitors_num;
 	GdkRectangle dest;
 	WebKitWebView *web_view;
-	WebKitWebInspector *inspector;
 	struct sigaction sa;
 
 	gtk_init(&argc, &argv);
@@ -204,12 +212,12 @@ main (int argc, char *argv[]) {
 	window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 	layout = GTK_LAYOUT(gtk_layout_new(NULL, NULL));
 	web_view = web_view_init();
-	inspector = inspector_init(web_view);
 
 	/* init bar configuration */
 	bar = calloc(1, sizeof(struct bar));
 	bar->height = -1; /* default value */
 	bar->monitor = -1; /* default value */
+	bar->debug = false; /* default value */
 	bar->web_view = web_view;
 	bar->efd = eventfd(0, 0);
 	if (bar->efd == -1) {
@@ -218,6 +226,10 @@ main (int argc, char *argv[]) {
 	}
 
 	parse_args(argc, argv, &config_filename);
+
+	if (bar->debug == true) {
+		inspector_init(web_view);
+	}
 
 	bar->config = get_config_json(config_filename);
 	if (!bar->config) {
@@ -277,7 +289,7 @@ main (int argc, char *argv[]) {
 		gtk_window_move(window, bar->pos_x, bar->pos_y);
 	}
 
-	g_signal_connect(web_view, "context-menu", G_CALLBACK(wk_context_menu_cb), NULL);
+	g_signal_connect(web_view, "context-menu", G_CALLBACK(bar->debug ? wk_enable_context_menu_cb : wk_disable_context_menu_cb), NULL);
 	g_signal_connect(web_view, "window-object-cleared", G_CALLBACK(wk_window_object_cleared_cb), bar);
 	g_signal_connect(web_view, "notify::load-status", G_CALLBACK(wk_load_status_cb), NULL);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
