@@ -123,6 +123,7 @@ inspector_init (WebKitWebView *web_view) {
 	WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(web_view));
 	g_signal_connect(G_OBJECT(inspector), "inspect-web-view", G_CALLBACK(wk_inspect_web_view_cb), NULL);
 	g_signal_connect(G_OBJECT(inspector), "show-window", G_CALLBACK(wk_show_window_cb), web_view);
+	webkit_web_inspector_show(inspector);
 
 	return 0;
 }
