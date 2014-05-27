@@ -7,9 +7,9 @@ widget_js_func_toggle (JSContextRef ctx, JSObjectRef func, JSObjectRef this, siz
 	playerctl_player_play_pause(player, NULL);
 
 	g_object_unref(player);
+
 	return JSValueMakeUndefined(ctx);
 }
-
 
 static JSValueRef
 widget_js_func_next (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
@@ -17,6 +17,7 @@ widget_js_func_next (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_
 	playerctl_player_next(player, NULL);
 
 	g_object_unref(player);
+
 	return JSValueMakeUndefined(ctx);
 }
 
@@ -26,6 +27,7 @@ widget_js_func_previous (JSContextRef ctx, JSObjectRef func, JSObjectRef this, s
 	playerctl_player_previous(player, NULL);
 
 	g_object_unref(player);
+
 	return JSValueMakeUndefined(ctx);
 }
 
