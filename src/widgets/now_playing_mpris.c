@@ -1,6 +1,17 @@
 #include "widgets.h"
 #include "now_playing_mpris.h"
 
+static JSValueRef
+widget_js_func_toggle (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
+	LOG_DEBUG("toggling");
+	return JSValueMakeUndefined(ctx);
+}
+
+const JSStaticFunction widget_js_staticfuncs[] = {
+	{ "toggle", widget_js_func_toggle, kJSPropertyAttributeReadOnly },
+	{ NULL, NULL, 0 },
+};
+
 static int
 update_widget (struct widget *widget, PlayerctlPlayer *player) {
 	char *artist = playerctl_player_get_artist(player, NULL);
