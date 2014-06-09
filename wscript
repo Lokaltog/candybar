@@ -20,9 +20,9 @@ def get_version():
 	version = 'beta'
 	if not os.path.exists('.git'):
 		return version + '-unknown'
-	version += '-git-' + subprocess.Popen('git rev-list --count HEAD', shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8').strip()
-	version += '.' + subprocess.Popen('git rev-parse --short HEAD', shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8').strip()
-	return version
+		version += '-git-' + subprocess.Popen('git rev-list --count HEAD', shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8').strip()
+		version += '.' + subprocess.Popen('git rev-parse --short HEAD', shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8').strip()
+		return version
 
 
 def options(opt):
@@ -45,8 +45,8 @@ def configure(ctx):
 	else:
 		ctx.env.append_unique('CFLAGS', ['-O3', '-g', '-Werror', '-Wall', '-Wpedantic', '-Wextra', '-Wno-unused-parameter', '-std=c99'])
 		ctx.env.append_unique('DEFINES', 'RELEASE')
-	ctx.env.append_unique('INCLUDES', ['./src'])
-	ctx.env.append_unique('DEFINES', '_POSIX_C_SOURCE=200809L')
+		ctx.env.append_unique('INCLUDES', ['./src'])
+		ctx.env.append_unique('DEFINES', '_POSIX_C_SOURCE=200809L')
 
 	# defines
 	ctx.define('PACKAGE', PACKAGE)
@@ -88,13 +88,15 @@ def build(bld):
 	# widgets
 	bld.shlib(source='src/widgets/datetime.c', target='widget_datetime', use=basedeps, install_path=LIBDIR)
 
+	bld.objects(source='src/util/process.c', target='util_process', use=basedeps, cflags=['-fPIC'])
+
 	if bld.is_defined('HAVE_ALSA'):
 		bld.shlib(source='src/widgets/volume.c', target='widget_volume', use=basedeps + ['ALSA'], install_path=LIBDIR)
 
 	if bld.is_defined('HAVE_CURL'):
 		bld.objects(source='src/util/curl.c', target='util_curl', use=basedeps + ['CURL'], cflags=['-fPIC'])
 
-		bld.shlib(source='src/widgets/email_imap.c', target='widget_email_imap', use=basedeps + ['CURL', 'util_curl'], install_path=LIBDIR)
+		bld.shlib(source='src/widgets/email_imap.c', target='widget_email_imap', use=basedeps + ['CURL', 'util_curl', 'util_process'], install_path=LIBDIR)
 		bld.shlib(source='src/widgets/external_ip.c', target='widget_external_ip', use=basedeps + ['CURL', 'util_curl'], install_path=LIBDIR)
 		bld.shlib(source='src/widgets/weather.c', target='widget_weather', use=basedeps + ['CURL', 'util_curl'], install_path=LIBDIR)
 
