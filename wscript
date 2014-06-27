@@ -83,7 +83,8 @@ def build(bld):
 		'VERSION="{0}"'.format(get_version()),
 	]
 
-	bld.objects(source=bld.path.ant_glob('src/util/(log|config|copy_prop|gdk_helpers).c'), target='baseutils', use=basedeps)
+	bld.objects(source=bld.path.ant_glob('src/util/(log|config|copy_prop|gdk_helpers|process).c'), target='baseutils', use=basedeps)
+	bld.objects(source='src/util/process.c', target='util_process', use=basedeps, cflags=['-fPIC'])
 
 	# widgets
 	bld.shlib(source='src/widgets/datetime.c', target='widget_datetime', use=basedeps, install_path=LIBDIR)
@@ -94,7 +95,7 @@ def build(bld):
 	if bld.is_defined('HAVE_CURL'):
 		bld.objects(source='src/util/curl.c', target='util_curl', use=basedeps + ['CURL'], cflags=['-fPIC'])
 
-		bld.shlib(source='src/widgets/email_imap.c', target='widget_email_imap', use=basedeps + ['CURL', 'util_curl'], install_path=LIBDIR)
+		bld.shlib(source='src/widgets/email_imap.c', target='widget_email_imap', use=basedeps + ['CURL', 'util_curl', 'util_process'], install_path=LIBDIR)
 		bld.shlib(source='src/widgets/external_ip.c', target='widget_external_ip', use=basedeps + ['CURL', 'util_curl'], install_path=LIBDIR)
 		bld.shlib(source='src/widgets/weather.c', target='widget_weather', use=basedeps + ['CURL', 'util_curl'], install_path=LIBDIR)
 
