@@ -221,7 +221,7 @@ further details.
 Authors
 -------
 
-Kim Silkebækken <kim@silkebaekken.net>
+Kim Silkebækken <kim@silkebaekken.no>
 
 See https://github.com/Lokaltog/candybar/graphs/contributors for a list of all
 contributors.
