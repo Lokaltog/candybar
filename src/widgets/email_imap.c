@@ -208,9 +208,7 @@ widget_main (struct widget *widget) {
 
 			return 0;
 		}
-		proc.argv = malloc(sizeof(char*) * 2);
-		proc.argv[0] = proc.path;
-		proc.argv[1] = 0;
+
 		const int ret = process(&proc);
 		free_process(&proc);
 		if (ret != 0) {
