@@ -51,12 +51,6 @@ wk_disable_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
 	return TRUE;
 }
 
-static gboolean
-wk_enable_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
-	/* Enable context menu */
-	return FALSE;
-}
-
 static void
 wk_realize_handler (GtkWidget *window, gpointer user_data) {
 	GdkAtom net_wm_strut_atom = gdk_atom_intern_static_string("_NET_WM_STRUT");
@@ -290,7 +284,10 @@ main (int argc, char *argv[]) {
 		gtk_window_move(window, bar->pos_x, bar->pos_y);
 	}
 
-	g_signal_connect(web_view, "context-menu", G_CALLBACK(bar->debug ? wk_enable_context_menu_cb : wk_disable_context_menu_cb), NULL);
+	if (!bar->debug) {
+		g_signal_connect(web_view, "context-menu", G_CALLBACK(wk_disable_context_menu_cb), NULL);
+	}
+
 	g_signal_connect(web_view, "window-object-cleared", G_CALLBACK(wk_window_object_cleared_cb), bar);
 	g_signal_connect(web_view, "notify::load-status", G_CALLBACK(wk_load_status_cb), NULL);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
