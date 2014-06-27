@@ -10,7 +10,7 @@ parse_args (int argc, char *argv[], char **config_filename) {
 	int int_arg;
 	char *end;
 
-	while ((opt = getopt(argc, argv, "c:h:m:p:t:")) != -1) {
+	while ((opt = getopt(argc, argv, "c:h:m:p:t:d")) != -1) {
 		switch (opt) {
 		case 'c':
 			*config_filename = optarg;
@@ -38,12 +38,15 @@ parse_args (int argc, char *argv[], char **config_filename) {
 		case 't':
 			bar->theme_uri = optarg;
 			break;
+		case 'd':
+			bar->debug = true;
+			break;
 		}
 	}
 }
 
 static gboolean
-wk_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
+wk_disable_context_menu_cb (WebKitWebView *web_view, GtkWidget *window) {
 	/* Disable context menu */
 	return TRUE;
 }
@@ -86,6 +89,40 @@ wk_realize_handler (GtkWidget *window, gpointer user_data) {
 }
 
 static WebKitWebView*
+wk_inspect_web_view_cb (WebKitWebInspector *web_inspector,
+                        WebKitWebView *web_view,
+                        gpointer user_data) {
+	GtkWidget *window;
+	GtkWidget *view;
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(window), "Inspector");
+	view = webkit_web_view_new();
+	gtk_container_add(GTK_CONTAINER(window), view);
+	g_object_set_data(G_OBJECT(web_view), "inspector-window", window);
+
+	return WEBKIT_WEB_VIEW(view);
+}
+
+static gboolean
+wk_show_window_cb (WebKitWebInspector *web_inspector, GtkWidget *web_view) {
+	GtkWidget *window;
+	window = g_object_get_data(G_OBJECT(web_view), "inspector-window");
+	gtk_widget_show_all(window);
+
+	return TRUE;
+}
+
+static void*
+inspector_init (WebKitWebView *web_view) {
+	WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(web_view));
+	g_signal_connect(G_OBJECT(inspector), "inspect-web-view", G_CALLBACK(wk_inspect_web_view_cb), NULL);
+	g_signal_connect(G_OBJECT(inspector), "show-window", G_CALLBACK(wk_show_window_cb), web_view);
+	webkit_web_inspector_show(inspector);
+
+	return 0;
+}
+
+static WebKitWebView*
 web_view_init () {
 	WebKitWebView *web_view;
 	WebKitWebSettings *web_view_settings;
@@ -106,6 +143,7 @@ web_view_init () {
 	/* set webview settings */
 	web_view_settings = webkit_web_settings_new();
 	g_object_set(G_OBJECT(web_view_settings),
+	             "enable-developer-extras", TRUE,
 	             "enable-accelerated-compositing", FALSE,
 	             "enable-dns-prefetching", FALSE,
 	             "enable-java-applet", FALSE,
@@ -174,6 +212,7 @@ main (int argc, char *argv[]) {
 	bar = calloc(1, sizeof(struct bar));
 	bar->height = -1; /* default value */
 	bar->monitor = -1; /* default value */
+	bar->debug = false; /* default value */
 	bar->web_view = web_view;
 	bar->efd = eventfd(0, 0);
 	if (bar->efd == -1) {
@@ -182,6 +221,10 @@ main (int argc, char *argv[]) {
 	}
 
 	parse_args(argc, argv, &config_filename);
+
+	if (bar->debug == true) {
+		inspector_init(web_view);
+	}
 
 	bar->config = get_config_json(config_filename);
 	if (!bar->config) {
@@ -241,7 +284,10 @@ main (int argc, char *argv[]) {
 		gtk_window_move(window, bar->pos_x, bar->pos_y);
 	}
 
-	g_signal_connect(web_view, "context-menu", G_CALLBACK(wk_context_menu_cb), NULL);
+	if (!bar->debug) {
+		g_signal_connect(web_view, "context-menu", G_CALLBACK(wk_disable_context_menu_cb), NULL);
+	}
+
 	g_signal_connect(web_view, "window-object-cleared", G_CALLBACK(wk_window_object_cleared_cb), bar);
 	g_signal_connect(web_view, "notify::load-status", G_CALLBACK(wk_load_status_cb), NULL);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);

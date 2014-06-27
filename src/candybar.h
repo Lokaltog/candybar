@@ -33,6 +33,7 @@ struct bar {
 	const char *theme_uri;
 	json_t *theme_config;
 	int efd;
+	bool debug;
 };
 
 #define MISSING_VALUE ""
