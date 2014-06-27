@@ -1,6 +1,43 @@
 #include "widgets.h"
 #include "now_playing_mpris.h"
 
+static JSValueRef
+widget_js_func_toggle (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
+	PlayerctlPlayer *player = playerctl_player_new(NULL, NULL);
+	playerctl_player_play_pause(player, NULL);
+
+	g_object_unref(player);
+
+	return JSValueMakeUndefined(ctx);
+}
+
+static JSValueRef
+widget_js_func_next (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
+	PlayerctlPlayer *player = playerctl_player_new(NULL, NULL);
+	playerctl_player_next(player, NULL);
+
+	g_object_unref(player);
+
+	return JSValueMakeUndefined(ctx);
+}
+
+static JSValueRef
+widget_js_func_previous (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
+	PlayerctlPlayer *player = playerctl_player_new(NULL, NULL);
+	playerctl_player_previous(player, NULL);
+
+	g_object_unref(player);
+
+	return JSValueMakeUndefined(ctx);
+}
+
+const JSStaticFunction widget_js_staticfuncs[] = {
+	{ "toggle", widget_js_func_toggle, kJSPropertyAttributeReadOnly },
+	{ "next", widget_js_func_next, kJSPropertyAttributeReadOnly },
+	{ "previous", widget_js_func_previous, kJSPropertyAttributeReadOnly },
+	{ NULL, NULL, 0 },
+};
+
 static int
 update_widget (struct widget *widget, PlayerctlPlayer *player) {
 	char *artist = playerctl_player_get_artist(player, NULL);
