@@ -5,64 +5,62 @@
 #include <assert.h>
 
 struct Buffer {
-	char *stdOutBuffer, *stdErrBuffer;
-	size_t stdOutUsed, stdOutLen, stdErrUsed, stdErrLen;
+	char *stdout_buffer, *stderr_buffer;
+	size_t stdout_used, stdout_len, stderr_used, stderr_len;
 };
 
-static inline void freeBuffer(struct Buffer *buffer)
-{
-	if (buffer->stdOutBuffer) {
-		free(buffer->stdOutBuffer);
-		buffer->stdOutBuffer = 0;
-		buffer->stdOutUsed = buffer->stdOutLen = 0;
+static inline void
+free_buffer (struct Buffer *buffer) {
+	if (buffer->stdout_buffer) {
+		free(buffer->stdout_buffer);
+		buffer->stdout_buffer = 0;
+		buffer->stdout_used = buffer->stdout_len = 0;
 	}
-	if (buffer->stdErrBuffer) {
-		free(buffer->stdErrBuffer);
-		buffer->stdErrBuffer = 0;
-		buffer->stdErrUsed = buffer->stdErrLen = 0;
+	if (buffer->stderr_buffer) {
+		free(buffer->stderr_buffer);
+		buffer->stderr_buffer = 0;
+		buffer->stderr_used = buffer->stderr_len = 0;
 	}
 }
 
-static inline void freeProcess(struct Process *proc)
-{
-	for (int i=0; proc->argv[i]; ++i)
+static inline void
+free_process (struct Process *proc) {
+	for (int i = 0; proc->argv[i]; ++i) {
 		free(proc->argv[i]);
+	}
 	free(proc->argv);
 }
 
 static inline void
-writeBuffer(char **buf, size_t *used, size_t *bufLen, const char *data, size_t dataLen)
-{
+write_buffer (char **buf, size_t *used, size_t *buf_len, const char *data, size_t data_len) {
 	if (!*buf) {
 		*buf = calloc(1024, 1);
-		*bufLen = 1024;
+		*buf_len = 1024;
 	}
-	while (*used + dataLen >= *bufLen) {
-		size_t add = *bufLen * 1.5;
-		if (add < dataLen) {
-			add = dataLen;
+	while (*used + data_len >= *buf_len) {
+		size_t add = *buf_len * 1.5;
+		if (add < data_len) {
+			add = data_len;
 		}
-		*bufLen += add;
-		*buf = realloc(*buf, *bufLen);
+		*buf_len += add;
+		*buf = realloc(*buf, *buf_len);
 	}
-	memcpy(*buf + *used, data, dataLen);
-	*used += dataLen;
+	memcpy(*buf + *used, data, data_len);
+	*used += data_len;
 	(*buf)[*used] = 0;
-	assert(*used <= *bufLen);
+	assert(*used <= *buf_len);
 }
 
 void
-writeStdOut(struct Process *proc, const char *data, size_t len)
-{
-	struct Buffer *buf = (struct Buffer*)proc->userData;
-	writeBuffer(&buf->stdOutBuffer, &buf->stdOutUsed, &buf->stdOutLen, data, len);
+write_stdout (struct Process *proc, const char *data, size_t len) {
+	struct Buffer *buf = (struct Buffer*)proc->user_data;
+	write_buffer(&buf->stdout_buffer, &buf->stdout_used, &buf->stdout_len, data, len);
 }
 
 void
-writeStdErr(struct Process *proc, const char *data, size_t len)
-{
-	struct Buffer *buf = (struct Buffer*)proc->userData;
-	writeBuffer(&buf->stdErrBuffer, &buf->stdErrUsed, &buf->stdErrLen, data, len);
+write_stderr (struct Process *proc, const char *data, size_t len) {
+	struct Buffer *buf = (struct Buffer*)proc->user_data;
+	write_buffer(&buf->stderr_buffer, &buf->stderr_used, &buf->stderr_len, data, len);
 }
 
 static int
@@ -100,8 +98,8 @@ widget_update (struct widget *widget, struct widget_config config) {
 	status = curl_easy_perform(curl);
 	if (status != CURLE_OK) {
 		LOG_ERR("unable to request data from %s (this error may be temporary): %s",
-				config.address,
-				curl_easy_strerror(status));
+		        config.address,
+		        curl_easy_strerror(status));
 
 		return 0;
 	}
@@ -135,43 +133,49 @@ widget_update (struct widget *widget, struct widget_config config) {
 	free(data);
 
 	widget_data_callback(widget,
-						 widget_data_arg_number(unread),
-						 widget_data_arg_string(config.username));
+	                     widget_data_arg_number(unread),
+	                     widget_data_arg_string(config.username));
 
 	return 0;
 }
 
-static const char *next(const char *ch, int space)
-{
-	while (*ch && !isspace(*ch) == !space)
+static const char*
+next (const char *ch, int space) {
+	while (*ch && !isspace(*ch) == !space) {
 		++ch;
+	}
+
 	return ch;
 }
 
-static int parseCommandLineArguments(const char *passwordCommand, struct Process *proc)
-{
-	const char *start = next(passwordCommand, 1);
-	if (!*start)
+static int
+parse_cmdline_arguments (const char *password_command, struct Process *proc) {
+	const char *start = next(password_command, 1);
+	if (!*start) {
 		return -1;
+	}
 	const char *end = next(start, 0);
 	if (!*end) {
 		proc->path = strdup(start);
-	} else {
+	}
+	else {
 		proc->path = strndup(start, end - start);
 	}
 	proc->argv = calloc(1024, sizeof(char*));
 	proc->argv[0] = proc->path;
-	int argvIdx = 1;
+	int argv_idx = 1;
 
 	while ((start = next(end, 1))) {
 		end = next(start, 0);
 		if (!*end) {
-			proc->argv[argvIdx++] = strdup(start);
+			proc->argv[argv_idx++] = strdup(start);
 			break;
-		} else {
-			proc->argv[argvIdx++] = strndup(start, end - start);
+		}
+		else {
+			proc->argv[argv_idx++] = strndup(start, end - start);
 		}
 	}
+
 	return 1;
 }
 
@@ -181,7 +185,7 @@ widget_main (struct widget *widget) {
 	widget_init_config_string(widget->config, "address", config.address);
 	widget_init_config_string(widget->config, "username", config.username);
 	widget_init_config_string(widget->config, "password", config.password);
-	widget_init_config_string(widget->config, "passwordcommand", config.passwordcommand);
+	widget_init_config_string(widget->config, "password_command", config.password_command);
 	widget_init_config_boolean(widget->config, "ssl_verify", config.ssl_verify);
 	widget_init_config_integer(widget->config, "refresh_interval", config.refresh_interval);
 
@@ -193,30 +197,28 @@ widget_main (struct widget *widget) {
 
 	struct Buffer buffer;
 	memset(&buffer, 0, sizeof(buffer));
-	if (strlen(config.passwordcommand)) {
+	if (strlen(config.password_command)) {
 		struct Process proc;
 		memset(&proc, 0, sizeof(proc));
-		proc.stdErrCb = writeStdErr;
-		proc.stdOutCb = writeStdOut;
-		proc.userData = &buffer;
-		if (parseCommandLineArguments(config.passwordcommand, &proc) == -1) {
-			char buf[1024];
-			snprintf(buf, sizeof(buf), "Can't parse passwordcommand: \"%s\"", config.passwordcommand);
-			LOG_ERR(buf);
+		proc.stderr_cb = write_stderr;
+		proc.stdout_cb = write_stdout;
+		proc.user_data = &buffer;
+		if (parse_cmdline_arguments(config.password_command, &proc) == -1) {
+			LOG_ERR("email_imap: cannot parse password_command: \"%s\"", config.password_command);
+
 			return 0;
 		}
 		proc.argv = malloc(sizeof(char*) * 2);
 		proc.argv[0] = proc.path;
 		proc.argv[1] = 0;
 		const int ret = process(&proc);
-		freeProcess(&proc);
+		free_process(&proc);
 		if (ret != 0) {
-			char buf[1024];
-			snprintf(buf, sizeof(buf), "Process error: %s => %d: %s/%s\n", proc.path, ret, proc.error, buffer.stdErrBuffer);
-			LOG_ERR(buf);
+			LOG_ERR("email_imap: process error: %s => %d: %s/%s\n", proc.path, ret, proc.error, buffer.stderr_buffer);
+
 			return 0;
 		}
-		config.password = buffer.stdOutBuffer;
+		config.password = buffer.stdout_buffer;
 	}
 
 	widget_epoll_init(widget);
@@ -229,5 +231,5 @@ cleanup:
 
 	widget_epoll_cleanup(widget);
 	widget_clean_exit(widget);
-	freeBuffer(&buffer);
+	free_buffer(&buffer);
 }

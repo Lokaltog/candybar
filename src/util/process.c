@@ -15,8 +15,7 @@
 	} while (VAR == -1 && errno == EINTR)
 
 static inline void
-appendFlag(int fd, int flag)
-{
+append_flag (int fd, int flag) {
 	int err;
 	EINTRWRAP(err, fcntl(fd, F_GETFL, 0));
 	assert(err >= 0);
@@ -26,8 +25,7 @@ appendFlag(int fd, int flag)
 }
 
 static inline void
-closeFd(int *fd)
-{
+close_fd (int *fd) {
 	if (*fd != -1) {
 		int err;
 		EINTRWRAP(err, close(*fd));
@@ -36,204 +34,223 @@ closeFd(int *fd)
 }
 
 static inline int
-readFd(int *fd, struct Process *proc, WriteCallback cb)
-{
+read_fd (int *fd, struct Process *proc, WriteCallback cb) {
 	char buf[BUFSIZ];
 	int ret;
 	EINTRWRAP(ret, read(*fd, buf, sizeof(buf)));
 	if (!ret) {
-		closeFd(fd);
-	} else if (ret > 0 && cb) {
+		close_fd(fd);
+	}
+	else if (( ret > 0) && cb) {
 		cb(proc, buf, ret);
 	}
+
 	return ret;
 }
 
 int
-process(struct Process *proc)
-{
+process (struct Process *proc) {
 	assert(proc);
 	assert(proc->path);
 	assert(proc->argv);
 	memset(proc->error, 0, sizeof(proc->error));
-	int stdIn[2], stdOut[2], stdErr[2], closePipe[2];
+	int stdin[2], stdout[2], stderr[2], close_pipe[2];
 	int err;
-	EINTRWRAP(err, pipe(stdIn));
+	EINTRWRAP(err, pipe(stdin));
 	assert(!err);
-	EINTRWRAP(err, pipe(stdOut));
+	EINTRWRAP(err, pipe(stdout));
 	assert(!err);
-	EINTRWRAP(err, pipe(stdErr));
+	EINTRWRAP(err, pipe(stderr));
 	assert(!err);
-	EINTRWRAP(err, pipe(closePipe));
+	EINTRWRAP(err, pipe(close_pipe));
 	assert(!err);
 
-	appendFlag(closePipe[1], FD_CLOEXEC);
+	append_flag(close_pipe[1], FD_CLOEXEC);
 
 	const int pid = fork();
 
 	if (pid == -1) {
-		EINTRWRAP(err, close(closePipe[1]));
-		EINTRWRAP(err, close(closePipe[0]));
-		EINTRWRAP(err, close(stdIn[1]));
-		EINTRWRAP(err, close(stdIn[0]));
-		EINTRWRAP(err, close(stdOut[1]));
-		EINTRWRAP(err, close(stdOut[0]));
-		EINTRWRAP(err, close(stdErr[1]));
-		EINTRWRAP(err, close(stdErr[0]));
+		EINTRWRAP(err, close(close_pipe[1]));
+		EINTRWRAP(err, close(close_pipe[0]));
+		EINTRWRAP(err, close(stdin[1]));
+		EINTRWRAP(err, close(stdin[0]));
+		EINTRWRAP(err, close(stdout[1]));
+		EINTRWRAP(err, close(stdout[0]));
+		EINTRWRAP(err, close(stderr[1]));
+		EINTRWRAP(err, close(stderr[0]));
 		snprintf(proc->error, sizeof(proc->error), "Fork failed %d", errno);
+
 		return -1;
-	} else if (pid == 0) {
-		EINTRWRAP(err, close(closePipe[0]));
-		EINTRWRAP(err, close(stdIn[1]));
-		EINTRWRAP(err, close(stdIn[1]));
-		EINTRWRAP(err, close(stdOut[0]));
-		EINTRWRAP(err, close(stdErr[0]));
+	}
+	else if (pid == 0) {
+		EINTRWRAP(err, close(close_pipe[0]));
+		EINTRWRAP(err, close(stdin[1]));
+		EINTRWRAP(err, close(stdin[1]));
+		EINTRWRAP(err, close(stdout[0]));
+		EINTRWRAP(err, close(stderr[0]));
 
-		EINTRWRAP(err, dup2(stdIn[0], STDIN_FILENO));
-		EINTRWRAP(err, close(stdIn[0]));
-		EINTRWRAP(err, dup2(stdOut[1], STDOUT_FILENO));
-		EINTRWRAP(err, close(stdOut[1]));
-		EINTRWRAP(err, dup2(stdErr[1], STDERR_FILENO));
-		EINTRWRAP(err, close(stdErr[1]));
+		EINTRWRAP(err, dup2(stdin[0], STDIN_FILENO));
+		EINTRWRAP(err, close(stdin[0]));
+		EINTRWRAP(err, dup2(stdout[1], STDOUT_FILENO));
+		EINTRWRAP(err, close(stdout[1]));
+		EINTRWRAP(err, dup2(stderr[1], STDERR_FILENO));
+		EINTRWRAP(err, close(stderr[1]));
 
-		if (proc->cwd && strlen(proc->cwd))
+		if (proc->cwd && strlen(proc->cwd)) {
 			EINTRWRAP(err, chdir(proc->cwd));
-		const int ret = execv(proc->path, (char *const *)proc->argv);
+		}
+		const int ret = execv(proc->path, (char*const*)proc->argv);
 
-		// notify the parent process
+		/* notify the parent process */
 		const char c = 'c';
-		EINTRWRAP(err, write(closePipe[1], &c, 1));
-		EINTRWRAP(err, close(closePipe[1]));
+		EINTRWRAP(err, write(close_pipe[1], &c, 1));
+		EINTRWRAP(err, close(close_pipe[1]));
 		_exit(1);
 		(void)ret;
-	} else {
-		// parent
-		EINTRWRAP(err, close(closePipe[1]));
-		EINTRWRAP(err, close(stdIn[0]));
-		EINTRWRAP(err, close(stdOut[1]));
-		EINTRWRAP(err, close(stdErr[1]));
+	}
+	else {
+		/* parent */
+		EINTRWRAP(err, close(close_pipe[1]));
+		EINTRWRAP(err, close(stdin[0]));
+		EINTRWRAP(err, close(stdout[1]));
+		EINTRWRAP(err, close(stderr[1]));
 
-		//printf("fork, in parent\n");
+		/* printf("fork, in parent\n"); */
 
-		appendFlag(stdIn[1], O_NONBLOCK);
+		append_flag(stdin[1], O_NONBLOCK);
 
 		int status = 0, max, closed = 0;
-		size_t stdInWritten = 0;
-		while (stdInWritten < proc->stdInLength) {
-			EINTRWRAP(err, write(stdIn[1], proc->stdInBuffer + stdInWritten, proc->stdInLength - stdInWritten));
+		size_t stdin_written = 0;
+		while (stdin_written < proc->stdin_length) {
+			EINTRWRAP(err, write(stdin[1], proc->stdin_buffer + stdin_written, proc->stdin_length - stdin_written));
 			if (err > 0) {
-				stdInWritten += err;
-			} else if (err < 0) {
-				if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				stdin_written += err;
+			}
+			else if (err < 0) {
+				if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
 					break;
-				} else {
+				}
+				else {
 					status = -1;
 					goto cleanup;
 				}
 			}
 		}
-		assert(stdInWritten <= proc->stdInLength);
-		if (stdInWritten == proc->stdInLength) {
-			closeFd(&stdIn[1]);
+		assert(stdin_written <= proc->stdin_length);
+		if (stdin_written == proc->stdin_length) {
+			close_fd(&stdin[1]);
 			++closed;
 		}
 
-		max = closePipe[0];
-		if (stdOut[0] > max)
-			max = stdOut[0];
-		if (stdErr[0] > max)
-			max = stdErr[0];
-		if (stdIn[1] > max)
-			max = stdIn[1];
+		max = close_pipe[0];
+		if (stdout[0] > max) {
+			max = stdout[0];
+		}
+		if (stderr[0] > max) {
+			max = stderr[0];
+		}
+		if (stdin[1] > max) {
+			max = stdin[1];
+		}
 
 		do {
 			fd_set r, w;
 			FD_ZERO(&r);
 			FD_ZERO(&w);
-			if (closePipe[0] != -1)
-				FD_SET(closePipe[0], &r);
-			if (stdOut[0] != -1)
-				FD_SET(stdOut[0], &r);
-			if (stdErr[0] != -1)
-				FD_SET(stdErr[0], &r);
-			if (stdIn[1] != -1)
-				FD_SET(stdIn[1], &w);
+			if (close_pipe[0] != -1) {
+				FD_SET(close_pipe[0], &r);
+			}
+			if (stdout[0] != -1) {
+				FD_SET(stdout[0], &r);
+			}
+			if (stderr[0] != -1) {
+				FD_SET(stderr[0], &r);
+			}
+			if (stdin[1] != -1) {
+				FD_SET(stdin[1], &w);
+			}
 
 			const int ret = select(max + 1, &r, &w, 0, 0);
 			assert(ret);
 			if (ret > 0) {
-				if (stdOut[0] != -1 && FD_ISSET(stdOut[0], &r)) {
-					const int ret = readFd(&stdOut[0], proc, proc->stdOutCb);
+				if ((stdout[0] != -1) && FD_ISSET(stdout[0], &r)) {
+					const int ret = read_fd(&stdout[0], proc, proc->stdout_cb);
 					if (!ret) {
 						++closed;
-					} else if (ret < 0) {
+					}
+					else if (ret < 0) {
 						snprintf(proc->error, sizeof(proc->error), "read failed for process %s stdout %d", proc->path, errno);
 						status = -1;
 						goto cleanup;
 					}
 				}
-				if (stdErr[0] != -1 && FD_ISSET(stdErr[0], &r)) {
-					const int ret = readFd(&stdErr[0], proc, proc->stdErrCb);
+				if ((stderr[0] != -1) && FD_ISSET(stderr[0], &r)) {
+					const int ret = read_fd(&stderr[0], proc, proc->stderr_cb);
 					if (!ret) {
 						++closed;
-					} else if (ret < 0) {
+					}
+					else if (ret < 0) {
 						snprintf(proc->error, sizeof(proc->error), "read failed for process %s stderr %d", proc->path, errno);
 						status = -1;
 						goto cleanup;
 					}
 				}
-				if (closePipe[0] != -1 && FD_ISSET(closePipe[0], &r)) {
-					const int ret = readFd(&closePipe[0], 0, 0);
+				if ((close_pipe[0] != -1) && FD_ISSET(close_pipe[0], &r)) {
+					const int ret = read_fd(&close_pipe[0], 0, 0);
 					if (ret > 0) {
 						snprintf(proc->error, sizeof(proc->error), "exec failed process %s %d", proc->path, errno);
 						status = -1;
 						goto cleanup;
-					} else if (ret < 0) {
+					}
+					else if (ret < 0) {
 						snprintf(proc->error, sizeof(proc->error), "read failed for process %s close pipe %d", proc->path, errno);
 						status = -1;
 						goto cleanup;
 					}
 				}
 
-				if (stdIn[1] != -1 && FD_ISSET(stdIn[1], &w)) {
-					while (stdInWritten < proc->stdInLength) {
-						EINTRWRAP(err, write(stdIn[1], proc->stdInBuffer + stdInWritten, proc->stdInLength - stdInWritten));
+				if ((stdin[1] != -1) && FD_ISSET(stdin[1], &w)) {
+					while (stdin_written < proc->stdin_length) {
+						EINTRWRAP(err, write(stdin[1], proc->stdin_buffer + stdin_written, proc->stdin_length - stdin_written));
 						if (err > 0) {
-							stdInWritten += err;
-						} else if (err < 0) {
-							if (errno == EAGAIN || errno == EWOULDBLOCK) {
+							stdin_written += err;
+						}
+						else if (err < 0) {
+							if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
 								break;
-							} else {
+							}
+							else {
 								status = -1;
 								goto cleanup;
 							}
 						}
 					}
-					assert(stdInWritten <= proc->stdInLength);
-					if (stdInWritten == proc->stdInLength) {
-						closeFd(&stdIn[1]);
+					assert(stdin_written <= proc->stdin_length);
+					if (stdin_written == proc->stdin_length) {
+						close_fd(&stdin[1]);
 						++closed;
 					}
 				}
-
-			} else if (errno != EINTR) {
+			}
+			else if (errno != EINTR) {
 				snprintf(proc->error, sizeof(proc->error), "select failed %d", errno);
 				status = -1;
 				break;
 			}
 		} while (closed < 3);
-  cleanup:
+cleanup:
 		{
-			int statusCode;
-			EINTRWRAP(err, waitpid(pid, &statusCode, 0));
-			if (status != -1)
-				status = statusCode;
-			closeFd(&closePipe[0]);
-			closeFd(&stdIn[1]);
-			closeFd(&stdOut[0]);
-			closeFd(&stdErr[0]);
+			int status_code;
+			EINTRWRAP(err, waitpid(pid, &status_code, 0));
+			if (status != -1) {
+				status = status_code;
+			}
+			close_fd(&close_pipe[0]);
+			close_fd(&stdin[1]);
+			close_fd(&stdout[0]);
+			close_fd(&stderr[0]);
 		}
+
 		return status;
 	}
 }
-
