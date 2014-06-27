@@ -13,8 +13,8 @@ candybar - WebKit-based status bar for tiling window managers
 Synopsis
 --------
 
-*candybar* [*-c* _config-file_ | *-h* _height_ | *-m* _monitor_ | *-p* _position_ |
- *-t* _theme-uri_]
+*candybar* [*-d*] [*-c* _config-file_] [*-h* _height_] [*-m* _monitor_] [*-p*
+ _position_] [*-t* _theme-uri_]
 
 Description
 -----------
@@ -28,6 +28,8 @@ https://github.com/Lokaltog/candybar/wiki/Screenshots[candybar wiki].
 
 Options
 -------
+
+*-d*:: Enable debugging mode and display the WebKit inspector window on launch.
 
 *-c* _config-file_:: Read configuration options from the specified
 _config-file_. config-file overrides _CANDYBAR_CONFIG_PATH_ and any system-wide and
