@@ -82,6 +82,14 @@ default: none
 
 default: none
 
+'password_command'::
+    Command to execute to retrieve the IMAP server password. Useful for GPG-encrypted
+    password files or third-party password stores like *pass*(1).
+
+    Example: "/usr/bin/pass path/to/my-imap-account"
+
+default: none
+
 'ssl_verify'::
     Verify SSL certificate chain.
 
