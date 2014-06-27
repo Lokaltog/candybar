@@ -31,10 +31,30 @@ widget_js_func_previous (JSContextRef ctx, JSObjectRef func, JSObjectRef this, s
 	return JSValueMakeUndefined(ctx);
 }
 
+static JSValueRef
+widget_js_func_status (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
+	PlayerctlPlayer *player = playerctl_player_new(NULL, NULL);
+	char *raw;
+	double status;
+
+	g_object_get(player, "status", &raw);
+	if (strcmp(raw, "Playing") == 0) {
+		status = 0;
+	}
+	else {
+		status = 1;
+	}
+
+	g_object_unref(player);
+
+	return JSValueMakeNumber(ctx, status);
+}
+
 const JSStaticFunction widget_js_staticfuncs[] = {
 	{ "toggle", widget_js_func_toggle, kJSPropertyAttributeReadOnly },
 	{ "next", widget_js_func_next, kJSPropertyAttributeReadOnly },
 	{ "previous", widget_js_func_previous, kJSPropertyAttributeReadOnly },
+	{ "status", widget_js_func_status, kJSPropertyAttributeReadOnly },
 	{ NULL, NULL, 0 },
 };
 
@@ -68,6 +88,12 @@ on_metadata (PlayerctlPlayer *player, GVariant *e, gpointer user_data) {
 	update_widget(widget, player);
 }
 
+static void
+on_status (PlayerctlPlayer *player, gpointer user_data) {
+	struct widget *widget = user_data;
+	update_widget(widget, player);
+}
+
 void*
 widget_main (struct widget *widget) {
 	struct widget_config config = widget_config_defaults;
@@ -82,6 +108,8 @@ widget_main (struct widget *widget) {
 
 		if (player) {
 			g_signal_connect(player, "metadata", G_CALLBACK(on_metadata), widget);
+			g_signal_connect(player, "pause", G_CALLBACK(on_status), widget);
+			g_signal_connect(player, "play", G_CALLBACK(on_status), widget);
 
 			widget_epoll_wait_goto(widget, -1, cleanup);
 		}
