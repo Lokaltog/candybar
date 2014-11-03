@@ -1,7 +1,7 @@
 #include "widgets.h"
 #include "weather.h"
 
-static struct location*
+static int
 get_geoip_location (struct location *location) {
 	json_t *location_data, *geoip_city, *geoip_country_code;
 	json_error_t error;
@@ -15,6 +15,7 @@ get_geoip_location (struct location *location) {
 	}
 
 	free(geoip_raw_json);
+	geoip_raw_json = NULL;
 
 	geoip_city = json_object_get(location_data, "city");
 	if (!json_is_string(geoip_city)) {
@@ -34,17 +35,15 @@ get_geoip_location (struct location *location) {
 		json_decref(location_data);
 	}
 
-	return location;
+	return 0;
 
-error:
-	if (geoip_raw_json != NULL) {
-		free(geoip_raw_json);
-	}
-	if (location_data != NULL) {
-		json_decref(location_data);
-	}
+ error:
+	free(geoip_raw_json);
+	geoip_raw_json = NULL;
 
-	return NULL;
+	json_decref(location_data);
+
+	return 1;
 }
 
 static struct weather*
@@ -74,8 +73,11 @@ get_weather_information (struct location *location) {
 	weather_data = json_loads(weather_raw_json, 0, &error);
 
 	free(query_str);
+	query_str = NULL;
 	free(query_str_escaped);
+	query_str_escaped = NULL;
 	free(request_uri);
+	request_uri = NULL;
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
 
@@ -84,6 +86,7 @@ get_weather_information (struct location *location) {
 	}
 
 	free(weather_raw_json);
+	weather_raw_json = NULL;
 
 	json_t *weather_code, *weather_temp;
 	json_t *tmp_obj = NULL;
@@ -136,13 +139,11 @@ get_weather_information (struct location *location) {
 
 	return weather;
 
-error:
-	if (weather_data != NULL) {
-		json_decref(weather_data);
-	}
-	if (weather != NULL) {
-		free(weather);
-	}
+ error:
+	json_decref(weather_data);
+
+	free(weather);
+	weather = NULL;
 
 	return NULL;
 }
@@ -164,6 +165,7 @@ widget_update (struct widget *widget, struct location *location, struct widget_c
 	                     widget_data_arg_string(config.unit));
 
 	free(weather);
+	weather = NULL;
 
 	return 0;
 }
@@ -183,9 +185,9 @@ widget_main (struct widget *widget) {
 		location->country_code = strdup("");
 	}
 	else {
-		location = get_geoip_location(location);
+		get_geoip_location(location);
 	}
-	if (!location) {
+	if (!(location->city || location->country_code)) {
 		LOG_WARN("could not get GeoIP location, consider setting the location manually in config.json");
 		goto cleanup;
 	}
@@ -196,15 +198,14 @@ widget_main (struct widget *widget) {
 	}
 
 cleanup:
-	if (location->city != NULL) {
-		free(location->city);
-	}
-	if (location->country_code != NULL) {
-		free(location->country_code);
-	}
-	if (location != NULL) {
-		free(location);
-	}
+	free(location->city);
+	location->city = NULL;
+
+	free(location->country_code);
+	location->country_code = NULL;
+
+	free(location);
+	location = NULL;
 
 	widget_epoll_cleanup(widget);
 	widget_clean_exit(widget);
