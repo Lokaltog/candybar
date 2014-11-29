@@ -4,9 +4,10 @@
 static JSValueRef
 widget_js_func_toggle (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
 	PlayerctlPlayer *player = playerctl_player_new(NULL, NULL);
-	playerctl_player_play_pause(player, NULL);
-
-	g_object_unref(player);
+	if (player) {
+		playerctl_player_play_pause(player, NULL);
+		g_object_unref(player);
+	}
 
 	return JSValueMakeUndefined(ctx);
 }
@@ -14,9 +15,10 @@ widget_js_func_toggle (JSContextRef ctx, JSObjectRef func, JSObjectRef this, siz
 static JSValueRef
 widget_js_func_next (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
 	PlayerctlPlayer *player = playerctl_player_new(NULL, NULL);
-	playerctl_player_next(player, NULL);
-
-	g_object_unref(player);
+	if (player) {
+		playerctl_player_next(player, NULL);
+		g_object_unref(player);
+	}
 
 	return JSValueMakeUndefined(ctx);
 }
@@ -24,9 +26,10 @@ widget_js_func_next (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_
 static JSValueRef
 widget_js_func_previous (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
 	PlayerctlPlayer *player = playerctl_player_new(NULL, NULL);
-	playerctl_player_previous(player, NULL);
-
-	g_object_unref(player);
+	if (player) {
+		playerctl_player_previous(player, NULL);
+		g_object_unref(player);
+	}
 
 	return JSValueMakeUndefined(ctx);
 }
