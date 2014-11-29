@@ -1,12 +1,32 @@
 #include "widgets.h"
 #include "now_playing_mpris.h"
 
+static int
+hide_widget (JSContextRef ctx, JSObjectRef this) {
+	struct js_callback_arg arg = widget_data_arg_string("hide");
+
+	JSStringRef str = JSStringCreateWithUTF8CString(arg.value.string);
+	JSValueRef refs[2] = {JSValueMakeString(ctx, str), JSValueMakeString(ctx, str)};
+	JSStringRelease(str);
+
+	JSStringRef str_ondatachanged = JSStringCreateWithUTF8CString("onDataChanged");
+	JSValueRef func = JSObjectGetProperty(ctx, this, str_ondatachanged, NULL);
+	JSObjectRef function = JSValueToObject(ctx, func, NULL);
+	JSStringRelease(str_ondatachanged);
+
+	JSObjectCallAsFunction(ctx, function, NULL, 2, refs, NULL);
+
+	return 0;
+}
+
 static JSValueRef
 widget_js_func_toggle (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_t argc, const JSValueRef argv[], JSValueRef *exc) {
 	PlayerctlPlayer *player = playerctl_player_new(NULL, NULL);
 	if (player) {
 		playerctl_player_play_pause(player, NULL);
 		g_object_unref(player);
+	} else {
+		hide_widget(ctx, this);
 	}
 
 	return JSValueMakeUndefined(ctx);
@@ -18,6 +38,8 @@ widget_js_func_next (JSContextRef ctx, JSObjectRef func, JSObjectRef this, size_
 	if (player) {
 		playerctl_player_next(player, NULL);
 		g_object_unref(player);
+	} else {
+		hide_widget(ctx, this);
 	}
 
 	return JSValueMakeUndefined(ctx);
@@ -29,6 +51,8 @@ widget_js_func_previous (JSContextRef ctx, JSObjectRef func, JSObjectRef this, s
 	if (player) {
 		playerctl_player_previous(player, NULL);
 		g_object_unref(player);
+	} else {
+		hide_widget(ctx, this);
 	}
 
 	return JSValueMakeUndefined(ctx);
