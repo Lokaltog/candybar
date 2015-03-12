@@ -9,3 +9,9 @@ struct desktop {
 	bool is_urgent;
 	int clients_len;
 };
+
+static struct widget_config {
+	bool show_empty;
+} widget_config_defaults = {
+	.show_empty = true,
+};
