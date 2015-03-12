@@ -77,8 +77,8 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 
 	uint32_t desktop_idx = 0;
 	for (i = 0; i < desktop_len; i++) {
-		/* Skip desktop if show_empty is false and desktop is not selected or used */
-		if (!(config.show_empty) && !desktops[i].is_selected && desktops[i].clients_len == 0) {
+		/* Hide desktop if not config.show_empty and empty/unselected */
+		if (!(config.show_empty) && !desktops[i].is_selected && (desktops[i].clients_len == 0)) {
 			continue;
 		}
 
