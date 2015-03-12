@@ -61,6 +61,16 @@ default: "%H:%M"
 
 default: 10
 
+desktops
+^^^^^^^^^^
+
+Display desktops.
+
+'show_empty'::
+    Display empty desktops. Set to false to hide empty/unselected desktops.
+
+default: true
+
 email_imap
 ^^^^^^^^^^
 
