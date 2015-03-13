@@ -87,11 +87,11 @@ widget_update (struct widget *widget, xcb_ewmh_connection_t *ewmh, int screen_nb
 		json_object_set_new(json_desktop, "clients_len", json_integer(desktops[i].clients_len));
 		json_object_set_new(json_desktop, "is_urgent", json_boolean(desktops[i].is_urgent));
 		json_array_append_new(json_desktops_array, json_desktop);
-		desktop_idx++;
 
 		if (desktops[i].is_selected) {
 			json_object_set_new(json_data_object, "current_desktop", json_integer(desktop_idx));
 		}
+		desktop_idx++;
 	}
 
 	char *json_str = strdup(json_dumps(json_data_object, 0));
