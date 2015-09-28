@@ -275,12 +275,12 @@ main (int argc, char *argv[]) {
 
 	if (bar->position == BAR_POSITION_TOP) {
 		bar->pos_x = dest.x;
-		bar->pos_y = 0;
+		bar->pos_y = dest.y;
 		gtk_window_move(window, bar->pos_x, bar->pos_y);
 	}
 	else if (bar->position == BAR_POSITION_BOTTOM) {
 		bar->pos_x = dest.x;
-		bar->pos_y = dest.height - bar->height;
+		bar->pos_y = dest.y + dest.height - bar->height;
 		gtk_window_move(window, bar->pos_x, bar->pos_y);
 	}
 
